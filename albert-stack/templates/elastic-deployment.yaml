@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elasticsearch
+  namespace: {{ .Values.global.namespace | default "default" }}
+spec:
+  replicas: {{ .Values.elasticsearch.replicas }}
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      initContainers:
+      - name: init-sysctl
+        image: busybox
+        command: ['sysctl', '-w', 'vm.max_map_count=262144']
+        securityContext:
+          privileged: true
+      - name: fix-permissions
+        image: busybox
+        command: ['sh', '-c', 'chown -R 1000:1000 /usr/share/elasticsearch/data']
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+        - name: data
+          mountPath: /usr/share/elasticsearch/data
+      containers:
+      - name: elasticsearch
+        image: {{ .Values.elasticsearch.image.repository }}:{{ .Values.elasticsearch.image.tag }}
+        imagePullPolicy: {{ .Values.elasticsearch.image.pullPolicy }}
+        env:
+        - name: node.name
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: cluster.name
+          value: "elasticsearch-cluster"
+        - name: discovery.type
+          value: "single-node"
+        - name: ES_JAVA_OPTS
+          value: {{ .Values.elasticsearch.config.javaOpts | quote }}
+        - name: xpack.security.enabled
+          value: {{ .Values.elasticsearch.config.xpackSecurityEnabled | quote }}
+        - name: logger.level
+          value: {{ .Values.elasticsearch.config.loggerLevel | quote }}
+        - name: rootLogger.level
+          value: {{ .Values.elasticsearch.config.rootLoggerLevel | quote }}
+        ports:
+        - containerPort: {{ .Values.elasticsearch.service.port }}
+          name: http
+        - containerPort: {{ .Values.elasticsearch.service.transportPort }}
+          name: transport
+        volumeMounts:
+        - name: data
+          mountPath: /usr/share/elasticsearch/data
+        resources:
+          requests:
+            cpu: {{ .Values.elasticsearch.resources.requests.cpu | quote }}
+            memory: {{ .Values.elasticsearch.resources.requests.memory | quote }}
+          limits:
+            cpu: {{ .Values.elasticsearch.resources.limits.cpu | quote }}
+            memory: {{ .Values.elasticsearch.resources.limits.memory | quote }}
+        {{- if .Values.elasticsearch.probes }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.elasticsearch.probes.readiness.path }}
+            port: http
+          initialDelaySeconds: {{ .Values.elasticsearch.probes.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.elasticsearch.probes.readiness.periodSeconds }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.elasticsearch.probes.liveness.path }}
+            port: http
+          initialDelaySeconds: {{ .Values.elasticsearch.probes.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.elasticsearch.probes.liveness.periodSeconds }}
+        {{- end }}
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: elasticsearch-data
