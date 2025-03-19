@@ -17,6 +17,8 @@ spec:
       labels:
         app: vllm
     spec:
+      nodeSelector:
+        k8s.scaleway.com/pool-name: gpu-high
       volumes:
       - name: cache-volume
         persistentVolumeClaim:
@@ -32,7 +34,7 @@ spec:
         imagePullPolicy: {{ .Values.vllm.image.pullPolicy }}
         command: ["/bin/sh", "-c"]
         args: [
-          "vllm serve {{ .Values.vllm.config.model }} --trust-remote-code --enable-chunked-prefill --max_num_batched_tokens {{ .Values.vllm.config.maxNumBatchedTokens }}"
+          "vllm serve {{ .Values.vllm.config.model }} --tokenizer_mode mistral --config_format mistral --load_format mistral --tool-call-parser mistral --enable-auto-tool-choice --limit_mm_per_prompt 'image=10' --trust-remote-code --enable-chunked-prefill --max_num_batched_tokens {{ .Values.vllm.config.maxNumBatchedTokens }}"
         ]
         env:
         - name: HUGGING_FACE_HUB_TOKEN

@@ -16,6 +16,8 @@ spec:
       labels:
         app: albert-api
     spec:
+      nodeSelector:
+        k8s.scaleway.com/pool-name: pool-par-2-fervent-wilson
       containers:
       - name: api
         image: {{ .Values.albertApi.image.repository }}:{{ .Values.albertApi.image.tag }}

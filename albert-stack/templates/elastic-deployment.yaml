@@ -13,6 +13,8 @@ spec:
       labels:
         app: elasticsearch
     spec:
+      nodeSelector:
+        k8s.scaleway.com/pool-name: pool-par-2-fervent-wilson
       initContainers:
       - name: init-sysctl
         image: busybox
