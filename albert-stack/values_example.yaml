@@ -65,7 +65,7 @@ streamlit:
   replicas: 1
   image:
     repository: ghcr.io/etalab-ia/albert-api/ui
-    tag: latest
+    tag: 81bc119682ffc2345c64d0f284d47e4682200ef8
     pullPolicy: IfNotPresent
   service:
     type: LoadBalancer
@@ -73,6 +73,8 @@ streamlit:
     targetPort: 8501
   config:
     baseUrl: "http://albert-api.default.svc.cluster.local:80/v1"
+    excludeModels: ""
+    documentsEmbeddingsModel: "BAAI/bge-m3"
   probes:
     readiness:
       path: /
@@ -124,7 +126,7 @@ vllm:
       periodSeconds: 30
     liveness:
       path: /health
-      initialDelaySeconds: 60
+      initialDelaySeconds: 180
       periodSeconds: 30
 
 # BGE Embeddings configuration
