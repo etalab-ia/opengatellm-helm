@@ -29,6 +29,10 @@ spec:
         env:
           - name: BASE_URL
             value: {{ .Values.streamlit.config.baseUrl | quote }}
+          - name: EXCLUDE_MODELS
+            value: {{ .Values.streamlit.config.excludeModels | quote }}
+          - name: DOCUMENTS_EMBEDDINGS_MODEL
+            value: {{ .Values.streamlit.config.documentsEmbeddingsModel | quote }}
         ports:
           - containerPort: {{ .Values.streamlit.service.port }}
         readinessProbe:
