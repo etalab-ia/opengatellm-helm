@@ -16,6 +16,8 @@ spec:
       labels:
         app: redis
     spec:
+      nodeSelector:
+        k8s.scaleway.com/pool-name: "cpu-ram"
       containers:
       - name: redis
         image: {{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}
