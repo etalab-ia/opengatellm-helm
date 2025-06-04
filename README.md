@@ -4,6 +4,7 @@ This repository contains the helm chart to deploy albert-api and its components 
 ## Deployment
 - Create a kubernetes cluster with the provider of your choice
 - We recommend having at least 3 nodes, including one with a GPU sized for the LLM you wish to use.
+- Add the following label to your gpu node : `k8s.scaleway.com/pool-name: "gpu"`, and for your other npdes : `k8s.scaleway.com/pool-name: "cpu-ram"` so that each deployment goes to the appropriate node.
 - Verify that the connection with your cluster is functional and that the nodes are available with `kubectl get nodes`
 - In `albert-stack/values.yaml`, replace the secrets and API key with values of your choice. You can also customize your deployment via this file, for example the tag of the API version to deploy, rate limiting, API keys for the different deployed services (redis, elastic search, Qdrant, etc), ports, hardware configuration requested by each pod, etc.
 - From the `albert-stack` folder, install the helm chart with the command `helm install albert-stack .`
@@ -18,7 +19,7 @@ This repository contains the helm chart to deploy albert-api and its components 
 ```
 curl http://YOUR_LOAD_BALANCER_INGRESS_IP/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_GRIST_API_KEY" \
+  -H "Authorization: Bearer changeme" \
   -d '{
     "model": "meta-llama/Meta-Llama-3-8B-Instruct",
     "messages": [
