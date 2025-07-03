@@ -59,7 +59,7 @@ albertApi:
           - model: "mistralai/Mistral-Small-3.1-24B-Instruct-2503"
             type: vllm
             args:
-              api_url: "http://llama-3-8b.default.svc.cluster.local/v1"
+              api_url: "http://mistral-24b.default.svc.cluster.local/v1"
               api_key: changeme
 
       - id: embeddings-small
@@ -115,7 +115,7 @@ vllm:
     tag: v0.8.4
     pullPolicy: IfNotPresent
   service:
-    name: llama-3-8b
+    name: mistral-24b
     type: ClusterIP
     port: 80
     targetPort: 8000
