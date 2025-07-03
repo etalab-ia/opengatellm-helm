@@ -1,6 +1,5 @@
 This repository contains the helm chart to deploy albert-api and its components on Kubernetes.
 
-
 ## Deployment
 - Create a kubernetes cluster with the provider of your choice
 - We recommend having at least 3 nodes, including one with a GPU sized for the LLM you wish to use.
@@ -16,12 +15,21 @@ This repository contains the helm chart to deploy albert-api and its components 
 - Once all services are "Running", you can get the public IP of the load balancer with `kubectl describe svc albert-api`.
 - Use the value of `LoadBalancer Ingress` to contact the API, for example:
 
+
+To list the available models, you can use the following command:
+```
+curl http://YOUR_LOAD_BALANCER_INGRESS_IP/v1/models \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer changeme" \
+```
+
+To test the API, you can use the following command to send a chat completion request:
 ```
 curl http://YOUR_LOAD_BALANCER_INGRESS_IP/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer changeme" \
   -d '{
-    "model": "meta-llama/Meta-Llama-3-8B-Instruct",
+    "model": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
     "messages": [
       {
         "role": "system",
