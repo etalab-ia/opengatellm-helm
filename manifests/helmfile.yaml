@@ -6,6 +6,6 @@ environments:
 releases:
   - name: albert-api
     namespace: {{ .Namespace }}
-    chart: .charts/albert-stack
-    values:
-      - .values/albert-stack.yaml
+    chart: ./charts/albert-stack
+    secrets:
+        - ./dev/secret.enc.yaml

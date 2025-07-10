@@ -1,0 +1,7 @@
+creation_rules:
+  - key_groups:
+      - age:
+          - age15fyxdwmg5mvldtqqus87xspuws2u0cpvwheehrtvkexj4tnsqqysw6re2x #Jacques Roussel
+          - age1qy04neuzwpasmvljqrcvhwnf0kz5cpyteze38c8avp0czewskasszv9pyw # ArgoCD Hors-Prod
+          - age176z8zwzw6yrtwr8n5j77l5jqlc86lpzsdyl3adwd7yx0kpmhhp6qrxy06p # Alessandro Mosca
+
