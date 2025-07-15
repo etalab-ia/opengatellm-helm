@@ -2,10 +2,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: vllm
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ .Values.global.namespace | default "default" }}
   labels:
     app: vllm
-    {{- include "opengatellm-stack.labels" . | nindent 4 }}
+    {{- include "albert-stack.labels" . | nindent 4 }}
     app.kubernetes.io/component: vllm
 spec:
   replicas: {{ .Values.vllm.replicas }}
@@ -17,8 +17,6 @@ spec:
       labels:
         app: vllm
     spec:
-      nodeSelector:
-        k8s.scaleway.com/pool-name: "gpu"
       volumes:
       - name: cache-volume
         persistentVolumeClaim:

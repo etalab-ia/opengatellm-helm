@@ -2,9 +2,9 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: redis-pvc
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ .Values.global.namespace | default "default" }}
   labels:
-    {{- include "opengatellm-stack.labels" . | nindent 4 }}
+    {{- include "albert-stack.labels" . | nindent 4 }}
     app.kubernetes.io/component: redis
 spec:
   accessModes:

@@ -12,8 +12,8 @@ Access URLs:
   NOTE: It may take a few minutes for all services to be in "Running" state.
 
   To find the public IP addresses:
-    $ kubectl describe svc -n {{ .Release.Namespace | quote }} albert-api
-    $ kubectl describe svc -n {{ .Release.Namespace | quote }} streamlit
+    $ kubectl describe svc -n {{ .Values.global.namespace | default "default" }} albert-api
+    $ kubectl describe svc -n {{ .Values.global.namespace | default "default" }} streamlit
 
   Use the "LoadBalancer Ingress" value to access each service:
   - Albert API: http://<LoadBalancer Ingress IP>:{{ .Values.albertApi.service.port }}

@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: qdrant
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: default
 spec:
   replicas: {{ .Values.qdrant.replicas }}
   selector:
@@ -13,8 +13,6 @@ spec:
       labels:
         app: qdrant
     spec:
-      nodeSelector:
-        k8s.scaleway.com/pool-name: "cpu-ram"
       containers:
       - name: qdrant
         image: {{ .Values.qdrant.image.repository }}:{{ .Values.qdrant.image.tag }}

@@ -1,6 +1,4 @@
-This repository contains the helm chart to deploy OpenGateLLM and its components on Kubernetes.
-
-You can check the official OpenGateLLM repository here: https://github.com/etalab-ia/OpenGateLLM/
+This repository contains the helm chart to deploy albert-api and its components on Kubernetes.
 
 ## Provisioning
 
@@ -14,6 +12,10 @@ You can check the official OpenGateLLM repository here: https://github.com/etala
 We provision the kubernetes cluster with Terraform, using the Scaleway provider. You can use this module to create a kubernetes cluster with the provider of your choice.
 > **Note**: We are storing the tfstate locally.
 
+Download the new kubeconfig from Scaleway console and update your local kubeconfig file with the following command:
+```bash 
+export KUBECONFIG=<path_to_your_kubeconfig_file>
+```
 
 ## Deployment
 - Create a kubernetes cluster with the provider of your choice. We provide tofu files to easily create an adequate cluster with an H100 on scaleway.
@@ -54,4 +56,20 @@ curl http://YOUR_LOAD_BALANCER_INGRESS_IP/v1/chat/completions \
         "content": "Qui es tu ?"
       }
     ]}'
+```
+
+```curl -X 'POST' \
+'https://albert.api.dev.etalab.gouv.fr/v1/embeddings' \
+-H 'accept: application/json' \
+-H "Authorization: Bearer changeme" \
+-H 'Content-Type: application/json' \
+-d '{
+"input": [
+0
+],
+"model": "string",
+"dimensions": 0,
+"encoding_format": "float",
+"additionalProp1": {}
+}'
 ```

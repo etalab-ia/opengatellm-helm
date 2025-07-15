@@ -4,7 +4,6 @@ global:
     storageClassName: default
 
 ingress:
-  enabled: true
   className: "nginx"
   annotations:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
@@ -57,7 +56,6 @@ albertApi:
     tag: 0.1.1
     pullPolicy: IfNotPresent
   service:
-#    type: LoadBalancer
     type: ClusterIP
     port: 80
     targetPort: 8000
@@ -138,7 +136,6 @@ streamlit:
     tag: 81bc119682ffc2345c64d0f284d47e4682200ef8
     pullPolicy: IfNotPresent
   service:
-#    type: LoadBalancer
     type: ClusterIP
     port: 8501
     targetPort: 8501
@@ -174,7 +171,7 @@ vllm:
     model: mistralai/Mistral-Small-3.1-24B-Instruct-2503
   persistence:
     size: 100Gi
-    storageClassName: bsu-sc
+    storageClassName: sbs-default
   resources:
 #    limits:
 #      cpu: "44"
@@ -327,3 +324,6 @@ postgres:
     timeoutSeconds: 10
     failureThreshold: 5
     startupDelaySeconds: 60
+
+huggingface:
+  token: "YOUR_HF_API_KEY"

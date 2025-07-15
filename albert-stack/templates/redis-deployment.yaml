@@ -2,9 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: redis
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ .Values.global.namespace | default "default" }}
   labels:
-    {{- include "opengatellm-stack.labels" . | nindent 4 }}
+    {{- include "albert-stack.labels" . | nindent 4 }}
     app.kubernetes.io/component: redis
 spec:
   replicas: {{ .Values.redis.replicas }}
@@ -16,8 +16,6 @@ spec:
       labels:
         app: redis
     spec:
-      nodeSelector:
-        k8s.scaleway.com/pool-name: "cpu-ram"
       containers:
       - name: redis
         image: {{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}

@@ -2,9 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: streamlit
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ .Values.global.namespace | default "default" }}
   labels:
-    {{- include "opengatellm-stack.labels" . | nindent 4 }}
+    {{- include "albert-stack.labels" . | nindent 4 }}
     app.kubernetes.io/component: streamlit
 spec:
   replicas: {{ .Values.streamlit.replicas }}
@@ -16,8 +16,6 @@ spec:
       labels:
         app: streamlit
     spec:
-      nodeSelector:
-        k8s.scaleway.com/pool-name: "cpu-ram"
       containers:
       - name: streamlit
         image: {{ .Values.streamlit.image.repository }}:{{ .Values.streamlit.image.tag }}

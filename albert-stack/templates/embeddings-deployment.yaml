@@ -2,10 +2,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bge-embeddings
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ .Values.global.namespace | default "default" }}
   labels:
     app: bge-embeddings
-    {{- include "opengatellm-stack.labels" . | nindent 4 }}
+    {{- include "albert-stack.labels" . | nindent 4 }}
     app.kubernetes.io/component: embeddings
 spec:
   replicas: {{ .Values.embeddings.replicas }}
@@ -17,8 +17,6 @@ spec:
       labels:
         app: bge-embeddings
     spec:
-      nodeSelector:
-        k8s.scaleway.com/pool-name: "gpu"
       containers:
       - name: bge-embeddings
         image: {{ .Values.embeddings.image.repository }}:{{ .Values.embeddings.image.tag }}

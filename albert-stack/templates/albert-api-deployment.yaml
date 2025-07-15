@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: albert-api
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ .Values.global.namespace | default "default" }}
   labels:
     {{- include "albert-stack.labels" . | nindent 4 }}
     app.kubernetes.io/component: albert-api
@@ -16,8 +16,6 @@ spec:
       labels:
         app: albert-api
     spec:
-      nodeSelector:
-        k8s.scaleway.com/pool-name: "cpu-ram"
       containers:
       - name: api
         image: {{ .Values.albertApi.image.repository }}:{{ .Values.albertApi.image.tag }}
