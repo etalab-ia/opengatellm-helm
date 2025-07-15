@@ -8,4 +8,4 @@ releases:
     namespace: {{ .Namespace }}
     chart: ./charts/albert-stack
     secrets:
-        - ./dev/secret.enc.yaml
+        - ./dev/secrets.enc.yaml

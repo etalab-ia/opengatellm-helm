@@ -1,17 +1,64 @@
 # Global settings
 global:
-  namespace: default
   storage:
     storageClassName: default
 
-opengatellm:
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+  hosts:
+    - host: albert.api.k8s.etalab.gouv.fr
+      paths:
+        - path: /((documentation|swagger|openapi\.json|v1|health|metrics|roles|users|tokens).*)  # fastapi
+          pathType: ImplementationSpecific
+          service:
+            name: api-service
+            port: 80
+
+        - path: /playground(/|$)(.*)  # streamlit
+          pathType: ImplementationSpecific
+          service:
+            name: playground-service
+            port: 8501
+
+        - path: /metabase(/|$)(.*)  # metabase
+          pathType: ImplementationSpecific
+          service:
+            name: metabase-service
+            port: 3000
+
+        - path: /status  # simple redirect, not supported in Ingress directly
+          pathType: Exact
+          service:
+            name: api-service
+            port: 80
+
+        - path: /()(.*)  # fallback to uptime or default
+          pathType: ImplementationSpecific
+          service:
+            name: uptime-service
+            port: 3001
+  tls:
+    - hosts:
+        - albert.api.k8s.etalab.gouv.fr
+      secretName: tls-secret
+
+albertApi:
   replicas: 1
   image:
-    repository: ghcr.io/etalab-ia/opengatellm/app
+    repository: ghcr.io/etalab-ia/albert-api/app
     tag: 0.1.1
     pullPolicy: IfNotPresent
   service:
-    type: LoadBalancer
+#    type: LoadBalancer
+    type: ClusterIP
     port: 80
     targetPort: 8000
   config:
@@ -87,15 +134,16 @@ opengatellm:
 streamlit:
   replicas: 1
   image:
-    repository: ghcr.io/etalab-ia/opengatellm/ui
+    repository: ghcr.io/etalab-ia/albert-api/ui
     tag: 81bc119682ffc2345c64d0f284d47e4682200ef8
     pullPolicy: IfNotPresent
   service:
-    type: LoadBalancer
+#    type: LoadBalancer
+    type: ClusterIP
     port: 8501
     targetPort: 8501
   config:
-    baseUrl: "http://opengatellm.default.svc.cluster.local:80/v1"
+    baseUrl: "http://albert-api.default.svc.cluster.local:80/v1"
     excludeModels: ""
     documentsEmbeddingsModel: "BAAI/bge-m3"
   probes:
