@@ -26,6 +26,9 @@ spec:
         env:
           - name: PORT
             value: {{ .Values.embeddings.config.port | quote }}
+        volumeMounts:
+          - mountPath: /data
+            name: embeddings-models
         resources:
           limits:
             cpu: {{ .Values.embeddings.resources.limits.cpu | quote }}
@@ -49,3 +52,7 @@ spec:
           initialDelaySeconds: {{ .Values.embeddings.probes.readiness.initialDelaySeconds }}
           timeoutSeconds: 30
           periodSeconds: {{ .Values.embeddings.probes.readiness.periodSeconds }}
+      volumes:
+        - name: embeddings-models
+          persistentVolumeClaim:
+            claimName: embeddings-models-pvc
