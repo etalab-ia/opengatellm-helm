@@ -58,18 +58,16 @@ curl http://YOUR_LOAD_BALANCER_INGRESS_IP/v1/chat/completions \
     ]}'
 ```
 
-```curl -X 'POST' \
-'https://albert.api.dev.etalab.gouv.fr/v1/embeddings' \
--H 'accept: application/json' \
--H "Authorization: Bearer changeme" \
--H 'Content-Type: application/json' \
--d '{
-"input": [
-0
-],
-"model": "string",
-"dimensions": 0,
-"encoding_format": "float",
-"additionalProp1": {}
-}'
+```bash 
+curl -X 'POST' 'http://YOUR_LOAD_BALANCER_INGRESS_IP.fr/v1/embeddings' \
+  -H 'accept: application/json' \
+    -H "Authorization: Bearer changeme" \
+    -H 'Content-Type: application/json' \
+    -d '{
+        "input": [0],
+        "model": "string",
+        "dimensions": 0,
+        "encoding_format": "float",
+        "additionalProp1": {}
+    }'
 ```

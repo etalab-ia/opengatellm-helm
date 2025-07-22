@@ -157,6 +157,7 @@ streamlit:
       periodSeconds: 10
 
 vllm:
+  enabled: false  # Set to true to enable VLLM deployment
   replicas: 1
   image:
     repository: vllm/vllm-openai
@@ -222,6 +223,8 @@ embeddings:
   config:
     model: BAAI/bge-m3
     port: 8000
+  persistence:
+    size: 10Gi
   resources:
     limits:
       memory: 8Gi

@@ -1,3 +1,4 @@
+{{- if .Values.vllm.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -76,3 +77,4 @@ spec:
             port: {{ .Values.vllm.service.targetPort }}
           initialDelaySeconds: {{ .Values.vllm.probes.liveness.initialDelaySeconds }}
           periodSeconds: {{ .Values.vllm.probes.liveness.periodSeconds }}
+{{- end }}

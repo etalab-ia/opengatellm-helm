@@ -1,3 +1,4 @@
+{{- if .Values.vllm.enabled }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -14,3 +15,4 @@ spec:
       storage: {{ .Values.vllm.persistence.size }}
   storageClassName: {{ .Values.vllm.persistence.storageClassName }}
   volumeMode: Filesystem
+{{- end }}
