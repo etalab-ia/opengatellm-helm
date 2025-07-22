@@ -224,21 +224,20 @@ embeddings:
     port: 8000
   resources:
     limits:
-      cpu: "4"
-      memory: 32Gi
+      memory: 8Gi
       #gpu: 1
     requests:
-      cpu: "2"
-      memory: 16Gi
+      cpu: "1"
+      memory: 4Gi
       #gpu: 1
   probes:
     readiness:
       path: /health
-      initialDelaySeconds: 10
+      initialDelaySeconds: 300
       periodSeconds: 30
     liveness:
       path: /health
-      initialDelaySeconds: 60
+      initialDelaySeconds: 300
       periodSeconds: 30
 
 # Qdrant configuration
