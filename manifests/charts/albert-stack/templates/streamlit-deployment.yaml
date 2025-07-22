@@ -16,8 +16,6 @@ spec:
       labels:
         app: streamlit
     spec:
-      nodeSelector:
-        k8s.scaleway.com/pool-name: "cpu-ram"
       containers:
       - name: streamlit
         image: {{ .Values.streamlit.image.repository }}:{{ .Values.streamlit.image.tag }}

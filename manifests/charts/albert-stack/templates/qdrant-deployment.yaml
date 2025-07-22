@@ -13,8 +13,6 @@ spec:
       labels:
         app: qdrant
     spec:
-      nodeSelector:
-        k8s.scaleway.com/pool-name: "cpu-ram"
       containers:
       - name: qdrant
         image: {{ .Values.qdrant.image.repository }}:{{ .Values.qdrant.image.tag }}
