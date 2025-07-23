@@ -36,12 +36,10 @@ albertApi:
           api_key: changeme
           prefer_grpc: True
           timeout: 10
-
       - type: redis
         args:
           host: "redis.default.svc.cluster.local"
           password: changeme
-
       - type: sql
         args:
           url: postgresql+asyncpg://postgres:changeme@postgres:5432/api
@@ -61,7 +59,6 @@ albertApi:
             args:
               api_url: "http://mistral-24b.default.svc.cluster.local/v1"
               api_key: changeme
-
       - id: embeddings-small
         type: text-embeddings-inference
         aliases: [ "BAAI/bge-m3" ]
@@ -174,10 +171,12 @@ embeddings:
   config:
     model: BAAI/bge-m3
     port: 8000
+  persistence:
+    size: 10Gi
   resources:
     limits:
       cpu: "4"
-      memory: 32Gi
+      memory: 24Gi
       #gpu: 1
     requests:
       cpu: "2"
@@ -238,17 +237,14 @@ postgres:
     repository: postgres
     tag: "16.5"
     pullPolicy: IfNotPresent
-
   config:
     user: postgres
     password: changeme
     db: postgres
     create_db: api,playground
-
   service:
     type: ClusterIP
     port: 5432
-
   persistence:
     enabled: true
     size: 8Gi
@@ -272,7 +268,6 @@ postgres:
         done
         echo "Multiple databases created"
       fi
-
   healthcheck:
     enabled: true
     intervalSeconds: 4

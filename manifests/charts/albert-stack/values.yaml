@@ -288,17 +288,14 @@ postgres:
     repository: postgres
     tag: "16.5"
     pullPolicy: IfNotPresent
-
   config:
     user: postgres
     password: changeme
     db: postgres
     create_db: api,playground
-
   service:
     type: ClusterIP
     port: 5432
-
   persistence:
     enabled: true
     size: 8Gi

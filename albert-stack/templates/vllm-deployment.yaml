@@ -17,6 +17,8 @@ spec:
       labels:
         app: vllm
     spec:
+      nodeSelector:
+        k8s.scaleway.com/pool-name: "gpu"
       volumes:
       - name: cache-volume
         persistentVolumeClaim:

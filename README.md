@@ -65,7 +65,7 @@ curl -X 'POST' 'http://YOUR_LOAD_BALANCER_INGRESS_IP.fr/v1/embeddings' \
     -H 'Content-Type: application/json' \
     -d '{
         "input": [0],
-        "model": "string",
+        "model": "embeddings-small",
         "dimensions": 0,
         "encoding_format": "float",
         "additionalProp1": {}
