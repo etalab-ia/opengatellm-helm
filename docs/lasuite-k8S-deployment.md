@@ -1,4 +1,4 @@
-# Déploiement de LaSuite sur Kubernetes
+# Déploiement de Albert-API sur le K8S de LaSuite
 
 ## Prérequis
 

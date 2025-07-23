@@ -22,8 +22,8 @@ Access URLs:
 Components in this deployment:
 - Albert API
 - Streamlit UI
-- vLLM ({{ .Values.vllm.config.model }})
-- Embeddings ({{ .Values.embeddings.config.model }})
+- vLLM
+- Embeddings
 - Qdrant Vector Database
 - Redis
 - Elasticsearch
