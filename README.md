@@ -1,4 +1,5 @@
 This repository contains the helm chart to deploy OpenGateLLM and its components on Kubernetes.
+You can check the official OpenGateLLM repository here: https://github.com/etalab-ia/OpenGateLLM/
 
 ## Deployment
 - Create a kubernetes cluster with the provider of your choice
