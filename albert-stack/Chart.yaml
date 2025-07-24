@@ -1,6 +1,6 @@
 apiVersion: v2
-name: albert-stack
-description: A Helm chart for Albert API Stack
+name: opengatellm-stack
+description: A Helm chart for OpenGateLLM Stack
 type: application
 version: 0.1.0
 appVersion: "1.0.0"
