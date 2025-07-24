@@ -1,0 +1,284 @@
+# Global settings
+global:
+  namespace: default
+  storage:
+    storageClassName: default
+
+opengatellm:
+  replicas: 1
+  image:
+    repository: ghcr.io/etalab-ia/opengatellm/app
+    tag: 0.1.1
+    pullPolicy: IfNotPresent
+  service:
+    type: LoadBalancer
+    port: 80
+    targetPort: 8000
+  config:
+    general:
+      log_level: DEBUG
+
+    playground:
+      api_url: http://api:8000
+      max_api_key_expiration_days: 365
+      cache_ttl: 1800
+      database_url: postgresql://postgres:changeme@postgres:5432/playground
+
+    auth:
+      master_username: master
+      master_key: changeme
+
+    databases:
+      - type: qdrant
+        model: embeddings-small
+        args:
+          url: "http://qdrant.default.svc.cluster.local:6333"
+          api_key: changeme
+          prefer_grpc: True
+          timeout: 10
+
+      - type: redis
+        args:
+          host: "redis.default.svc.cluster.local"
+          password: changeme
+
+      - type: sql
+        args:
+          url: postgresql+asyncpg://postgres:changeme@postgres:5432/api
+          echo: True
+          pool_size: 5
+          max_overflow: 10
+          pool_pre_ping: True
+          connect_args: { "server_settings": { "statement_timeout": "120" } }
+
+    models:
+      - id: "mistralai/Mistral-Small-3.1-24B-Instruct-2503"
+        type: text-generation
+        owned_by: test
+        clients:
+          - model: "mistralai/Mistral-Small-3.1-24B-Instruct-2503"
+            type: vllm
+            args:
+              api_url: "http://mistral-24b.default.svc.cluster.local/v1"
+              api_key: changeme
+
+      - id: embeddings-small
+        type: text-embeddings-inference
+        aliases: [ "BAAI/bge-m3" ]
+        clients:
+          - model: BAAI/bge-m3
+            type: tei
+            args:
+              api_url: "http://bge-embeddings.default.svc.cluster.local/v1"
+              api_key: "changeme"
+
+  probes:
+    readiness:
+      enabled: false
+      path: /health
+      initialDelaySeconds: 10
+      periodSeconds: 30
+    liveness:
+      enabled: false
+      path: /health
+      initialDelaySeconds: 60
+      periodSeconds: 30
+
+streamlit:
+  replicas: 1
+  image:
+    repository: ghcr.io/etalab-ia/opengatellm/ui
+    tag: 81bc119682ffc2345c64d0f284d47e4682200ef8
+    pullPolicy: IfNotPresent
+  service:
+    type: LoadBalancer
+    port: 8501
+    targetPort: 8501
+  config:
+    baseUrl: "http://opengatellm.default.svc.cluster.local:80/v1"
+    excludeModels: ""
+    documentsEmbeddingsModel: "BAAI/bge-m3"
+  probes:
+    readiness:
+      path: /
+      initialDelaySeconds: 5
+      periodSeconds: 10
+    liveness:
+      path: /
+      initialDelaySeconds: 10
+      periodSeconds: 10
+
+vllm:
+  replicas: 1
+  image:
+    repository: vllm/vllm-openai
+    tag: v0.8.4
+    pullPolicy: IfNotPresent
+  service:
+    name: mistral-24b
+    type: ClusterIP
+    port: 80
+    targetPort: 8000
+  config:
+    # model: neuralmagic/Meta-Llama-3.1-70B-Instruct-FP8
+    #model: meta-llama/Llama-3.1-8B-Instruct
+    # model: google/gemma-3-27b-it
+    model: mistralai/Mistral-Small-3.1-24B-Instruct-2503
+  persistence:
+    size: 100Gi
+    storageClassName: sbs-default
+  resources:
+#    limits:
+#      cpu: "44"
+#      memory: 460G
+#      gpu: 2
+#    requests:
+#      cpu: "40"
+#      memory: 400G
+#      gpu: 2
+    limits:
+      cpu: "22"
+      memory: 230G
+      gpu: 1
+    requests:
+      cpu: "20"
+      memory: 200G
+      gpu: 1
+  shm:
+    sizeLimit: 32Gi
+  secrets:
+    huggingfaceToken:
+      name: huggingface-token
+      key: token
+  probes:
+    readiness:
+      path: /health
+      initialDelaySeconds: 10
+      periodSeconds: 30
+    liveness:
+      path: /health
+      initialDelaySeconds: 300
+      periodSeconds: 30
+
+# BGE Embeddings configuration
+embeddings:
+  replicas: 1
+  image:
+    repository: ghcr.io/huggingface/text-embeddings-inference
+    tag: cpu-latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8000
+  config:
+    model: BAAI/bge-m3
+    port: 8000
+  resources:
+    limits:
+      cpu: "4"
+      memory: 32Gi
+      #gpu: 1
+    requests:
+      cpu: "2"
+      memory: 16Gi
+      #gpu: 1
+  probes:
+    readiness:
+      path: /health
+      initialDelaySeconds: 10
+      periodSeconds: 30
+    liveness:
+      path: /health
+      initialDelaySeconds: 60
+      periodSeconds: 30
+
+# Qdrant configuration
+qdrant:
+  replicas: 1
+  image:
+    repository: qdrant/qdrant
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    httpPort: 6333
+    grpcPort: 6334
+  config:
+    apiKey: "changeme"
+  persistence:
+    size: 30Gi
+
+# Redis configuration
+redis:
+  replicas: 1
+  image:
+    repository: redis/redis-stack-server
+    tag: 7.2.0-v11
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 6379
+  config:
+    args: "--dir /data --requirepass changeme --user username on >password ~* allcommands --save 60 1 --appendonly yes"
+    password: "changeme"
+    username: "username"
+  persistence:
+    size: 10Gi
+  probes:
+    readiness:
+      initialDelaySeconds: 10
+      periodSeconds: 30
+    liveness:
+      initialDelaySeconds: 60
+      periodSeconds: 30
+
+postgres:
+  image:
+    repository: postgres
+    tag: "16.5"
+    pullPolicy: IfNotPresent
+
+  config:
+    user: postgres
+    password: changeme
+    db: postgres
+    create_db: api,playground
+
+  service:
+    type: ClusterIP
+    port: 5432
+
+  persistence:
+    enabled: true
+    size: 8Gi
+  scripts:
+    enabled: true
+    content: |
+      #!/bin/bash
+      
+      function create_database() {
+        local database=$1
+        echo "  Creating database '$database'"
+        psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
+            CREATE DATABASE $database WITH ENCODING 'utf8';
+      EOSQL
+      }
+      
+      if [[ -n "$CREATE_DB" ]]; then
+        echo "Multiple database creation requested: $CREATE_DB"
+        for db in $(echo $CREATE_DB | tr ',' ' '); do
+         create_database $db
+        done
+        echo "Multiple databases created"
+      fi
+
+  healthcheck:
+    enabled: true
+    intervalSeconds: 4
+    timeoutSeconds: 10
+    failureThreshold: 5
+    startupDelaySeconds: 60
+
+huggingface:
+  token: "YOUR_HF_API_KEY"

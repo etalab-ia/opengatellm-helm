@@ -1,0 +1,11 @@
+environments:
+  dev:
+    values:
+      - version: 0.0.1
+---
+releases:
+  - name: albert-api
+    namespace: {{ .Namespace }}
+    chart: .charts/albert-stack
+    values:
+      - .values/albert-stack.yaml
