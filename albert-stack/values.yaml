@@ -4,10 +4,10 @@ global:
   storage:
     storageClassName: default
 
-albertApi:
+openGateLLM:
   replicas: 1
   image:
-    repository: ghcr.io/etalab-ia/albert-api/app
+    repository: ghcr.io/etalab-ia/opengatellm/app
     tag: 0.1.1
     pullPolicy: IfNotPresent
   service:
@@ -87,7 +87,7 @@ albertApi:
 streamlit:
   replicas: 1
   image:
-    repository: ghcr.io/etalab-ia/albert-api/ui
+    repository: ghcr.io/etalab-ia/opengatellm/ui
     tag: 81bc119682ffc2345c64d0f284d47e4682200ef8
     pullPolicy: IfNotPresent
   service:
