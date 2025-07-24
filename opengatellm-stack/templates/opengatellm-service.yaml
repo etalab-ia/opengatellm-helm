@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: opengatellm
+  namespace: {{ .Values.global.namespace | default "default" }}
+  labels:
+    {{- include "opengatellm-stack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: opengatellm
+spec:
+  selector:
+    app: opengatellm
+  ports:
+    - port: {{ .Values.opengatellm.service.port }}
+      targetPort: {{ .Values.opengatellm.service.targetPort }}
+      name: http
+  type: {{ .Values.opengatellm.service.type }}

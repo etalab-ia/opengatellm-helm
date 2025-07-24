@@ -1,4 +1,4 @@
-# File: albert-stack/templates/NOTES.txt
+# File: opengatellm-stack/templates/NOTES.txt
 Thank you for installing {{ .Chart.Name }}.
 
 Your release is named {{ .Release.Name }}.
@@ -12,15 +12,15 @@ Access URLs:
   NOTE: It may take a few minutes for all services to be in "Running" state.
 
   To find the public IP addresses:
-    $ kubectl describe svc -n {{ .Values.global.namespace | default "default" }} albert-api
+    $ kubectl describe svc -n {{ .Values.global.namespace | default "default" }} opengatellm
     $ kubectl describe svc -n {{ .Values.global.namespace | default "default" }} streamlit
 
   Use the "LoadBalancer Ingress" value to access each service:
-  - Albert API: http://<LoadBalancer Ingress IP>:{{ .Values.albertApi.service.port }}
+  - OpenGateLLM: http://<LoadBalancer Ingress IP>:{{ .Values.opengatellm.service.port }}
   - Streamlit UI: http://<LoadBalancer Ingress IP>:{{ .Values.streamlit.service.port }}
 
 Components in this deployment:
-- Albert API
+- OpenGateLLM
 - Streamlit UI
 - vLLM ({{ .Values.vllm.config.model }})
 - Embeddings ({{ .Values.embeddings.config.model }})

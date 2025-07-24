@@ -1,5 +1,5 @@
 locals {
-  app_name = "albert-api"
+  app_name = "opengatellm"
   region   = "fr-par"
 }
 

@@ -5,7 +5,7 @@ metadata:
   namespace: {{ .Values.global.namespace | default "default" }}
   labels:
     app: vllm
-    {{- include "albert-stack.labels" . | nindent 4 }}
+    {{- include "opengatellm-stack.labels" . | nindent 4 }}
     app.kubernetes.io/component: vllm
 spec:
   replicas: {{ .Values.vllm.replicas }}

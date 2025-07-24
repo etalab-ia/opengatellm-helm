@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opengatellm
+  namespace: {{ .Values.global.namespace | default "default" }}
+  labels:
+    {{- include "opengatellm-stack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: opengatellm
+spec:
+  replicas: {{ .Values.opengatellm.replicas }}
+  selector:
+    matchLabels:
+      app: opengatellm
+  template:
+    metadata:
+      labels:
+        app: opengatellm
+    spec:
+      nodeSelector:
+        k8s.scaleway.com/pool-name: "cpu-ram"
+      containers:
+      - name: api
+        image: {{ .Values.opengatellm.image.repository }}:{{ .Values.opengatellm.image.tag }}
+        imagePullPolicy: {{ .Values.opengatellm.image.pullPolicy }}
+        command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "{{ .Values.opengatellm.service.targetPort }}"]
+        ports:
+          - containerPort: {{ .Values.opengatellm.service.targetPort }}
+        env:
+          - name: CONFIG_FILE
+            value: "/home/opengatellm/conf/config.yml"
+        volumeMounts:
+          - name: opengatellm-config-vol
+            mountPath: /home/opengatellm/conf
+            readOnly: true
+        {{- if .Values.opengatellm.probes.readiness.enabled }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.opengatellm.probes.readiness.path }}
+            port: {{ .Values.opengatellm.service.targetPort }}
+          initialDelaySeconds: {{ .Values.opengatellm.probes.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.opengatellm.probes.readiness.periodSeconds }}
+        {{- end }}
+        {{- if .Values.opengatellm.probes.liveness.enabled }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.opengatellm.probes.liveness.path }}
+            port: {{ .Values.opengatellm.service.targetPort }}
+          initialDelaySeconds: {{ .Values.opengatellm.probes.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.opengatellm.probes.liveness.periodSeconds }}
+        {{- end }}
+      volumes:
+      - name: opengatellm-config-vol
+        configMap:
+          name: opengatellm-config

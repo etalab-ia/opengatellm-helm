@@ -4,7 +4,7 @@ global:
   storage:
     storageClassName: default
 
-openGateLLM:
+opengatellm:
   replicas: 1
   image:
     repository: ghcr.io/etalab-ia/opengatellm/app
@@ -95,7 +95,7 @@ streamlit:
     port: 8501
     targetPort: 8501
   config:
-    baseUrl: "http://albert-api.default.svc.cluster.local:80/v1"
+    baseUrl: "http://opengatellm.default.svc.cluster.local:80/v1"
     excludeModels: ""
     documentsEmbeddingsModel: "BAAI/bge-m3"
   probes:
