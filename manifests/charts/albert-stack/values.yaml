@@ -1,12 +1,12 @@
 # Global settings
 global:
   storage:
-    storageClassName: default
+    storageClassName: bsu-gp2
 
 ingress:
-  enabled: true
   className: "nginx"
   annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-production
     nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
     nginx.ingress.kubernetes.io/use-regex: "true"
@@ -14,7 +14,7 @@ ingress:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
   hosts:
-    - host: albert.api.k8s.etalab.gouv.fr
+    - host: albert.dinum-dev-osc-euw2-bacasable-wapp-01.k8s.cloud.incubateur.net
       paths:
         - path: /((documentation|swagger|openapi\.json|v1|health|metrics|roles|users|tokens).*)  # fastapi
           pathType: ImplementationSpecific
@@ -47,7 +47,7 @@ ingress:
             port: 3001
   tls:
     - hosts:
-        - albert.api.k8s.etalab.gouv.fr
+        - albert.dinum-dev-osc-euw2-bacasable-wapp-01.k8s.cloud.incubateur.net
       secretName: tls-secret
 
 albertApi:
@@ -57,7 +57,6 @@ albertApi:
     tag: 0.1.1
     pullPolicy: IfNotPresent
   service:
-#    type: LoadBalancer
     type: ClusterIP
     port: 80
     targetPort: 8000
@@ -99,16 +98,16 @@ albertApi:
           connect_args: { "server_settings": { "statement_timeout": "120" } }
 
     models:
-      - id: "mistralai/Mistral-Small-3.1-24B-Instruct-2503"
+      - id: albert-small
         type: text-generation
-        owned_by: test
+        owned_by: "Albert API (prod)"
         clients:
-          - model: "mistralai/Mistral-Small-3.1-24B-Instruct-2503"
-            type: vllm
+          - model: albert-small
+            type: albert
             args:
-              api_url: "http://mistral-24b.default.svc.cluster.local/v1"
-              api_key: changeme
-
+            api_url: https://albert.api.etalab.gouv.fr
+            api_key: ALBERT_API_KEY
+            
       - id: embeddings-small
         type: text-embeddings-inference
         aliases: [ "BAAI/bge-m3" ]
@@ -209,7 +208,6 @@ vllm:
       initialDelaySeconds: 300
       periodSeconds: 30
 
-# BGE Embeddings configuration
 embeddings:
   replicas: 1
   image:
@@ -243,7 +241,6 @@ embeddings:
       initialDelaySeconds: 300
       periodSeconds: 30
 
-# Qdrant configuration
 qdrant:
   replicas: 1
   image:
@@ -259,29 +256,32 @@ qdrant:
   persistence:
     size: 30Gi
 
-# Redis configuration
 redis:
-  replicas: 1
-  image:
-    repository: redis/redis-stack-server
-    tag: 7.2.0-v11
-    pullPolicy: IfNotPresent
-  service:
-    type: ClusterIP
-    port: 6379
-  config:
-    args: "--dir /data --requirepass changeme --user username on >password ~* allcommands --save 60 1 --appendonly yes"
-    password: "changeme"
-    username: "username"
-  persistence:
-    size: 10Gi
-  probes:
-    readiness:
-      initialDelaySeconds: 10
-      periodSeconds: 30
-    liveness:
-      initialDelaySeconds: 60
-      periodSeconds: 30
+  commonConfiguration: |-
+    appendonly yes
+    save "7200 1 3600 10000"
+    dbfilename ftr-data.rdb
+    appendfilename appendonly.aof
+    aof-use-rdb-preamble yes
+    auto-aof-rewrite-percentage 100
+    auto-aof-rewrite-min-size 2048mb
+  networkPolicy:
+    enabled: false
+    allowExternal: false
+  global:
+    storageClass: bsu-gp2
+    compatibility:
+      openshift:
+        adaptSecurityContext: auto
+  architecture: replication
+  sentinel:
+    enabled: true
+    persistence:
+      enabled: true
+      size: 5Gi
+  auth:
+    enabled: true
+    sentinel: true
 
 postgres:
   image:

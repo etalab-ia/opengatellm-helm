@@ -19,6 +19,14 @@ spec:
     spec:
       containers:
       - name: bge-embeddings
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop:
+              - ALL
+          seccompProfile:
+            type: RuntimeDefault
         image: {{ .Values.embeddings.image.repository }}:{{ .Values.embeddings.image.tag }}
         imagePullPolicy: {{ .Values.embeddings.image.pullPolicy }}
         command: [ "text-embeddings-router" ]
@@ -31,13 +39,10 @@ spec:
             name: embeddings-models
         resources:
           limits:
-            cpu: {{ .Values.embeddings.resources.limits.cpu | quote }}
             memory: {{ .Values.embeddings.resources.limits.memory }}
-            nvidia.com/gpu: {{ .Values.embeddings.resources.limits.gpu }}
           requests:
             cpu: {{ .Values.embeddings.resources.requests.cpu | quote }}
             memory: {{ .Values.embeddings.resources.requests.memory }}
-            nvidia.com/gpu: {{ .Values.embeddings.resources.requests.gpu }}
         livenessProbe:
           httpGet:
             path: {{ .Values.embeddings.probes.liveness.path }}

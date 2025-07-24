@@ -12,3 +12,4 @@ spec:
   resources:
     requests:
       storage: {{ .Values.embeddings.persistence.size }}
+  storageClassName: {{ .Values.global.storage.storageClassName }}

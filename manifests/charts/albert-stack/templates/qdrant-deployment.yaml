@@ -15,6 +15,14 @@ spec:
     spec:
       containers:
       - name: qdrant
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop:
+              - ALL
+          seccompProfile:
+            type: RuntimeDefault
         image: {{ .Values.qdrant.image.repository }}:{{ .Values.qdrant.image.tag }}
         imagePullPolicy: {{ .Values.qdrant.image.pullPolicy }}
         env:

@@ -3,9 +3,13 @@ kind: PersistentVolumeClaim
 metadata:
   name: qdrant-pvc
   namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "albert-stack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: qdrant
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: {{ .Values.qdrant.persistence.size }}
+  storageClassName: {{ .Values.global.storage.storageClassName }}
