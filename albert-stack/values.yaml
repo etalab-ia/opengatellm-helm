@@ -52,14 +52,14 @@ albertApi:
           connect_args: { "server_settings": { "statement_timeout": "120" } }
 
     models:
-      - id: "mistralai/Mistral-Small-3.1-24B-Instruct-2503"
-        type: text-generation
+      - id: "openai/whisper-large-v3"
+        type: automatic-speech-recognition
         owned_by: test
         clients:
-          - model: "mistralai/Mistral-Small-3.1-24B-Instruct-2503"
-            type: vllm
+          - model: "openai/whisper-large-v3"
+            type: openai
             args:
-              api_url: "http://mistral-24b.default.svc.cluster.local/v1"
+              api_url: "http://whisper-large.default.svc.cluster.local/v1"
               api_key: changeme
 
       - id: embeddings-small
@@ -111,11 +111,14 @@ streamlit:
 vllm:
   replicas: 1
   image:
-    repository: vllm/vllm-openai
-    tag: v0.8.4
+    # repository: vllm/vllm-openai
+    # tag: v0.8.4
+    repository: ghcr.io/etalab-ia/whisper-openai-api/app
+    tag: latest
     pullPolicy: IfNotPresent
   service:
-    name: mistral-24b
+    # name: mistral-24b
+    name : whisper-large
     type: ClusterIP
     port: 80
     targetPort: 8000
@@ -123,7 +126,8 @@ vllm:
     # model: neuralmagic/Meta-Llama-3.1-70B-Instruct-FP8
     #model: meta-llama/Llama-3.1-8B-Instruct
     # model: google/gemma-3-27b-it
-    model: mistralai/Mistral-Small-3.1-24B-Instruct-2503
+    # model: mistralai/Mistral-Small-3.1-24B-Instruct-2503
+    model: openai/whisper-large-v3
   persistence:
     size: 100Gi
     storageClassName: sbs-default
@@ -281,4 +285,4 @@ postgres:
     startupDelaySeconds: 60
 
 huggingface:
-  token: "YOUR_HF_API_KEY"
+  token: "**"
