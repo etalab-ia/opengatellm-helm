@@ -1,16 +1,16 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: streamlit
+  name: playground
   namespace: {{ .Release.Namespace | quote }}
   labels:
-    {{- include "opengatellm-stack.labels" . | nindent 4 }}
-    app.kubernetes.io/component: streamlit
+    {{- include "albert-stack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: playground
 spec:
   selector:
-    app: streamlit
+    app: playground
   ports:
-    - port: {{ .Values.streamlit.service.port }}
-      targetPort: {{ .Values.streamlit.service.targetPort }}
+    - port: {{ .Values.playground.service.port }}
+      targetPort: {{ .Values.playground.service.targetPort }}
       name: http
-  type: {{ .Values.streamlit.service.type }}
+  type: {{ .Values.playground.service.type }}

@@ -34,7 +34,7 @@ ingress:
             - path: /playground(/|$)(.*)  # streamlit
               pathType: ImplementationSpecific
               service:
-                name: streamlit
+                name: playground
                 port:
                   8501ite-target: /$2
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
@@ -48,10 +48,10 @@ ingress:
             name: albert-api
             port: 80
 
-        - path: /playground(/|$)(.*)  # streamlit
+        - path: /playground(/|$)(.*)
           pathType: ImplementationSpecific
           service:
-            name: streamlit
+            name: playground
             port: 8501
 
 #        - path: /()(.*)  # fallback to uptime or default
@@ -69,16 +69,15 @@ albertApi:
   replicas: 1
   image:
     repository: ghcr.io/etalab-ia/albert-api/app
-    tag: 0.1.1
+    tag: latest
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
     port: 80
-    targetPort: 8000
+    targetPort: 8080
   config:
     general:
       log_level: DEBUG
-
   probes:
     readiness:
       enabled: false
@@ -91,11 +90,11 @@ albertApi:
       initialDelaySeconds: 60
       periodSeconds: 30
 
-streamlit:
+playground:
   replicas: 1
   image:
     repository: ghcr.io/etalab-ia/albert-api/ui
-    tag: 81bc119682ffc2345c64d0f284d47e4682200ef8
+    tag: latest
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -105,6 +104,7 @@ streamlit:
     baseUrl: "http://albert-api.albert.svc.cluster.local:80/v1"
     excludeModels: ""
     documentsEmbeddingsModel: "BAAI/bge-m3"
+    streamlitCmdArgs: "--server.baseUrlPath=/playground"
   probes:
     readiness:
       path: /

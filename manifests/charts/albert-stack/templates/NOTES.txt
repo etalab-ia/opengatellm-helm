@@ -13,11 +13,11 @@ Access URLs:
 
   To find the public IP addresses:
     $ kubectl describe svc -n {{ .Release.Namespace | quote }} albert-api
-    $ kubectl describe svc -n {{ .Release.Namespace | quote }} streamlit
+    $ kubectl describe svc -n {{ .Release.Namespace | quote }} playground
 
   Use the "LoadBalancer Ingress" value to access each service:
   - Albert API: http://<LoadBalancer Ingress IP>:{{ .Values.albertApi.service.port }}
-  - Streamlit UI: http://<LoadBalancer Ingress IP>:{{ .Values.streamlit.service.port }}
+  - Streamlit UI: http://<LoadBalancer Ingress IP>:{{ .Values.playground.service.port }}
 
 Components in this deployment:
 - Albert API

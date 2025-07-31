@@ -30,7 +30,6 @@ spec:
             runAsGroup: 1100
           image: {{ .Values.albertApi.image.repository }}:{{ .Values.albertApi.image.tag }}
           imagePullPolicy: {{ .Values.albertApi.image.pullPolicy }}
-          command: [ "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "{{ .Values.albertApi.service.targetPort }}" ]
           ports:
             - containerPort: {{ .Values.albertApi.service.targetPort }}
           env:

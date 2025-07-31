@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: streamlit
+  name: playground
   namespace: {{ .Release.Namespace | quote }}
   labels:
-    {{- include "opengatellm-stack.labels" . | nindent 4 }}
-    app.kubernetes.io/component: streamlit
+    {{- include "albert-stack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: playground
 spec:
-  replicas: {{ .Values.streamlit.replicas }}
+  replicas: {{ .Values.playground.replicas }}
   selector:
     matchLabels:
-      app: streamlit
+      app: playground
   template:
     metadata:
       labels:
-        app: streamlit
+        app: playground
     spec:
       containers:
-      - name: streamlit
+      - name: playground
         securityContext:
           allowPrivilegeEscalation: false
           runAsNonRoot: true
@@ -28,33 +28,38 @@ spec:
             type: RuntimeDefault
           runAsUser: 1100
           runAsGroup: 1100
-        image: {{ .Values.streamlit.image.repository }}:{{ .Values.streamlit.image.tag }}
-        imagePullPolicy: {{ .Values.streamlit.image.pullPolicy }}
-        command: ["streamlit", "run", "ui/main.py",
-                  "--server.port={{ .Values.streamlit.service.port }}",
-                  "--browser.gatherUsageStats=false",
-                  "--theme.base=light",
-                  "--theme.primaryColor=#6a6af4",
-                  "--server.maxUploadSize=20",
-                  "--server.baseUrlPath=/playground"]
+        image: {{ .Values.playground.image.repository }}:{{ .Values.playground.image.tag }}
+        imagePullPolicy: {{ .Values.playground.image.pullPolicy }}
         env:
           - name: BASE_URL
-            value: {{ .Values.streamlit.config.baseUrl | quote }}
+            value: {{ .Values.playground.config.baseUrl | quote }}
           - name: EXCLUDE_MODELS
-            value: {{ .Values.streamlit.config.excludeModels | quote }}
+            value: {{ .Values.playground.config.excludeModels | quote }}
           - name: DOCUMENTS_EMBEDDINGS_MODEL
-            value: {{ .Values.streamlit.config.documentsEmbeddingsModel | quote }}
+            value: {{ .Values.playground.config.documentsEmbeddingsModel | quote }}
+          - name: STREAMLIT_CMD_ARGS
+            value: {{ .Values.playground.config.streamlitCmdArgs | quote }}
+          - name: CONFIG_FILE
+            value: "/home/albert/conf/config.yml"
+        volumeMounts:
+          - name: playground-config-vol
+            mountPath: /home/albert/conf
+            readOnly: true
         ports:
-          - containerPort: {{ .Values.streamlit.service.port }}
+          - containerPort: {{ .Values.playground.service.port }}
         readinessProbe:
           httpGet:
-            path: {{ .Values.streamlit.probes.readiness.path }}playground
-            port: {{ .Values.streamlit.service.port }}
-          initialDelaySeconds: {{ .Values.streamlit.probes.readiness.initialDelaySeconds }}
-          periodSeconds: {{ .Values.streamlit.probes.readiness.periodSeconds }}
+            path: {{ .Values.playground.probes.readiness.path }}playground
+            port: {{ .Values.playground.service.port }}
+          initialDelaySeconds: {{ .Values.playground.probes.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.playground.probes.readiness.periodSeconds }}
         livenessProbe:
           httpGet:
-            path: {{ .Values.streamlit.probes.liveness.path }}playground
-            port: {{ .Values.streamlit.service.port }}
-          initialDelaySeconds: {{ .Values.streamlit.probes.liveness.initialDelaySeconds }}
-          periodSeconds: {{ .Values.streamlit.probes.liveness.periodSeconds }}
+            path: {{ .Values.playground.probes.liveness.path }}playground
+            port: {{ .Values.playground.service.port }}
+          initialDelaySeconds: {{ .Values.playground.probes.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.playground.probes.liveness.periodSeconds }}
+      volumes:
+        - name: playground-config-vol
+          configMap:
+            name: playground-config
