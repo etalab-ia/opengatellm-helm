@@ -11,32 +11,7 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
     nginx.ingress.kubernetes.io/use-regex: "true"
-    nginx.ingress.kubernetes.io/rewringress:
-      enabled: true
-      className: "nginx"
-      annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-production
-        nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
-        nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
-        nginx.ingress.kubernetes.io/use-regex: "true"
-        nginx.ingress.kubernetes.io/rewrite-target: /$2
-        nginx.ingress.kubernetes.io/ssl-redirect: "true"
-        nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-      hosts:
-        - host: albert.dinum-dev-osc-euw2-bacasable-wapp-02.k8s.cloud.incubateur.net
-          paths:
-            - path: /((status|documentation|swagger|openapi\.json|v1|health|metrics|roles|users|tokens).*)
-              pathType: ImplementationSpecific
-              service:
-                name: albert-api
-                port: 80
-
-            - path: /playground(/|$)(.*)
-              pathType: ImplementationSpecific
-              service:
-                name: playground
-                port:
-                  8501ite-target: /$2
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
   hosts:
@@ -47,19 +22,16 @@ ingress:
           service:
             name: albert-api
             port: 80
-
         - path: /playground(/|$)(.*)
           pathType: ImplementationSpecific
           service:
             name: playground
             port: 8501
-
 #        - path: /()(.*)  # fallback to uptime or default
 #          pathType: ImplementationSpecific
 #          service:
 #            name: uptime-service
 #            port: 3001
-
   tls:
     - hosts:
         - albert.dinum-dev-osc-euw2-bacasable-wapp-02.k8s.cloud.incubateur.net
