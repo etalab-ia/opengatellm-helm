@@ -23,7 +23,7 @@ ingress:
         nginx.ingress.kubernetes.io/ssl-redirect: "true"
         nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
       hosts:
-        - host: albert.dinum-dev-osc-euw2-bacasable-wapp-01.k8s.cloud.incubateur.net
+        - host: albert.dinum-dev-osc-euw2-bacasable-wapp-02.k8s.cloud.incubateur.net
           paths:
             - path: /((status|documentation|swagger|openapi\.json|v1|health|metrics|roles|users|tokens).*)
               pathType: ImplementationSpecific
@@ -31,7 +31,7 @@ ingress:
                 name: albert-api
                 port: 80
 
-            - path: /playground(/|$)(.*)  # streamlit
+            - path: /playground(/|$)(.*)
               pathType: ImplementationSpecific
               service:
                 name: playground
@@ -40,7 +40,7 @@ ingress:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
   hosts:
-    - host: albert.dinum-dev-osc-euw2-bacasable-wapp-01.k8s.cloud.incubateur.net
+    - host: albert.dinum-dev-osc-euw2-bacasable-wapp-02.k8s.cloud.incubateur.net
       paths:
         - path: /((status|documentation|swagger|openapi\.json|v1|health|metrics|roles|users|tokens).*)
           pathType: ImplementationSpecific
@@ -62,7 +62,7 @@ ingress:
 
   tls:
     - hosts:
-        - albert.dinum-dev-osc-euw2-bacasable-wapp-01.k8s.cloud.incubateur.net
+        - albert.dinum-dev-osc-euw2-bacasable-wapp-02.k8s.cloud.incubateur.net
       secretName: tls-secret
 
 albertApi:
