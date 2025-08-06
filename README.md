@@ -3,10 +3,8 @@ This repository contains the helm chart to deploy OpenGateLLM and its components
 You can check the official OpenGateLLM repository here: https://github.com/etalab-ia/OpenGateLLM/
 
 ## Deployment
-- Create a kubernetes cluster with the provider of your choice
-- We recommend having at least 3 nodes, including one with a GPU sized for the LLM you wish to use.
-- Add the following label to your gpu node : `k8s.scaleway.com/pool-name: "gpu"`, and for your other nodes : `k8s.scaleway.com/pool-name: "cpu-ram"` so that each deployment goes to the appropriate node.
-- Verify that the connection with your cluster is functional and that the nodes are available with `kubectl get nodes`
+- Create a kubernetes cluster with the provider of your choice. We provide tofu files to easily create an adequate cluster with an H100 on scaleway.
+- To do so, run `tofu apply` from the `tofu/scaleway` folder
 - In `opengatellm-stack/values.yaml`, replace the secrets and API key with values of your choice. You can also customize your deployment via this file, for example the tag of the API version to deploy, rate limiting, API keys for the different deployed services (redis, elastic search, Qdrant, etc), ports, hardware configuration requested by each pod, etc.
 - From the `opengatellm-stack` folder, install the helm chart with the command `helm install opengatellm-stack .`
 - Monitor the deployment via the kubernetes dashboard, or via a tool like `k9s`.
