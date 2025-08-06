@@ -7,70 +7,78 @@ global:
 opengatellm:
   replicas: 1
   image:
-    repository: ghcr.io/etalab-ia/opengatellm/app
-    tag: 0.1.1
+    repository: ghcr.io/etalab-ia/albert-api/app
+    tag: 0.2.0
     pullPolicy: IfNotPresent
   service:
     type: LoadBalancer
     port: 80
     targetPort: 8000
   config:
-    general:
-      log_level: DEBUG
-
-    playground:
-      api_url: http://api:8000
-      max_api_key_expiration_days: 365
-      cache_ttl: 1800
-      database_url: postgresql://postgres:changeme@postgres:5432/playground
-
-    auth:
-      master_username: master
-      master_key: changeme
-
-    databases:
-      - type: qdrant
-        model: embeddings-small
-        args:
-          url: "http://qdrant.default.svc.cluster.local:6333"
-          api_key: changeme
-          prefer_grpc: True
-          timeout: 10
-
-      - type: redis
-        args:
-          host: "redis.default.svc.cluster.local"
-          password: changeme
-
-      - type: sql
-        args:
-          url: postgresql+asyncpg://postgres:changeme@postgres:5432/api
-          echo: True
-          pool_size: 5
-          max_overflow: 10
-          pool_pre_ping: True
-          connect_args: { "server_settings": { "statement_timeout": "120" } }
-
+    # ----------------------------------- models ------------------------------------
     models:
-      - id: "mistralai/Mistral-Small-3.1-24B-Instruct-2503"
+      - id: albert-testbed
         type: text-generation
-        owned_by: test
         clients:
-          - model: "mistralai/Mistral-Small-3.1-24B-Instruct-2503"
+          - model: "gemma3:1b"
             type: vllm
             args:
-              api_url: "http://mistral-24b.default.svc.cluster.local/v1"
-              api_key: changeme
+              api_url: http://albert-testbed.etalab.gouv.fr:8000
+              api_key: "changeme"
 
-      - id: embeddings-small
-        type: text-embeddings-inference
-        aliases: [ "BAAI/bge-m3" ]
+      - id: meta-llama/Llama-3.1-8B-Instruct
+        type: text-generation
         clients:
-          - model: BAAI/bge-m3
+          - model: "meta-llama/Llama-3.1-8B-Instruct"
+            type: vllm
+            args:
+              api_url: "http://mistral-24b.default.svc.cluster.local/"
+              api_key: "changeme"
+
+      - id: embeddings
+        type: text-embeddings-inference
+        clients:
+          - model: "BAAI/bge-m3"
             type: tei
             args:
-              api_url: "http://bge-embeddings.default.svc.cluster.local/v1"
+              api_url: "http://bge-embeddings.default.svc.cluster.local/"
               api_key: "changeme"
+
+    # -------------------------------- dependencies ---------------------------------
+    databases:
+      - type: sql
+        context: api
+        args:
+          url: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/api
+          echo: False
+          pool_size: 5
+          connect_args:
+            server_settings:
+              statement_timeout: "120s"
+            command_timeout: 60
+
+      - type: redis
+        context: api
+        args:
+          host: redis.default.svc.cluster.local
+          port: 6379
+          password: changeme
+
+      # qdrant: # optional
+      # elastic: # optional
+#    parser:
+#      args:
+#        api_url: "http://mistral-24b.default.svc.cluster.local"
+#        api_key: "changeme"
+
+
+      # playground ---------------------------------------------------------------------------------------------------------------------------------------
+    playground:
+      api_url: http://${API_HOST:-localhost}:8080
+      postgres:
+        url: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-changeme}@${POSTGRES_HOST:-localhost}:${POSTGRES_PORT:-5432}/playground
+      # auth_master_username: master # optional - default: master
+      # auth_master_key: changeme # optional - default: changeme
 
   probes:
     readiness:
@@ -88,7 +96,7 @@ streamlit:
   replicas: 1
   image:
     repository: ghcr.io/etalab-ia/opengatellm/ui
-    tag: 81bc119682ffc2345c64d0f284d47e4682200ef8
+    tag: latest
     pullPolicy: IfNotPresent
   service:
     type: LoadBalancer
@@ -113,6 +121,8 @@ vllm:
   image:
     repository: vllm/vllm-openai
     tag: v0.8.4
+    # repository: ghcr.io/etalab-ia/albert-marker/server
+    #tag: latest
     pullPolicy: IfNotPresent
   service:
     name: mistral-24b
@@ -121,9 +131,9 @@ vllm:
     targetPort: 8000
   config:
     # model: neuralmagic/Meta-Llama-3.1-70B-Instruct-FP8
-    #model: meta-llama/Llama-3.1-8B-Instruct
+    model: meta-llama/Llama-3.1-8B-Instruct
     # model: google/gemma-3-27b-it
-    model: mistralai/Mistral-Small-3.1-24B-Instruct-2503
+    # model: mistralai/Mistral-Small-3.1-24B-Instruct-2503
   persistence:
     size: 100Gi
     storageClassName: sbs-default
@@ -281,4 +291,4 @@ postgres:
     startupDelaySeconds: 60
 
 huggingface:
-  token: "YOUR_HF_API_KEY"
+  token: "***"
