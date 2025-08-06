@@ -26,6 +26,24 @@ opengatellm:
               api_url: http://albert-testbed.etalab.gouv.fr:8000
               api_key: "changeme"
 
+      - id: meta-llama/Llama-3.1-8B-Instruct
+        type: text-generation
+        clients:
+          - model: "meta-llama/Llama-3.1-8B-Instruct"
+            type: vllm
+            args:
+              api_url: "http://mistral-24b.default.svc.cluster.local/"
+              api_key: "changeme"
+
+      - id: embeddings
+        type: text-embeddings-inference
+        clients:
+          - model: "BAAI/bge-m3"
+            type: tei
+            args:
+              api_url: "http://bge-embeddings.default.svc.cluster.local/"
+              api_key: "changeme"
+
     # -------------------------------- dependencies ---------------------------------
     databases:
       - type: sql
@@ -48,10 +66,10 @@ opengatellm:
 
       # qdrant: # optional
       # elastic: # optional
-    parser:
-      args:
-        api_url: "http://mistral-24b.default.svc.cluster.local"
-        api_key: "changeme"
+#    parser:
+#      args:
+#        api_url: "http://mistral-24b.default.svc.cluster.local"
+#        api_key: "changeme"
 
 
       # playground ---------------------------------------------------------------------------------------------------------------------------------------
@@ -101,10 +119,10 @@ streamlit:
 vllm:
   replicas: 1
   image:
-    # repository: vllm/vllm-openai
-    # tag: v0.8.4
-    repository: ghcr.io/etalab-ia/albert-marker/server
-    tag: latest
+    repository: vllm/vllm-openai
+    tag: v0.8.4
+    # repository: ghcr.io/etalab-ia/albert-marker/server
+    #tag: latest
     pullPolicy: IfNotPresent
   service:
     name: mistral-24b
@@ -113,9 +131,9 @@ vllm:
     targetPort: 8000
   config:
     # model: neuralmagic/Meta-Llama-3.1-70B-Instruct-FP8
-    #model: meta-llama/Llama-3.1-8B-Instruct
+    model: meta-llama/Llama-3.1-8B-Instruct
     # model: google/gemma-3-27b-it
-    model: mistralai/Mistral-Small-3.1-24B-Instruct-2503
+    # model: mistralai/Mistral-Small-3.1-24B-Instruct-2503
   persistence:
     size: 100Gi
     storageClassName: sbs-default
@@ -273,4 +291,4 @@ postgres:
     startupDelaySeconds: 60
 
 huggingface:
-  token: "YOUR_HF_API_KEY"
+  token: "***"
