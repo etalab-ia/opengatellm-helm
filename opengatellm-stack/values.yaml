@@ -7,7 +7,7 @@ global:
 opengatellm:
   replicas: 1
   image:
-    repository: ghcr.io/etalab-ia/opengatellm/app
+    repository: ghcr.io/etalab-ia/albert-api/app
     tag: 0.1.1
     pullPolicy: IfNotPresent
   service:
@@ -52,11 +52,11 @@ opengatellm:
           connect_args: { "server_settings": { "statement_timeout": "120" } }
 
     models:
-      - id: "mistralai/Mistral-Small-3.1-24B-Instruct-2503"
+      - id: "meta-llama/Llama-3.1-8B-Instruct"
         type: text-generation
         owned_by: test
         clients:
-          - model: "mistralai/Mistral-Small-3.1-24B-Instruct-2503"
+          - model: "meta-llama/Llama-3.1-8B-Instruct"
             type: vllm
             args:
               api_url: "http://mistral-24b.default.svc.cluster.local/v1"
@@ -87,7 +87,7 @@ opengatellm:
 streamlit:
   replicas: 1
   image:
-    repository: ghcr.io/etalab-ia/opengatellm/ui
+    repository: ghcr.io/etalab-ia/albert-api/ui
     tag: 81bc119682ffc2345c64d0f284d47e4682200ef8
     pullPolicy: IfNotPresent
   service:
@@ -121,9 +121,9 @@ vllm:
     targetPort: 8000
   config:
     # model: neuralmagic/Meta-Llama-3.1-70B-Instruct-FP8
-    #model: meta-llama/Llama-3.1-8B-Instruct
+    model: meta-llama/Llama-3.1-8B-Instruct
     # model: google/gemma-3-27b-it
-    model: mistralai/Mistral-Small-3.1-24B-Instruct-2503
+    # model: mistralai/Mistral-Small-3.1-24B-Instruct-2503
   persistence:
     size: 100Gi
     storageClassName: sbs-default
@@ -281,4 +281,4 @@ postgres:
     startupDelaySeconds: 60
 
 huggingface:
-  token: "YOUR_HF_API_KEY"
+  token: "***"
