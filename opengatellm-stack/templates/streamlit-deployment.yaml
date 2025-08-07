@@ -35,8 +35,14 @@ spec:
             value: {{ .Values.streamlit.config.excludeModels | quote }}
           - name: DOCUMENTS_EMBEDDINGS_MODEL
             value: {{ .Values.streamlit.config.documentsEmbeddingsModel | quote }}
+          - name: CONFIG_FILE
+            value: "/home/opengatellm/conf/config.yml"
         ports:
           - containerPort: {{ .Values.streamlit.service.port }}
+        volumeMounts:
+          - name: streamlit-config-vol
+            mountPath: /home/opengatellm/conf
+            readOnly: true
         readinessProbe:
           httpGet:
             path: {{ .Values.streamlit.probes.readiness.path }}
@@ -49,3 +55,7 @@ spec:
             port: {{ .Values.streamlit.service.port }}
           initialDelaySeconds: {{ .Values.streamlit.probes.liveness.initialDelaySeconds }}
           periodSeconds: {{ .Values.streamlit.probes.liveness.periodSeconds }}
+      volumes:
+        - name: streamlit-config-vol
+          configMap:
+            name: streamlit-config

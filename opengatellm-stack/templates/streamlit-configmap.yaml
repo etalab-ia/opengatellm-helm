@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: streamlit-config
+  namespace: {{ .Values.global.namespace | default "default" }}
+  labels:
+    {{- include "opengatellm-stack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: opengatellm
+data:
+  config.yml: |
+    # opengatellm config.yml
+    {{- toYaml .Values.opengatellm.config | nindent 4 }}
