@@ -161,7 +161,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
+tofu/scaleway/.env
 .venv
 env/
 venv/
@@ -213,3 +213,4 @@ Thumbs.db
 .idea
 .ansible_env
 .terraform.lock.hcl
+**/values-secrets.yaml

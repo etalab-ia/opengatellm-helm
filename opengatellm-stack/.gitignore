@@ -120,7 +120,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
+../.env
 .venv
 env/
 venv/
@@ -204,3 +204,4 @@ terraform.rc
 /docs/tutorials/*.wav
 /docs/tutorials/*.mp3
 uv.lock
+**/values-secrets.yaml
