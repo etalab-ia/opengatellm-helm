@@ -26,10 +26,10 @@ opengatellm:
               api_url: http://albert-testbed.etalab.gouv.fr:8000
               api_key: "changeme"
 
-      - id: openai/gpt-oss-20b
+      - id: unsloth/gpt-oss-120b-Q2_K
         type: text-generation
         clients:
-          - model: "openai/gpt-oss-20b"
+          - model: "unsloth/gpt-oss-120b-Q2_K"
             type: vllm
             args:
               api_url: "http://mistral-24b.default.svc.cluster.local/"
@@ -121,10 +121,10 @@ streamlit:
 vllm:
   replicas: 1
   image:
-    repository: vllm/vllm-openai
-    tag: gptoss
+    repository: ollama/ollama
+    # tag: latest
     # repository: ghcr.io/etalab-ia/albert-marker/server
-    #tag: latest
+    tag: latest
     pullPolicy: IfNotPresent
   service:
     name: mistral-24b
@@ -136,7 +136,8 @@ vllm:
     # model: meta-llama/Llama-3.1-8B-Instruct
     # model: google/gemma-3-27b-it
     # model: mistralai/Mistral-Small-3.1-24B-Instruct-2503
-    model: openai/gpt-oss-20b
+    #model: hf.co/unsloth/gpt-oss-120b-GGUF:Q2_K
+    model: hf.co/unsloth/gpt-oss-120b-GGUF:F16
   persistence:
     size: 230Gi
     storageClassName: sbs-default
