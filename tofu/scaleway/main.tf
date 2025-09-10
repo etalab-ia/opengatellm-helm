@@ -12,7 +12,7 @@ resource "scaleway_k8s_cluster" "cluster" {
   version                     = "1.32.3"
   cni                         = "cilium"
   private_network_id          = scaleway_vpc_private_network.pn_priv.id
-  delete_additional_resources = false
+  delete_additional_resources = true
   region                      = local.region
   type                        = "kapsule"
 }

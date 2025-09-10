@@ -1,0 +1,121 @@
+# Global settings
+global:
+  storage:
+    storageClassName: bsu-gp2 # bsu-sc for K8S La Suite
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-production
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+  hosts:
+    - host: albert.dinum-dev-osc-euw2-bacasable-wapp-02.k8s.cloud.incubateur.net
+      paths:
+        - path: /((status|documentation|swagger|openapi\.json|v1|health|metrics|roles|users|tokens).*)
+          pathType: ImplementationSpecific
+          service:
+            name: albert-api
+            port: 80
+
+        - path: /playground(/|$)(.*)
+          pathType: ImplementationSpecific
+          service:
+            name: playground
+            port: 8501
+  tls:
+    - hosts:
+        - albert.dinum-dev-osc-euw2-bacasable-wapp-02.k8s.cloud.incubateur.net
+      secretName: tls-secret
+
+albertApi:
+  replicas: 1
+  image:
+    repository: ghcr.io/etalab-ia/albert-api/app
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8080
+  config:
+    general:
+      log_level: DEBUG
+  probes:
+    readiness:
+      enabled: false
+      path: /health
+      initialDelaySeconds: 10
+      periodSeconds: 30
+    liveness:
+      enabled: false
+      path: /health
+      initialDelaySeconds: 60
+      periodSeconds: 30
+
+playground:
+  replicas: 1
+  image:
+    repository: ghcr.io/etalab-ia/albert-api/ui
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8501
+    targetPort: 8501
+  config:
+    baseUrl: "http://albert-api.albert.svc.cluster.local:80/v1"
+    excludeModels: ""
+    documentsEmbeddingsModel: "BAAI/bge-m3"
+    streamlitCmdArgs: "--server.baseUrlPath=/playground"
+  probes:
+    readiness:
+      path: /
+      initialDelaySeconds: 5
+      periodSeconds: 10
+    liveness:
+      path: /
+      initialDelaySeconds: 10
+      periodSeconds: 10
+
+qdrant:
+  persistence:
+    storageClassName: bsu-gp2 # bsu-sc for K8S La Suite
+  updateVolumeFsOwnership: false
+  containerSecurityContext:
+    capabilities:
+      drop:
+        - ALL
+    seccompProfile:
+      type: RuntimeDefault
+
+redis:
+  commonConfiguration: |-
+    appendonly yes
+    save "7200 1 3600 10000"
+    dbfilename ftr-data.rdb
+    appendfilename appendonly.aof
+    aof-use-rdb-preamble yes
+    auto-aof-rewrite-percentage 100
+    auto-aof-rewrite-min-size 2048mb
+  networkPolicy:
+    enabled: false
+    allowExternal: false
+  global:
+    storageClass: bsu-gp2 # bsu-sc for K8S La Suite
+    compatibility:
+      openshift:
+        adaptSecurityContext: auto
+  architecture: replication
+  sentinel:
+    enabled: true
+    persistence:
+      enabled: true
+      size: 5Gi
+  auth:
+    enabled: true
+    sentinel: true

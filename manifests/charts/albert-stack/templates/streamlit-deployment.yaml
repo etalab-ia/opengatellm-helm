@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: playground
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "albert-stack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: playground
+spec:
+  replicas: {{ .Values.playground.replicas }}
+  selector:
+    matchLabels:
+      app: playground
+  template:
+    metadata:
+      labels:
+        app: playground
+    spec:
+      containers:
+      - name: playground
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop:
+              - ALL
+          seccompProfile:
+            type: RuntimeDefault
+          runAsUser: 1100
+          runAsGroup: 1100
+        image: {{ .Values.playground.image.repository }}:{{ .Values.playground.image.tag }}
+        imagePullPolicy: {{ .Values.playground.image.pullPolicy }}
+        env:
+          - name: BASE_URL
+            value: {{ .Values.playground.config.baseUrl | quote }}
+          - name: EXCLUDE_MODELS
+            value: {{ .Values.playground.config.excludeModels | quote }}
+          - name: DOCUMENTS_EMBEDDINGS_MODEL
+            value: {{ .Values.playground.config.documentsEmbeddingsModel | quote }}
+          - name: STREAMLIT_CMD_ARGS
+            value: {{ .Values.playground.config.streamlitCmdArgs | quote }}
+          - name: CONFIG_FILE
+            value: "/home/albert/conf/config.yml"
+        volumeMounts:
+          - name: playground-config-vol
+            mountPath: /home/albert/conf
+            readOnly: true
+        ports:
+          - containerPort: {{ .Values.playground.service.port }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.playground.probes.readiness.path }}playground
+            port: {{ .Values.playground.service.port }}
+          initialDelaySeconds: {{ .Values.playground.probes.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.playground.probes.readiness.periodSeconds }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.playground.probes.liveness.path }}playground
+            port: {{ .Values.playground.service.port }}
+          initialDelaySeconds: {{ .Values.playground.probes.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.playground.probes.liveness.periodSeconds }}
+      volumes:
+        - name: playground-config-vol
+          configMap:
+            name: playground-config
