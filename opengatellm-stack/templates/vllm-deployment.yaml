@@ -36,7 +36,7 @@ spec:
         args: [
           # "vllm serve {{ .Values.vllm.config.model }} --trust-remote-code --enable-chunked-prefill --max_num_batched_tokens {{ .Values.vllm.config.maxNumBatchedTokens }}"
           # mistral 24B
-          # "vllm serve {{ .Values.vllm.config.model }} --tensor-parallel-size 1 --enable-auto-tool-choice --tokenizer_mode mistral --config_format mistral --load_format mistral --tool-call-parser mistral --limit_mm_per_prompt 'image=10'"
+          # "vllm serve {{ .Values.vllm.config.model }} --tensor-parallel-size 1 --enable-auto-tool-choice --tool-call-parser mistral --no-enable-prefix-caching"
           # Llama 8b
           # "vllm serve {{ .Values.vllm.config.model }} --tensor-parallel-size 1 --enable-auto-tool-choice --tool-call-parser llama3_json --chat-template examples/tool_chat_template_llama3.1_json.jinja"
           # Gemma
