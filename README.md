@@ -1,5 +1,11 @@
 This repository contains the helm chart to deploy albert-api and its components on Kubernetes.
 
+## Repository structure
+
+In `albert-stack` folder, we referenced the helm chart to deploy manually albert-api v0.1.1 and its components on Kubernetes. You can base your deployment on Scalweway infrastructure using the tofu files provided in `tofu/scaleway` folder.
+In `opengatellm-stack` folder, we referenced the the helm chart to deploy manually albert-api v0.2.0 and its components on Kubernetes. You can base your deployment on Scalweway infrastructure using the tofu files provided in `tofu/scaleway` folder.
+In `tofu/scaleway` folder, you will find the tofu files to create a kubernetes cluster on Scaleway. Please adapt it according your needs.
+
 ## Provisioning
 
 ### Manually
