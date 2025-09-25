@@ -26,11 +26,11 @@ opengatellm:
               api_url: http://albert-testbed.etalab.gouv.fr:8000
               api_key: "changeme"
 
-      - id: openai/gpt-oss-120b
-        type: text-generation
+      - id: mistralai/Voxtral-Small-24B-2507
+        type: automatic-speech-recognition
         clients:
-          - model: "openai/gpt-oss-120b"
-            type: vllm
+          - model: "mistralai/Voxtral-Small-24B-2507"
+            type: albert
             args:
               api_url: "http://mistral-24b.default.svc.cluster.local/"
               api_key: "changeme"
@@ -122,7 +122,7 @@ vllm:
   replicas: 1
   image:
     repository: vllm/vllm-openai
-    tag: gptoss
+    tag: v0.10.2
     # repository: ghcr.io/etalab-ia/albert-marker/server
     #tag: latest
     pullPolicy: IfNotPresent
@@ -136,7 +136,8 @@ vllm:
     # model: meta-llama/Llama-3.1-8B-Instruct
     # model: google/gemma-3-27b-it
     # model: mistralai/Mistral-Small-3.1-24B-Instruct-2503
-    model: openai/gpt-oss-120b
+    # model: openai/gpt-oss-120b
+    model: mistralai/Voxtral-Small-24B-2507
   persistence:
     size: 230Gi
     storageClassName: sbs-default
