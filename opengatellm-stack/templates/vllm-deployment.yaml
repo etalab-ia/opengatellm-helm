@@ -44,7 +44,9 @@ spec:
           # Mistral 2 GPU
           #"vllm serve {{ .Values.vllm.config.model }} --tensor-parallel-size 2 --enable-auto-tool-choice --tokenizer_mode mistral --config_format mistral --load_format mistral --tool-call-parser mistral --limit_mm_per_prompt 'image=10'"
           # gpt-oss
-          "vllm serve {{ .Values.vllm.config.model }} --async-scheduling --max-model-len 100000"
+          #"vllm serve {{ .Values.vllm.config.model }} --async-scheduling --max-model-len 100000"
+          #magistral
+          "vllm serve {{ .Values.vllm.config.model }} --reasoning-parser mistral --tokenizer_mode mistral --config_format mistral --load_format mistral --tool-call-parser mistral --enable-auto-tool-choice --limit_mm_per_prompt '{\"image\": 10}' --tensor-parallel-size 1"
         ]
         env:
         - name: HUGGING_FACE_HUB_TOKEN
