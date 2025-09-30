@@ -5,10 +5,11 @@ global:
     storageClassName: default
 
 opengatellm:
+  enabled: false
   replicas: 1
   image:
-    repository: ghcr.io/etalab-ia/albert-api/app
-    tag: 0.2.0
+    repository: ghcr.io/etalab-ia/opengatellm/api
+    tag: 0.2.4
     pullPolicy: IfNotPresent
   service:
     type: LoadBalancer
@@ -17,60 +18,53 @@ opengatellm:
   config:
     # ----------------------------------- models ------------------------------------
     models:
-      - id: albert-testbed
+      - name: albert-testbed
         type: text-generation
-        clients:
-          - model: "gemma3:1b"
-            type: vllm
-            args:
-              api_url: http://albert-testbed.etalab.gouv.fr:8000
-              api_key: "changeme"
+        providers:
+          - type: vllm
+            model_name: "gemma3:1b"
+            url: "http://albert-testbed.etalab.gouv.fr:8000"
+            key: "changeme"
 
-      - id: openai/gpt-oss-120b
-        type: text-generation
-        clients:
-          - model: "openai/gpt-oss-120b"
-            type: vllm
-            args:
-              api_url: "http://mistral-24b.default.svc.cluster.local/"
-              api_key: "changeme"
+      - name: mistralai/Voxtral-Mini-3B-2507
+        type: automatic-speech-recognition
+        providers:
+          - type: vllm
+            model_name: "mistralai/Voxtral-Mini-3B-2507"
+            url: "http://mistral-24b.default.svc.cluster.local/"
+            key: "changeme"
 
-      - id: embeddings
+      - name: openai/gpt-oss-120b
+        type: automatic-speech-recognition
+        providers:
+          - type: vllm
+            model_name: "openai/gpt-oss-120b"
+            url: "http://mistral-24b.default.svc.cluster.local/"
+            key: "changeme"
+
+      - name: embeddings
         type: text-embeddings-inference
-        clients:
-          - model: "BAAI/bge-m3"
-            type: tei
-            args:
-              api_url: "http://bge-embeddings.default.svc.cluster.local/"
-              api_key: "changeme"
+        providers:
+          - type: tei
+            model_name: "BAAI/bge-m3"
+            url: "http://bge-embeddings.default.svc.cluster.local/"
+            key: "changeme"
 
     # -------------------------------- dependencies ---------------------------------
-    databases:
-      - type: sql
-        context: api
-        args:
-          url: postgresql+asyncpg://postgres:changeme@postgres:5432/api
-          echo: False
-          pool_size: 5
-          connect_args:
-            server_settings:
-              statement_timeout: "120s"
-            command_timeout: 60
+    dependencies:
+      postgres:
+        url: "postgresql+asyncpg://postgres:changeme@postgres:5432/api"
+        echo: False
+        pool_size: 5
+        connect_args:
+          server_settings:
+            statement_timeout: "120s"
+          command_timeout: 60
 
-      - type: redis
-        context: api
-        args:
-          host: redis.default.svc.cluster.local
-          port: 6379
-          password: changeme
-
-      # qdrant: # optional
-      # elastic: # optional
-#    parser:
-#      args:
-#        api_url: "http://mistral-24b.default.svc.cluster.local"
-#        api_key: "changeme"
-
+      redis:
+        host: redis.default.svc.cluster.local
+        port: 6379
+        password: changeme
 
       # playground ---------------------------------------------------------------------------------------------------------------------------------------
     playground:
@@ -122,13 +116,13 @@ vllm:
   replicas: 1
   image:
     repository: vllm/vllm-openai
-    tag: gptoss
+    tag: v0.10.2
     # repository: ghcr.io/etalab-ia/albert-marker/server
     #tag: latest
     pullPolicy: IfNotPresent
   service:
     name: mistral-24b
-    type: ClusterIP
+    type: LoadBalancer
     port: 80
     targetPort: 8000
   config:
@@ -137,6 +131,9 @@ vllm:
     # model: google/gemma-3-27b-it
     # model: mistralai/Mistral-Small-3.1-24B-Instruct-2503
     model: openai/gpt-oss-120b
+    # model: mistralai/Voxtral-Mini-3B-2507
+    # serveArgs: "--tokenizer_mode mistral --config_format mistral --load_format mistral --tensor-parallel-size 1 --tool-call-parser mistral --enable-auto-tool-choice"
+    serveArgs: "--no-enable-prefix-caching --max-model-len 63440"
   persistence:
     size: 230Gi
     storageClassName: sbs-default
@@ -175,6 +172,7 @@ vllm:
 
 # BGE Embeddings configuration
 embeddings:
+  enabled: false
   replicas: 1
   image:
     repository: ghcr.io/huggingface/text-embeddings-inference
@@ -205,22 +203,6 @@ embeddings:
       path: /health
       initialDelaySeconds: 60
       periodSeconds: 30
-
-# Qdrant configuration
-qdrant:
-  replicas: 1
-  image:
-    repository: qdrant/qdrant
-    tag: latest
-    pullPolicy: IfNotPresent
-  service:
-    type: ClusterIP
-    httpPort: 6333
-    grpcPort: 6334
-  config:
-    apiKey: "changeme"
-  persistence:
-    size: 30Gi
 
 # Redis configuration
 redis:
@@ -256,7 +238,7 @@ postgres:
     user: postgres
     password: changeme
     db: postgres
-    create_db: api,playground
+    create_db: api
 
   service:
     type: ClusterIP
@@ -292,6 +274,3 @@ postgres:
     timeoutSeconds: 10
     failureThreshold: 5
     startupDelaySeconds: 60
-
-#huggingface:
-#  token: "***"

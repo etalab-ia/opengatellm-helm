@@ -1,3 +1,4 @@
+{{- if .Values.opengatellm.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -10,3 +11,4 @@ data:
   config.yml: |
     # opengatellm config.yml
     {{- toYaml .Values.opengatellm.config | nindent 4 }}
+{{- end }}

@@ -1,3 +1,4 @@
+{{- if .Values.opengatellm.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -22,7 +23,12 @@ spec:
       - name: api
         image: {{ .Values.opengatellm.image.repository }}:{{ .Values.opengatellm.image.tag }}
         imagePullPolicy: {{ .Values.opengatellm.image.pullPolicy }}
-        command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "{{ .Values.opengatellm.service.targetPort }}"]
+        command:
+          - /bin/sh
+          - -c
+          - |
+            python -m alembic -c api/alembic.ini upgrade head && \
+            uvicorn api.main:app --host 0.0.0.0 --port {{ .Values.opengatellm.service.targetPort }}
         ports:
           - containerPort: {{ .Values.opengatellm.service.targetPort }}
         env:
@@ -52,3 +58,4 @@ spec:
       - name: opengatellm-config-vol
         configMap:
           name: opengatellm-config
+{{- end }}
