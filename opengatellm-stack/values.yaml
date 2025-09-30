@@ -5,6 +5,7 @@ global:
     storageClassName: default
 
 opengatellm:
+  enabled: false
   replicas: 1
   image:
     repository: ghcr.io/etalab-ia/opengatellm/api
@@ -30,6 +31,14 @@ opengatellm:
         providers:
           - type: vllm
             model_name: "mistralai/Voxtral-Mini-3B-2507"
+            url: "http://mistral-24b.default.svc.cluster.local/"
+            key: "changeme"
+
+      - name: openai/gpt-oss-120b
+        type: automatic-speech-recognition
+        providers:
+          - type: vllm
+            model_name: "openai/gpt-oss-120b"
             url: "http://mistral-24b.default.svc.cluster.local/"
             key: "changeme"
 
@@ -113,7 +122,7 @@ vllm:
     pullPolicy: IfNotPresent
   service:
     name: mistral-24b
-    type: ClusterIP
+    type: LoadBalancer
     port: 80
     targetPort: 8000
   config:
@@ -121,9 +130,10 @@ vllm:
     # model: meta-llama/Llama-3.1-8B-Instruct
     # model: google/gemma-3-27b-it
     # model: mistralai/Mistral-Small-3.1-24B-Instruct-2503
-    # model: openai/gpt-oss-120b
-    model: mistralai/Voxtral-Mini-3B-2507
-    serveArgs: "--tokenizer_mode mistral --config_format mistral --load_format mistral --tensor-parallel-size 1 --tool-call-parser mistral --enable-auto-tool-choice"
+    model: openai/gpt-oss-120b
+    # model: mistralai/Voxtral-Mini-3B-2507
+    # serveArgs: "--tokenizer_mode mistral --config_format mistral --load_format mistral --tensor-parallel-size 1 --tool-call-parser mistral --enable-auto-tool-choice"
+    serveArgs: "--no-enable-prefix-caching --max-model-len 63440"
   persistence:
     size: 230Gi
     storageClassName: sbs-default
@@ -162,6 +172,7 @@ vllm:
 
 # BGE Embeddings configuration
 embeddings:
+  enabled: false
   replicas: 1
   image:
     repository: ghcr.io/huggingface/text-embeddings-inference
@@ -192,22 +203,6 @@ embeddings:
       path: /health
       initialDelaySeconds: 60
       periodSeconds: 30
-
-# Qdrant configuration
-qdrant:
-  replicas: 1
-  image:
-    repository: qdrant/qdrant
-    tag: latest
-    pullPolicy: IfNotPresent
-  service:
-    type: ClusterIP
-    httpPort: 6333
-    grpcPort: 6334
-  config:
-    apiKey: "changeme"
-  persistence:
-    size: 30Gi
 
 # Redis configuration
 redis:

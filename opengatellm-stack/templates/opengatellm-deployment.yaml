@@ -1,3 +1,4 @@
+{{- if .Values.opengatellm.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -57,3 +58,4 @@ spec:
       - name: opengatellm-config-vol
         configMap:
           name: opengatellm-config
+{{- end }}

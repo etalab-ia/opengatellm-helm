@@ -1,16 +1,18 @@
+{{- if .Values.embeddings.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
   name: bge-embeddings
   namespace: {{ .Values.global.namespace | default "default" }}
   labels:
+    app: bge-embeddings
     {{- include "opengatellm-stack.labels" . | nindent 4 }}
-    app.kubernetes.io/component: embeddings
 spec:
+  type: {{ .Values.embeddings.service.type }}
+  ports:
+    - port: {{ .Values.embeddings.service.port }}
+      targetPort: {{ .Values.embeddings.service.targetPort }}
+      protocol: TCP
   selector:
     app: bge-embeddings
-  ports:
-    - name: http-embeddings
-      port: {{ .Values.embeddings.service.port }}
-      targetPort: {{ .Values.embeddings.service.targetPort }}
-  type: {{ .Values.embeddings.service.type }}
+{{- end }}
