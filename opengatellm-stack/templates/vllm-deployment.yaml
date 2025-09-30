@@ -35,13 +35,7 @@ spec:
         args:
         - |
           pip install vllm[audio]==0.10.2 &&
-          vllm serve {{ .Values.vllm.config.model }} \
-          --tokenizer_mode mistral \
-          --config_format mistral \
-          --load_format mistral \
-          --tensor-parallel-size 1 \
-          --tool-call-parser mistral \
-          --enable-auto-tool-choice
+          vllm serve {{ .Values.vllm.config.model }} {{ .Values.vllm.config.serveArgs }}
         env:
         - name: HUGGING_FACE_HUB_TOKEN
           valueFrom:
