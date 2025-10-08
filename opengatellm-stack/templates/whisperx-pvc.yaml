@@ -1,18 +1,18 @@
-{{- if .Values.vllm.enabled }}
+{{- if .Values.whisperx.enabled }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: vllm
+  name: whisperx-models
   namespace: {{ .Values.global.namespace | default "default" }}
   labels:
     {{- include "opengatellm-stack.labels" . | nindent 4 }}
-    app.kubernetes.io/component: vllm
+    app.kubernetes.io/component: whisperx
 spec:
   accessModes:
   - ReadWriteOnce
   resources:
     requests:
-      storage: {{ .Values.vllm.persistence.size }}
-  storageClassName: {{ .Values.vllm.persistence.storageClassName }}
+      storage: {{ .Values.whisperx.persistence.size }}
+  storageClassName: {{ .Values.whisperx.persistence.storageClassName }}
   volumeMode: Filesystem
 {{- end }}

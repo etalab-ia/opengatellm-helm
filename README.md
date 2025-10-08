@@ -40,8 +40,10 @@ export KUBECONFIG=<path_to_your_kubeconfig_file>
 ## Deployment
 - Create a kubernetes cluster with the provider of your choice. We provide tofu files to easily create an adequate cluster with an H100 on scaleway.
 - To do so, create a `tofu/scaleway/scaleway.auto.tfvars` file and fill it with your credentials.
-- Run `tofu apply` from the `tofu/scaleway` folder. 
-- In `opengatellm-stack/values.yaml`, replace the secrets and API key with values of your choice. You can also customize your deployment via this file, for example the tag of the API version to deploy, rate limiting, API keys for the different deployed services (redis, elastic search, Qdrant, etc), ports, hardware configuration requested by each pod, etc.
+- Run `tofu apply` from the `tofu/scaleway` folder.
+- Connect to the cluster using the Scaleway CLI : `scw k8s kubeconfig install CLUSTER_ID`. The cluster_id can be found on the UI of the kube cluster in Scaleway. 
+- You can customize the deployment in `opengatellm-stack/values.yaml`, for example the tag of the API version to deploy, rate limiting, API keys for the different deployed services (redis, elastic search, Qdrant, etc), ports, hardware configuration requested by each pod, etc.
+- In `opengatellm-stack/values-secret.yaml`, replace the secrets and API keys with values of your choice.
 - From the `opengatellm-stack` folder, install the helm chart with the command `helm install opengatellm-stack .`
 - Monitor the deployment via the kubernetes dashboard, or via a tool like `k9s`.
 - If some components don't start, or are stuck in "Pending", check why with `kubectl describe <pod_name>`.

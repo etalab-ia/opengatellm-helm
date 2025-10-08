@@ -34,11 +34,11 @@ opengatellm:
             url: "http://mistral-24b.default.svc.cluster.local/"
             key: "changeme"
 
-      - name: openai/gpt-oss-120b
+      - name: mistralai/Mistral-Small-3.2-24B-Instruct-2506
         type: automatic-speech-recognition
         providers:
           - type: vllm
-            model_name: "openai/gpt-oss-120b"
+            model_name: "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
             url: "http://mistral-24b.default.svc.cluster.local/"
             key: "changeme"
 
@@ -113,6 +113,7 @@ streamlit:
       periodSeconds: 10
 
 vllm:
+  enabled: false
   replicas: 1
   image:
     repository: vllm/vllm-openai
@@ -129,11 +130,14 @@ vllm:
     # model: neuralmagic/Meta-Llama-3.1-70B-Instruct-FP8
     # model: meta-llama/Llama-3.1-8B-Instruct
     # model: google/gemma-3-27b-it
-    # model: mistralai/Mistral-Small-3.1-24B-Instruct-2503
-    model: openai/gpt-oss-120b
+    model: mistralai/Mistral-Small-3.2-24B-Instruct-2506
+    # model: Qwen/Qwen3-30B-A3B-Instruct-2507
     # model: mistralai/Voxtral-Mini-3B-2507
-    # serveArgs: "--tokenizer_mode mistral --config_format mistral --load_format mistral --tensor-parallel-size 1 --tool-call-parser mistral --enable-auto-tool-choice"
-    serveArgs: "--no-enable-prefix-caching --max-model-len 63440"
+    # model: mistralai/Magistral-Small-2506
+    serveArgs: "--tokenizer_mode mistral --config_format mistral --load_format mistral --tensor-parallel-size 1 --tool-call-parser mistral --enable-auto-tool-choice --no-enable-prefix-caching"
+    # serveArgs: "--no-enable-prefix-caching --max-model-len 63440 --tool-call-parser openai --enable-auto-tool-choice"
+    # serveArgs: "--reasoning-parser qwen3 --enable-auto-tool-choice --tool-call-parser hermes --max-model-len 132896"
+
   persistence:
     size: 230Gi
     storageClassName: sbs-default
@@ -169,6 +173,51 @@ vllm:
       path: /health
       initialDelaySeconds: 300
       periodSeconds: 30
+
+
+whisperx:
+  enabled: true
+  replicas: 1
+  image:
+    repository: lasuite/whisper-api
+    tag: whisperx-002
+    pullPolicy: IfNotPresent
+  service:
+    name: whisper
+    type: LoadBalancer
+    port: 80
+    targetPort: 8000
+  persistence:
+    size: 100Gi
+    storageClassName: sbs-default
+  resources:
+    limits:
+      cpu: "4"
+      memory: 16Gi
+      gpu: 1
+    requests:
+      cpu: "1"
+      memory: 8G
+      gpu: 1
+  shm:
+    sizeLimit: 2Gi
+  secrets:
+    apiKey:
+      name: whisperx-api-key
+      key: api_key
+    huggingfaceToken:
+      name: huggingface-token
+      key: token
+  probes:
+    readiness:
+      path: /health
+      initialDelaySeconds: 30
+      periodSeconds: 30
+    liveness:
+      path: /health
+      initialDelaySeconds: 60
+      periodSeconds: 30
+
 
 # BGE Embeddings configuration
 embeddings:
