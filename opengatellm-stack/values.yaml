@@ -122,7 +122,7 @@ vllm:
     #tag: latest
     pullPolicy: IfNotPresent
   service:
-    name: vllm
+    name: vllm-api
     type: LoadBalancer
     port: 80
     targetPort: 8000
@@ -173,7 +173,6 @@ vllm:
       path: /health
       initialDelaySeconds: 300
       periodSeconds: 30
-
 
 whisperx:
   enabled: false
