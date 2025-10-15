@@ -1,3 +1,4 @@
+{{- if .Values.vllm.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -34,7 +35,8 @@ spec:
         command: ["/bin/sh", "-c"]
         args:
         - |
-          pip install vllm[audio]==0.10.2 &&
+          VLLM_VERSION={{ .Values.vllm.image.tag | trimPrefix "v" }} &&
+          pip install vllm[audio]==${VLLM_VERSION} &&
           vllm serve {{ .Values.vllm.config.model }} {{ .Values.vllm.config.serveArgs }}
         env:
         - name: HUGGING_FACE_HUB_TOKEN
@@ -70,3 +72,4 @@ spec:
             port: {{ .Values.vllm.service.targetPort }}
           initialDelaySeconds: {{ .Values.vllm.probes.liveness.initialDelaySeconds }}
           periodSeconds: {{ .Values.vllm.probes.liveness.periodSeconds }}
+{{- end }}

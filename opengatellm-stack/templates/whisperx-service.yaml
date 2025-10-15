@@ -1,0 +1,14 @@
+{{- if .Values.whisperx.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: whisper
+  namespace: {{ .Values.global.namespace }}
+spec:
+  type: {{ .Values.whisperx.service.type }}
+  ports:
+  - port: {{ .Values.whisperx.service.port }}
+    targetPort: {{ .Values.whisperx.service.targetPort }}
+  selector:
+    app: whisper
+{{- end }}
