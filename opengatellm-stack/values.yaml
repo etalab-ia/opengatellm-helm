@@ -31,7 +31,7 @@ opengatellm:
         providers:
           - type: vllm
             model_name: "mistralai/Voxtral-Mini-3B-2507"
-            url: "http://mistral-24b.default.svc.cluster.local/"
+            url: "http://vllm.default.svc.cluster.local/"
             key: "changeme"
 
       - name: mistralai/Mistral-Small-3.2-24B-Instruct-2506
@@ -39,7 +39,7 @@ opengatellm:
         providers:
           - type: vllm
             model_name: "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
-            url: "http://mistral-24b.default.svc.cluster.local/"
+            url: "http://vllm.default.svc.cluster.local/"
             key: "changeme"
 
       - name: embeddings
@@ -122,7 +122,7 @@ vllm:
     #tag: latest
     pullPolicy: IfNotPresent
   service:
-    name: mistral-24b
+    name: vllm
     type: LoadBalancer
     port: 80
     targetPort: 8000
@@ -176,47 +176,47 @@ vllm:
 
 
 whisperx:
-  enabled: true
-  replicas: 1
-  image:
-    repository: lasuite/whisper-api
-    tag: whisperx-002
-    pullPolicy: IfNotPresent
-  service:
-    name: whisper
-    type: LoadBalancer
-    port: 80
-    targetPort: 8000
-  persistence:
-    size: 100Gi
-    storageClassName: sbs-default
-  resources:
-    limits:
-      cpu: "4"
-      memory: 16Gi
-      gpu: 1
-    requests:
-      cpu: "1"
-      memory: 8G
-      gpu: 1
-  shm:
-    sizeLimit: 2Gi
-  secrets:
-    apiKey:
-      name: whisperx-api-key
-      key: api_key
-    huggingfaceToken:
-      name: huggingface-token
-      key: token
-  probes:
-    readiness:
-      path: /health
-      initialDelaySeconds: 30
-      periodSeconds: 30
-    liveness:
-      path: /health
-      initialDelaySeconds: 60
-      periodSeconds: 30
+  enabled: false
+#  replicas: 1
+#  image:
+#    repository: lasuite/whisper-api
+#    tag: whisperx-002
+#    pullPolicy: IfNotPresent
+#  service:
+#    name: whisper
+#    type: LoadBalancer
+#    port: 80
+#    targetPort: 8000
+#  persistence:
+#    size: 100Gi
+#    storageClassName: sbs-default
+#  resources:
+#    limits:
+#      cpu: "22"
+#      memory: 230G
+#      gpu: 1
+#    requests:
+#      cpu: "20"
+#      memory: 200G
+#      gpu: 1
+#  shm:
+#    sizeLimit: 2Gi
+#  secrets:
+#    apiKey:
+#      name: whisperx-api-key
+#      key: api_key
+#    huggingfaceToken:
+#      name: huggingface-token
+#      key: token
+#  probes:
+#    readiness:
+#      path: /health
+#      initialDelaySeconds: 30
+#      periodSeconds: 30
+#    liveness:
+#      path: /health
+#      initialDelaySeconds: 60
+#      periodSeconds: 30
 
 
 # BGE Embeddings configuration
