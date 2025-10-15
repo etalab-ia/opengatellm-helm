@@ -97,7 +97,6 @@ streamlit:
     type: LoadBalancer
     port: 8501
     targetPort: 8501
-  # TODO: should work without this config
   config:
     baseUrl: "http://opengatellm.default.svc.cluster.local:80"
     excludeModels: ""
@@ -117,9 +116,7 @@ vllm:
   replicas: 1
   image:
     repository: vllm/vllm-openai
-    tag: v0.10.2
-    # repository: ghcr.io/etalab-ia/albert-marker/server
-    #tag: latest
+    tag: v0.11.0
     pullPolicy: IfNotPresent
   service:
     name: vllm-api
@@ -134,9 +131,11 @@ vllm:
     # model: Qwen/Qwen3-30B-A3B-Instruct-2507
     # model: mistralai/Voxtral-Mini-3B-2507
     # model: mistralai/Magistral-Small-2506
+    # --enable-auto-tool-choice --tool-call-parser llama3_json --chat-template examples/tool_chat_template_llama3.1_json.jinja
     serveArgs: "--tokenizer_mode mistral --config_format mistral --load_format mistral --tensor-parallel-size 1 --tool-call-parser mistral --enable-auto-tool-choice --no-enable-prefix-caching"
     # serveArgs: "--no-enable-prefix-caching --max-model-len 63440 --tool-call-parser openai --enable-auto-tool-choice"
     # serveArgs: "--reasoning-parser qwen3 --enable-auto-tool-choice --tool-call-parser hermes --max-model-len 132896"
+
 
   persistence:
     size: 230Gi
@@ -164,6 +163,9 @@ vllm:
     huggingfaceToken:
       name: huggingface-token
       key: token
+    apiKey:
+      name: vllm-api-key
+      key: api_key
   probes:
     readiness:
       path: /health

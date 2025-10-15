@@ -1,9 +1,8 @@
-This repository contains the helm chart to deploy albert-api and its components on Kubernetes.
+This repository contains the helm chart to deploy [opengatellm](https://github.com/etalab-ia/OpenGateLLM/tree/main) and its components on Kubernetes.
 
 ## Repository structure
 
-In `albert-stack` folder, we referenced the helm chart to deploy manually albert-api v0.1.1 and its components on Kubernetes. You can base your deployment on Scalweway infrastructure using the tofu files provided in `tofu/scaleway` folder.
-In `opengatellm-stack` folder, we referenced the the helm chart to deploy manually albert-api v0.2.0 and its components on Kubernetes. You can base your deployment on Scalweway infrastructure using the tofu files provided in `tofu/scaleway` folder.
+In `opengatellm-stack` folder, there is the helm chart to deploy opengatellm and its components on Kubernetes.
 In `tofu/scaleway` folder, you will find the tofu files to create a kubernetes cluster on Scaleway. Please adapt it according your needs.
 
 ## Provisioning
@@ -44,7 +43,8 @@ export KUBECONFIG=<path_to_your_kubeconfig_file>
 - Connect to the cluster using the Scaleway CLI : `scw k8s kubeconfig install CLUSTER_ID`. The cluster_id can be found on the UI of the kube cluster in Scaleway. 
 - You can customize the deployment in `opengatellm-stack/values.yaml`, for example the tag of the API version to deploy, rate limiting, API keys for the different deployed services (redis, elastic search, Qdrant, etc), ports, hardware configuration requested by each pod, etc.
 - In `opengatellm-stack/values-secret.yaml`, replace the secrets and API keys with values of your choice.
-- From the `opengatellm-stack` folder, install the helm chart with the command `helm install opengatellm-stack .`
+- Create a namespace for the deployment `kubectl create namespace opengatellm`  
+- From the `opengatellm-stack` folder, install the helm chart in the namespace : `helm install opengatellm-stack . -f values.yaml -f values-secrets.yaml --namespace opengatellm`
 - Monitor the deployment via the kubernetes dashboard, or via a tool like `k9s`.
 - If some components don't start, or are stuck in "Pending", check why with `kubectl describe <pod_name>`.
 - If they start but remain in error, you can check the logs with `kubectl logs <pod_name>`

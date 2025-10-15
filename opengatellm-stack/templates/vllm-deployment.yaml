@@ -44,6 +44,11 @@ spec:
             secretKeyRef:
               name: {{ .Values.vllm.secrets.huggingfaceToken.name }}
               key: {{ .Values.vllm.secrets.huggingfaceToken.key }}
+        - name: VLLM_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.vllm.secrets.apiKey.name }}
+              key: {{ .Values.vllm.secrets.apiKey.key }}
         ports:
         - containerPort: {{ .Values.vllm.service.targetPort }}
         resources:
