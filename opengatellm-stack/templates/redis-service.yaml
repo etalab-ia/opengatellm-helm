@@ -1,3 +1,4 @@
+{{- if .Values.opengatellm.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -13,3 +14,4 @@ spec:
     - port: {{ .Values.redis.service.port }}
       targetPort: {{ .Values.redis.service.port }}
   type: {{ .Values.redis.service.type }}
+{{- end }}

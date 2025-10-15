@@ -1,3 +1,4 @@
+{{- if .Values.opengatellm.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -59,3 +60,4 @@ spec:
         - name: streamlit-config-vol
           configMap:
             name: streamlit-config
+{{- end }}
