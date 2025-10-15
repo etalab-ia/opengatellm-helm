@@ -113,7 +113,7 @@ streamlit:
       periodSeconds: 10
 
 vllm:
-  enabled: false
+  enabled: true
   replicas: 1
   image:
     repository: vllm/vllm-openai
