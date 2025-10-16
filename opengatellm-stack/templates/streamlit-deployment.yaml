@@ -30,12 +30,6 @@ spec:
                   "--theme.primaryColor=#6a6af4",
                   "--server.maxUploadSize=20"]
         env:
-          - name: BASE_URL
-            value: {{ .Values.streamlit.config.baseUrl | quote }}
-          - name: EXCLUDE_MODELS
-            value: {{ .Values.streamlit.config.excludeModels | quote }}
-          - name: DOCUMENTS_EMBEDDINGS_MODEL
-            value: {{ .Values.streamlit.config.documentsEmbeddingsModel | quote }}
           - name: CONFIG_FILE
             value: "/home/opengatellm/conf/config.yml"
         ports:

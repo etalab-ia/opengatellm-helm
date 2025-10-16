@@ -5,11 +5,11 @@ global:
     storageClassName: default
 
 opengatellm:
-  enabled: false
+  enabled: disabled
   replicas: 1
   image:
     repository: ghcr.io/etalab-ia/opengatellm/api
-    tag: 0.2.4
+    tag: 0.2.7
     pullPolicy: IfNotPresent
   service:
     type: LoadBalancer
@@ -31,15 +31,15 @@ opengatellm:
         providers:
           - type: vllm
             model_name: "mistralai/Voxtral-Mini-3B-2507"
-            url: "http://vllm.default.svc.cluster.local/"
+            url: "http://vllm-api.opengatellm.svc.cluster.local/"
             key: "changeme"
 
       - name: mistralai/Mistral-Small-3.2-24B-Instruct-2506
-        type: automatic-speech-recognition
+        type: text-generation
         providers:
           - type: vllm
             model_name: "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
-            url: "http://vllm.default.svc.cluster.local/"
+            url: "http://vllm-api.opengatellm.svc.cluster.local/"
             key: "changeme"
 
       - name: embeddings
@@ -47,7 +47,7 @@ opengatellm:
         providers:
           - type: tei
             model_name: "BAAI/bge-m3"
-            url: "http://bge-embeddings.default.svc.cluster.local/"
+            url: "http://bge-embeddings.opengatellm.svc.cluster.local/"
             key: "changeme"
 
     # -------------------------------- dependencies ---------------------------------
@@ -62,13 +62,13 @@ opengatellm:
           command_timeout: 60
 
       redis:
-        host: redis.default.svc.cluster.local
+        host: redis.opengatellm.svc.cluster.local
         port: 6379
         password: changeme
 
       # playground ---------------------------------------------------------------------------------------------------------------------------------------
     playground:
-      api_url: "http://opengatellm.default.svc.cluster.local"
+      api_url: "http://opengatellm.opengatellm.svc.cluster.local"
       encryption_key: changeme
       session_secret_key: changeme
       proconnect_enabled: False
@@ -97,10 +97,6 @@ streamlit:
     type: LoadBalancer
     port: 8501
     targetPort: 8501
-  config:
-    baseUrl: "http://opengatellm.default.svc.cluster.local:80"
-    excludeModels: ""
-    documentsEmbeddingsModel: "BAAI/bge-m3"
   probes:
     readiness:
       path: /

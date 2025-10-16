@@ -2,46 +2,18 @@ This repository contains the helm chart to deploy [opengatellm](https://github.c
 
 ## Repository structure
 
-In `opengatellm-stack` folder, there is the helm chart to deploy opengatellm and its components on Kubernetes.
-In `tofu/scaleway` folder, you will find the tofu files to create a kubernetes cluster on Scaleway. Please adapt it according your needs.
+- In `opengatellm-stack` folder, there is the helm chart to deploy opengatellm and its components on Kubernetes.
 
 ## Provisioning
 
-### Manually
-- Create a kubernetes cluster with the provider of your choice. To fo so, you can use the Terraform module available in this repository, or use the Scaleway console to create a managed kubernetes cluster.
+## Infrastructure
+- Create a kubernetes cluster with the provider of your choice.
 - We recommend having at least 3 nodes, including one with a GPU sized for the LLM you wish to use.
 - Add the following label to your gpu node : `k8s.scaleway.com/pool-name: "gpu"`, and for your other nodes : `k8s.scaleway.com/pool-name: "cpu-ram"` so that each deployment goes to the appropriate node.
 - Verify that the connection with your cluster is functional and that the nodes are available with `kubectl get nodes`
 
-### Using Terraform (Scaleway provider)
-
-We are provisioning the kubernetes cluster with Terraform, using the Scaleway provider. You can use this module to create a kubernetes cluster with the provider of your choice.
-> **Note**: We are storing the tfstate locally.
-
-In order to use Terraform, you need to create a file `scaleway.auto.tfvars` in the root of the repository with the following content:
-
-```hcl
-# scaleway.auto.tfvars
-access_key = "XXXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-secret_key = "XXXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-organization_id = "cae0ea36-fd89-47c3-9a9f-5dd2b2db3de3"
-project_id = "ffc1bdea-2094-4dc6-848a-8ca9d1d001b7"
-```
-
-Run the Terraform commands to initialize the provider, plan and apply the configuration.
-
-Then go to the Scaleway interface in order to download the new kubeconfig from Scaleway console and update your local kubeconfig file with the following command:
-
-```bash 
-export KUBECONFIG=<path_to_your_kubeconfig_file>
-```
-
-## Deployment
-- Create a kubernetes cluster with the provider of your choice. We provide tofu files to easily create an adequate cluster with an H100 on scaleway.
-- To do so, create a `tofu/scaleway/scaleway.auto.tfvars` file and fill it with your credentials.
-- Run `tofu apply` from the `tofu/scaleway` folder.
-- Connect to the cluster using the Scaleway CLI : `scw k8s kubeconfig install CLUSTER_ID`. The cluster_id can be found on the UI of the kube cluster in Scaleway. 
-- You can customize the deployment in `opengatellm-stack/values.yaml`, for example the tag of the API version to deploy, rate limiting, API keys for the different deployed services (redis, elastic search, Qdrant, etc), ports, hardware configuration requested by each pod, etc.
+## Deployment 
+- Customize the deployment in `opengatellm-stack/values.yaml`, for example the tag of the API version to deploy, rate limiting, API keys for the different deployed services (redis, elastic search, Qdrant, etc), ports, hardware configuration requested by each pod, etc.
 - In `opengatellm-stack/values-secret.yaml`, replace the secrets and API keys with values of your choice.
 - Create a namespace for the deployment `kubectl create namespace opengatellm`  
 - From the `opengatellm-stack` folder, install the helm chart in the namespace : `helm install opengatellm-stack . -f values.yaml -f values-secrets.yaml --namespace opengatellm`
@@ -79,6 +51,7 @@ curl http://YOUR_LOAD_BALANCER_INGRESS_IP/v1/chat/completions \
       }
     ]}'
 ```
+Or a request to the embeddings :
 
 ```bash 
 curl -X 'POST' 'http://YOUR_LOAD_BALANCER_INGRESS_IP.fr/v1/embeddings' \
