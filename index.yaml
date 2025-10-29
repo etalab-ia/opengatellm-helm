@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  opengatellm-stack:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2025-10-29T15:07:28.789985756Z"
+    description: A Helm chart for OpenGateLLM Stack
+    digest: 2727302830d90e2034798453cf73d7d3e56cc0a5fdd73fbb8acd4f01984378a8
+    name: opengatellm-stack
+    type: application
+    urls:
+    - https://github.com/etalab-ia/opengatellm-helm/releases/download/opengatellm-stack-0.1.0/opengatellm-stack-0.1.0.tgz
+    version: 0.1.0
+generated: "2025-10-29T15:07:28.790010142Z"
