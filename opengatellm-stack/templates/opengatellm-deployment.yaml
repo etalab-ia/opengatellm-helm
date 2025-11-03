@@ -3,7 +3,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: opengatellm
-  namespace: {{ .Values.global.namespace | default "default" }}
   labels:
     {{- include "opengatellm-stack.labels" . | nindent 4 }}
     app.kubernetes.io/component: opengatellm

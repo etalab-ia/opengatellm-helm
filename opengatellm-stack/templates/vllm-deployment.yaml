@@ -3,7 +3,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: vllm
-  namespace: {{ .Values.global.namespace | default "default" }}
   labels:
     app: vllm
     {{- include "opengatellm-stack.labels" . | nindent 4 }}
