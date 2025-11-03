@@ -15,6 +15,8 @@ opengatellm:
     type: LoadBalancer
     port: 80
     targetPort: 8000
+  nodeSelector:
+    k8s.scaleway.com/pool-name: "cpu-ram"
   config:
     # ----------------------------------- models ------------------------------------
     models:
@@ -97,6 +99,8 @@ streamlit:
     type: LoadBalancer
     port: 8501
     targetPort: 8501
+  nodeSelector:
+    k8s.scaleway.com/pool-name: "cpu-ram"
   probes:
     readiness:
       path: /
@@ -119,6 +123,8 @@ vllm:
     type: LoadBalancer
     port: 80
     targetPort: 8000
+  nodeSelector:
+    k8s.scaleway.com/pool-name: "gpu"
   config:
     # model: neuralmagic/Meta-Llama-3.1-70B-Instruct-FP8
     # model: meta-llama/Llama-3.1-8B-Instruct
@@ -184,6 +190,8 @@ whisperx:
     type: LoadBalancer
     port: 80
     targetPort: 8000
+  nodeSelector:
+    k8s.scaleway.com/pool-name: "gpu"
   persistence:
     size: 100Gi
     storageClassName: sbs-default
@@ -228,6 +236,8 @@ embeddings:
     type: ClusterIP
     port: 80
     targetPort: 8000
+  nodeSelector:
+    k8s.scaleway.com/pool-name: "gpu"
   config:
     model: BAAI/bge-m3
     port: 8000
@@ -260,6 +270,8 @@ redis:
   service:
     type: ClusterIP
     port: 6379
+  nodeSelector:
+    k8s.scaleway.com/pool-name: "cpu-ram"
   config:
     args: "--dir /data --requirepass changeme --user username on >password ~* allcommands --save 60 1 --appendonly yes"
     password: "changeme"
@@ -290,6 +302,9 @@ postgres:
     type: ClusterIP
     port: 5432
 
+  nodeSelector:
+    k8s.scaleway.com/pool-name: "cpu-ram"
+
   persistence:
     enabled: true
     size: 8Gi
@@ -297,7 +312,7 @@ postgres:
     enabled: true
     content: |
       #!/bin/bash
-      
+
       function create_database() {
         local database=$1
         echo "  Creating database '$database'"
@@ -305,7 +320,7 @@ postgres:
             CREATE DATABASE $database WITH ENCODING 'utf8';
       EOSQL
       }
-      
+
       if [[ -n "$CREATE_DB" ]]; then
         echo "Multiple database creation requested: $CREATE_DB"
         for db in $(echo $CREATE_DB | tr ',' ' '); do

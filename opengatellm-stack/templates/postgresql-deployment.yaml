@@ -13,8 +13,10 @@ spec:
       labels:
         app: postgres
     spec:
+      {{- with .Values.postgres.nodeSelector }}
       nodeSelector:
-        k8s.scaleway.com/pool-name: "cpu-ram"
+        {{ . | toYaml }}
+      {{- end }}
       containers:
         - name: postgres
           image: "{{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag }}"
