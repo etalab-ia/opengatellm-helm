@@ -20,8 +20,10 @@ spec:
     spec:
       securityContext:
         fsGroup: 1000
+      {{- with .Values.whisperx.nodeSelector }}
       nodeSelector:
-        k8s.scaleway.com/pool-name: "gpu"
+        {{ . | toYaml }}
+      {{- end }}
       volumes:
       - name: cache-volume
         persistentVolumeClaim:

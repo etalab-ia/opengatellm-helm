@@ -17,8 +17,10 @@ spec:
       labels:
         app: redis
     spec:
+      {{- with .Values.redis.nodeSelector }}
       nodeSelector:
-        k8s.scaleway.com/pool-name: "cpu-ram"
+        {{ . | toYaml }}
+      {{- end }}
       containers:
       - name: redis
         image: {{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}

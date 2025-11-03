@@ -18,8 +18,10 @@ spec:
       labels:
         app: bge-embeddings
     spec:
+      {{- with .Values.embeddings.nodeSelector }}
       nodeSelector:
-        k8s.scaleway.com/pool-name: "gpu"
+        {{ . | toYaml }}
+      {{- end }}
       containers:
       - name: bge-embeddings
         image: {{ .Values.embeddings.image.repository }}:{{ .Values.embeddings.image.tag }}
