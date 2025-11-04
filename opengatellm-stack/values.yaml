@@ -110,6 +110,7 @@ streamlit:
 vllm:
   enabled: true
   replicas: 1
+  api_key: "changeme"
   image:
     repository: vllm/vllm-openai
     tag: v0.11.0
