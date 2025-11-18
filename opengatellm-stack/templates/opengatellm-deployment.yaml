@@ -17,8 +17,10 @@ spec:
       labels:
         app: opengatellm
     spec:
+      {{- with .Values.opengatellm.nodeSelector }}
       nodeSelector:
-        k8s.scaleway.com/pool-name: "cpu-ram"
+        {{ . | toYaml }}
+      {{- end }}
       containers:
       - name: api
         image: {{ .Values.opengatellm.image.repository }}:{{ .Values.opengatellm.image.tag }}
