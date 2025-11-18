@@ -1,6 +1,5 @@
 # Global settings
 global:
-  namespace: opengatellm
   storage:
     storageClassName: default
 
