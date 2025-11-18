@@ -30,7 +30,8 @@ opengatellm:
         providers:
           - type: vllm
             model_name: "mistralai/Voxtral-Mini-3B-2507"
-            url: "http://vllm-api.opengatellm.svc.cluster.local/"
+            # Note: Update service name based on your release name: <release-name>-vllm
+            url: "http://opengatellm-stack-vllm/"
             key: "changeme"
 
       - name: mistralai/Mistral-Small-3.2-24B-Instruct-2506
@@ -38,7 +39,8 @@ opengatellm:
         providers:
           - type: vllm
             model_name: "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
-            url: "http://vllm-api.opengatellm.svc.cluster.local/"
+            # Note: Update service name based on your release name: <release-name>-vllm
+            url: "http://opengatellm-stack-vllm/"
             key: "changeme"
 
       - name: embeddings
@@ -52,7 +54,8 @@ opengatellm:
     # -------------------------------- dependencies ---------------------------------
     dependencies:
       postgres:
-        url: "postgresql+asyncpg://postgres:changeme@postgres:5432/api"
+        # Note: Update service name based on your release name: <release-name>-postgresql
+        url: "postgresql+asyncpg://postgres:changeme@opengatellm-stack-postgresql:5432/api"
         echo: False
         pool_size: 5
         connect_args:
@@ -61,7 +64,8 @@ opengatellm:
           command_timeout: 60
 
       redis:
-        host: redis.opengatellm.svc.cluster.local
+        # Note: Update service name based on your release name: <release-name>-redis-master
+        host: opengatellm-stack-redis-master
         port: 6379
         password: changeme
 
@@ -72,7 +76,8 @@ opengatellm:
       session_secret_key: changeme
       proconnect_enabled: False
       postgres:
-        url: postgresql+asyncpg://postgres:changeme@postgres:5432/playground
+        # Note: Update service name based on your release name: <release-name>-postgresql
+        url: postgresql+asyncpg://postgres:changeme@opengatellm-stack-postgresql:5432/playground
 
   probes:
     readiness:
@@ -250,73 +255,41 @@ embeddings:
       initialDelaySeconds: 60
       periodSeconds: 30
 
-# Redis configuration
 redis:
-  replicas: 1
-  image:
-    repository: redis/redis-stack-server
-    tag: 7.2.0-v11
-    pullPolicy: IfNotPresent
-  service:
-    type: ClusterIP
-    port: 6379
-  config:
-    args: "--dir /data --requirepass changeme --user username on >password ~* allcommands --save 60 1 --appendonly yes"
+  enabled: true
+  architecture: standalone
+  auth:
+    enabled: true
     password: "changeme"
-    username: "username"
-  persistence:
-    size: 10Gi
-  probes:
-    readiness:
-      initialDelaySeconds: 10
-      periodSeconds: 30
-    liveness:
-      initialDelaySeconds: 60
-      periodSeconds: 30
+  master:
+    persistence:
+      enabled: true
+      size: 10Gi
+    resources: {}
+  replica:
+    replicaCount: 0
 
-postgres:
-  image:
-    repository: postgres
-    tag: "16.5"
-    pullPolicy: IfNotPresent
 
-  config:
-    user: postgres
+postgresql:
+  enabled: true
+  auth:
+    username: postgres
     password: changeme
-    db: postgres
-    create_db: api
+    database: postgres
+  primary:
+    persistence:
+      enabled: true
+      size: 8Gi
+    initdb:
+      scripts:
+        init-db.sh: |
+          #!/bin/bash
+          set -e
 
-  service:
-    type: ClusterIP
-    port: 5432
-
-  persistence:
-    enabled: true
-    size: 8Gi
-  scripts:
-    enabled: true
-    content: |
-      #!/bin/bash
-
-      function create_database() {
-        local database=$1
-        echo "  Creating database '$database'"
-        psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
-            CREATE DATABASE $database WITH ENCODING 'utf8';
-      EOSQL
-      }
-
-      if [[ -n "$CREATE_DB" ]]; then
-        echo "Multiple database creation requested: $CREATE_DB"
-        for db in $(echo $CREATE_DB | tr ',' ' '); do
-         create_database $db
-        done
-        echo "Multiple databases created"
-      fi
-
-  healthcheck:
-    enabled: true
-    intervalSeconds: 4
-    timeoutSeconds: 10
-    failureThreshold: 5
-    startupDelaySeconds: 60
+          # Create additional database 'api'
+          echo "Creating database 'api'"
+          psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
+              CREATE DATABASE api WITH ENCODING 'utf8';
+          EOSQL
+          echo "Database 'api' created successfully"
+    resources: {}

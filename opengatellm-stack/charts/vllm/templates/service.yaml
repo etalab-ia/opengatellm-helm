@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "vllm.fullname" . }}
+  labels:
+    {{- include "vllm.labels" . | nindent 4 }}
+    app.kubernetes.io/component: vllm
+spec:
+  ports:
+  - name: http
+    port: {{ .Values.service.port }}
+    protocol: TCP
+    targetPort: {{ .Values.service.targetPort }}
+  selector:
+    {{- include "vllm.selectorLabels" . | nindent 4 }}
+  sessionAffinity: None
+  type: {{ .Values.service.type }}

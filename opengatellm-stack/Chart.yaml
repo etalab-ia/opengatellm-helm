@@ -2,5 +2,24 @@ apiVersion: v2
 name: opengatellm-stack
 description: A Helm chart for OpenGateLLM Stack
 type: application
-version: 0.1.0
+version: 0.2.0
 appVersion: "1.0.0"
+
+dependencies:
+  - name: postgresql
+    version: "16.5.x"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled
+    tags:
+      - opengatellm-stack-database
+  - name: redis
+    version: "20.5.x"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: redis.enabled
+    tags:
+      - opengatellm-stack-cache
+  - name: vllm
+    version: "0.1.0"
+    condition: vllm.enabled
+    tags:
+      - opengatellm-stack-inference

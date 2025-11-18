@@ -1,0 +1,55 @@
+# Default values for vLLM subchart
+replicas: 1
+api_key: "changeme"
+
+image:
+  repository: vllm/vllm-openai
+  tag: v0.11.0
+  pullPolicy: IfNotPresent
+
+service:
+  name: vllm-api
+  type: LoadBalancer
+  port: 80
+  targetPort: 8000
+
+config:
+  model: mistralai/Mistral-Small-3.2-24B-Instruct-2506
+  serveArgs: "--tokenizer_mode mistral --config_format mistral --load_format mistral --tensor-parallel-size 1 --tool-call-parser mistral --enable-auto-tool-choice --no-enable-prefix-caching"
+
+persistence:
+  size: 230Gi
+  storageClassName: sbs-default
+
+resources:
+  limits:
+    cpu: "22"
+    memory: 230G
+    gpu: 1
+  requests:
+    cpu: "20"
+    memory: 200G
+    gpu: 1
+
+shm:
+  sizeLimit: 32Gi
+
+secrets:
+  huggingfaceToken:
+    name: huggingface-token
+    key: token
+  apiKey:
+    name: vllm-api-key
+    key: api_key
+
+probes:
+  readiness:
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 30
+  liveness:
+    path: /health
+    initialDelaySeconds: 300
+    periodSeconds: 30
+
+nodeSelector: {}
