@@ -164,7 +164,7 @@ vllm:
       name: huggingface-token
       key: token
     apiKey:
-      name: vllm-api-key
+      name: opengatellm-stack-vllm-api-key
       key: api_key
   probes:
     readiness:
@@ -175,50 +175,6 @@ vllm:
       path: /health
       initialDelaySeconds: 300
       periodSeconds: 30
-
-whisperx:
-  enabled: false
-  replicas: 1
-  image:
-    repository: lasuite/whisper-api
-    tag: whisperx-002
-    pullPolicy: IfNotPresent
-  service:
-    name: whisper
-    type: LoadBalancer
-    port: 80
-    targetPort: 8000
-  persistence:
-    size: 100Gi
-    storageClassName: sbs-default
-  resources:
-    limits:
-      cpu: "22"
-      memory: 230G
-      gpu: 1
-    requests:
-      cpu: "20"
-      memory: 200G
-      gpu: 1
-  shm:
-    sizeLimit: 2Gi
-  secrets:
-    apiKey:
-      name: whisperx-api-key
-      key: api_key
-    huggingfaceToken:
-      name: huggingface-token
-      key: token
-  probes:
-    readiness:
-      path: /health
-      initialDelaySeconds: 30
-      periodSeconds: 30
-    liveness:
-      path: /health
-      initialDelaySeconds: 60
-      periodSeconds: 30
-
 
 # BGE Embeddings configuration
 embeddings:

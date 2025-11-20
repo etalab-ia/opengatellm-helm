@@ -2,19 +2,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: streamlit
+  name: opengatellm-stack-playground
   labels:
     {{- include "opengatellm-stack.labels" . | nindent 4 }}
-    app.kubernetes.io/component: streamlit
+    app.kubernetes.io/component: playground
 spec:
   replicas: {{ .Values.streamlit.replicas }}
   selector:
     matchLabels:
-      app: streamlit
+      app: opengatellm-stack-playground
   template:
     metadata:
       labels:
-        app: streamlit
+        app: opengatellm-stack-playground
     spec:
       {{- with .Values.streamlit.nodeSelector }}
       nodeSelector:
@@ -48,5 +48,5 @@ spec:
       volumes:
         - name: streamlit-config-vol
           configMap:
-            name: streamlit-config
+            name: opengatellm-stack-playground-config
 {{- end }}

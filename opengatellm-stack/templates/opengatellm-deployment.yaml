@@ -2,19 +2,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: opengatellm
+  name: opengatellm-stack-api
   labels:
     {{- include "opengatellm-stack.labels" . | nindent 4 }}
-    app.kubernetes.io/component: opengatellm
+    app.kubernetes.io/component: api
 spec:
   replicas: {{ .Values.opengatellm.replicas }}
   selector:
     matchLabels:
-      app: opengatellm
+      app: opengatellm-stack-api
   template:
     metadata:
       labels:
-        app: opengatellm
+        app: opengatellm-stack-api
     spec:
       {{- with .Values.opengatellm.nodeSelector }}
       nodeSelector:
@@ -58,5 +58,5 @@ spec:
       volumes:
       - name: opengatellm-config-vol
         configMap:
-          name: opengatellm-config
+          name: opengatellm-stack-api-config
 {{- end }}
