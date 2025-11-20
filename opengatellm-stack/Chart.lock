@@ -5,8 +5,8 @@ dependencies:
 - name: redis
   repository: https://charts.bitnami.com/bitnami
   version: 23.2.12
-- name: vllm
-  repository: ""
-  version: 0.1.0
-digest: sha256:b84844664bec4661a893f46cc67cde4f26bb3ddb305cde420abf9788a25272ad
-generated: "2025-11-20T11:33:40.833677+01:00"
+- name: vllm-stack
+  repository: https://vllm-project.github.io/production-stack
+  version: 0.1.8
+digest: sha256:cfacaa42932d6eaa6f733846103fbc8302c1ccd9d0d0643ad7212c60063c7143
+generated: "2025-11-20T16:10:06.311209+01:00"

@@ -29,8 +29,8 @@ opengatellm:
         providers:
           - type: vllm
             model_name: "mistralai/Voxtral-Mini-3B-2507"
-            # Note: Update service name based on your release name: <release-name>-vllm
-            url: "http://opengatellm-stack-vllm/"
+            # Note: Update service name based on your release name: <release-name>-router-service
+            url: "http://opengatellm-stack-router-service/"
             key: "changeme"
 
       - name: mistralai/Mistral-Small-3.2-24B-Instruct-2506
@@ -38,8 +38,8 @@ opengatellm:
         providers:
           - type: vllm
             model_name: "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
-            # Note: Update service name based on your release name: <release-name>-vllm
-            url: "http://opengatellm-stack-vllm/"
+            # Note: Update service name based on your release name: <release-name>-router-service
+            url: "http://opengatellm-stack-router-service/"
             key: "changeme"
 
       - name: embeddings
@@ -110,71 +110,72 @@ streamlit:
       initialDelaySeconds: 10
       periodSeconds: 10
 
-vllm:
+vllm-stack:
   enabled: true
-  replicas: 1
-  api_key: "changeme"
-  image:
-    repository: vllm/vllm-openai
-    tag: v0.11.0
-    pullPolicy: IfNotPresent
-  service:
-    name: vllm-api
-    type: LoadBalancer
-    port: 80
-    targetPort: 8000
-  config:
-    # model: neuralmagic/Meta-Llama-3.1-70B-Instruct-FP8
-    # model: meta-llama/Llama-3.1-8B-Instruct
-    # model: google/gemma-3-27b-it
-    model: mistralai/Mistral-Small-3.2-24B-Instruct-2506
-    # model: Qwen/Qwen3-30B-A3B-Instruct-2507
-    # model: mistralai/Voxtral-Mini-3B-2507
-    # model: mistralai/Magistral-Small-2506
-    # --enable-auto-tool-choice --tool-call-parser llama3_json --chat-template examples/tool_chat_template_llama3.1_json.jinja
-    serveArgs: "--tokenizer_mode mistral --config_format mistral --load_format mistral --tensor-parallel-size 1 --tool-call-parser mistral --enable-auto-tool-choice --no-enable-prefix-caching"
-    # serveArgs: "--no-enable-prefix-caching --max-model-len 63440 --tool-call-parser openai --enable-auto-tool-choice"
-    # serveArgs: "--reasoning-parser qwen3 --enable-auto-tool-choice --tool-call-parser hermes --max-model-len 132896 --tensor-parallel-size 1 --no-enable-prefix-caching"
+  # Expose vLLM router service externally
+  serviceType: LoadBalancer
+  servicePort: 80
+  # Router resource configuration (default 500Mi is too small, causing OOMKills)
+  routerSpec:
+    resources:
+      requests:
+        cpu: 400m
+        memory: 1Gi
+      limits:
+        memory: 2Gi
+  servingEngineSpec:
+    enableEngine: true
+    # API key for securing vLLM - value will be overridden from values-secrets.yaml
+    vllmApiKey: "changeme"
+    modelSpec:
+      - name: "mistral-small"
+        repository: vllm/vllm-openai
+        tag: v0.11.0
+        imagePullPolicy: IfNotPresent
 
+        # Model configuration
+        modelURL: mistralai/Mistral-Small-3.2-24B-Instruct-2506
+        # modelURL: neuralmagic/Meta-Llama-3.1-70B-Instruct-FP8
+        # modelURL: meta-llama/Llama-3.1-8B-Instruct
+        # modelURL: google/gemma-3-27b-it
+        # modelURL: Qwen/Qwen3-30B-A3B-Instruct-2507
+        # modelURL: mistralai/Voxtral-Mini-3B-2507
+        # modelURL: mistralai/Magistral-Small-2506
 
-  persistence:
-    size: 230Gi
-    storageClassName: sbs-default
-  resources:
-#    limits:
-#      cpu: "44"
-#      memory: 460G
-#      gpu: 2
-#    requests:
-#      cpu: "40"
-#      memory: 400G
-#      gpu: 2
-    limits:
-      cpu: "22"
-      memory: 230G
-      gpu: 1
-    requests:
-      cpu: "20"
-      memory: 200G
-      gpu: 1
-  shm:
-    sizeLimit: 32Gi
-  secrets:
-    huggingfaceToken:
-      name: huggingface-token
-      key: token
-    apiKey:
-      name: opengatellm-stack-vllm-api-key
-      key: api_key
-  probes:
-    readiness:
-      path: /health
-      initialDelaySeconds: 10
-      periodSeconds: 30
-    liveness:
-      path: /health
-      initialDelaySeconds: 300
-      periodSeconds: 30
+        replicaCount: 1
+
+        # Resource configuration
+        requestCPU: 20
+        requestMemory: "200G"
+        requestGPU: 1
+        limitCPU: "22"
+        limitMemory: "230G"
+
+        pvcStorage: "230Gi"
+        storageClass: sbs-default
+        pvcAccessMode:
+          - ReadWriteOnce
+
+        shmSize: "32Gi"
+
+        vllmConfig:
+          tensorParallelSize: 1
+          enablePrefixCaching: false
+          extraArgs:
+            - "--tokenizer_mode"
+            - "mistral"
+            - "--config_format"
+            - "mistral"
+            - "--load_format"
+            - "mistral"
+            - "--tool-call-parser"
+            - "mistral"
+            - "--enable-auto-tool-choice"
+
+        # Hugging Face token from existing secret
+        hf_token:
+          secretName: "huggingface-token"
+          secretKey: "token"
 
 # BGE Embeddings configuration
 embeddings:
@@ -212,16 +213,36 @@ embeddings:
 
 redis:
   enabled: true
+  fullnameOverride: opengatellm-stack-redis
   architecture: standalone
   auth:
     enabled: true
     password: "changeme"
+  image:
+    registry: docker.io
+    repository: redis/redis-stack-server
+    tag: 7.4.0-v8
+  global:
+    security:
+      # Allow official Redis Stack image instead of the default minimal bitnami one
+      allowInsecureImages: true
+  commonConfiguration: |-
+    # Load Redis Stack modules from correct path
+    loadmodule /opt/redis-stack/lib/redistimeseries.so
+    loadmodule /opt/redis-stack/lib/rejson.so
+    loadmodule /opt/redis-stack/lib/redisearch.so
+    loadmodule /opt/redis-stack/lib/redisbloom.so
+    # Enable AOF https://redis.io/topics/persistence#append-only-file
+    appendonly yes
+    # Disable RDB persistence, AOF persistence already enabled.
+    save ""
   master:
     persistence:
       enabled: true
       size: 10Gi
     resources: {}
   replica:
+    # Single instance mode
     replicaCount: 0
 
 

@@ -18,8 +18,9 @@ dependencies:
     condition: redis.enabled
     tags:
       - opengatellm-stack-cache
-  - name: vllm
-    version: "0.1.0"
-    condition: vllm.enabled
+  - name: vllm-stack
+    version: "0.1.8"
+    repository: "https://vllm-project.github.io/production-stack"
+    condition: vllm-stack.enabled
     tags:
       - opengatellm-stack-inference
