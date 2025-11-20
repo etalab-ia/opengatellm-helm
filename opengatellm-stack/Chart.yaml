@@ -7,13 +7,13 @@ appVersion: "1.0.0"
 
 dependencies:
   - name: postgresql
-    version: "16.5.x"
+    version: "18.1.11"
     repository: "https://charts.bitnami.com/bitnami"
     condition: postgresql.enabled
     tags:
       - opengatellm-stack-database
   - name: redis
-    version: "20.5.x"
+    version: "23.2.12"
     repository: "https://charts.bitnami.com/bitnami"
     condition: redis.enabled
     tags:

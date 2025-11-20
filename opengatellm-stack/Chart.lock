@@ -1,12 +1,12 @@
 dependencies:
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami
-  version: 16.5.6
+  version: 18.1.11
 - name: redis
   repository: https://charts.bitnami.com/bitnami
-  version: 20.5.0
+  version: 23.2.12
 - name: vllm
   repository: ""
   version: 0.1.0
-digest: sha256:21a92bdcc10a49350e5ea371f151c695bf72396b1a3f9fd69358fd266eb91d7f
-generated: "2025-11-18T21:17:53.714967+01:00"
+digest: sha256:b84844664bec4661a893f46cc67cde4f26bb3ddb305cde420abf9788a25272ad
+generated: "2025-11-20T11:33:40.833677+01:00"

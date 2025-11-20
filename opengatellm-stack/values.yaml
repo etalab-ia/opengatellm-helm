@@ -1,4 +1,3 @@
-# Global settings
 global:
   storage:
     storageClassName: default
@@ -94,8 +93,8 @@ opengatellm:
 streamlit:
   replicas: 1
   image:
-    repository: ghcr.io/etalab-ia/opengatellm/ui
-    tag: latest
+    repository: ghcr.io/etalab-ia/opengatellm/playground
+    tag: 0.2.7
     pullPolicy: IfNotPresent
   service:
     type: LoadBalancer
@@ -135,7 +134,7 @@ vllm:
     # --enable-auto-tool-choice --tool-call-parser llama3_json --chat-template examples/tool_chat_template_llama3.1_json.jinja
     serveArgs: "--tokenizer_mode mistral --config_format mistral --load_format mistral --tensor-parallel-size 1 --tool-call-parser mistral --enable-auto-tool-choice --no-enable-prefix-caching"
     # serveArgs: "--no-enable-prefix-caching --max-model-len 63440 --tool-call-parser openai --enable-auto-tool-choice"
-    # serveArgs: "--reasoning-parser qwen3 --enable-auto-tool-choice --tool-call-parser hermes --max-model-len 132896"
+    # serveArgs: "--reasoning-parser qwen3 --enable-auto-tool-choice --tool-call-parser hermes --max-model-len 132896 --tensor-parallel-size 1 --no-enable-prefix-caching"
 
 
   persistence:
@@ -282,14 +281,6 @@ postgresql:
       size: 8Gi
     initdb:
       scripts:
-        init-db.sh: |
-          #!/bin/bash
-          set -e
-
-          # Create additional database 'api'
-          echo "Creating database 'api'"
-          psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
-              CREATE DATABASE api WITH ENCODING 'utf8';
-          EOSQL
-          echo "Database 'api' created successfully"
+        init-db.sql: |
+          CREATE DATABASE api WITH ENCODING 'utf8';
     resources: {}
