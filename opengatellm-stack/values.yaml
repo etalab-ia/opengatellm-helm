@@ -42,7 +42,7 @@ opengatellm:
             url: "http://opengatellm-stack-router-service/"
             key: "changeme"
 
-      - name: embeddings
+      - name: BAAI/bge-m3
         type: text-embeddings-inference
         providers:
           - type: tei
@@ -68,7 +68,19 @@ opengatellm:
         port: 6379
         password: changeme
 
+      elasticsearch:
+        # Note: Service name matches elasticsearch.service.name in values
+        hosts: "http://opengatellm-stack-elasticsearch:9200"
+        # No authentication needed (security disabled for simplicity)
+        # basic_auth:
+        #   - "elastic"
+        #   - "changeme"
+
       # playground ---------------------------------------------------------------------------------------------------------------------------------------
+
+    settings:
+      vector_store_model: "BAAI/bge-m3"
+
     playground:
       api_url: "http://opengatellm.opengatellm.svc.cluster.local"
       encryption_key: changeme
@@ -111,7 +123,7 @@ streamlit:
       periodSeconds: 10
 
 vllm-stack:
-  enabled: true
+  enabled: false
   # Expose vLLM router service externally
   serviceType: LoadBalancer
   servicePort: 80
@@ -179,7 +191,7 @@ vllm-stack:
 
 # BGE Embeddings configuration
 embeddings:
-  enabled: false
+  enabled: true
   replicas: 1
   image:
     repository: ghcr.io/huggingface/text-embeddings-inference
@@ -208,7 +220,7 @@ embeddings:
       periodSeconds: 30
     liveness:
       path: /health
-      initialDelaySeconds: 60
+      initialDelaySeconds: 120
       periodSeconds: 30
 
 redis:
@@ -261,3 +273,38 @@ postgresql:
         init-db.sql: |
           CREATE DATABASE api WITH ENCODING 'utf8';
     resources: {}
+
+elasticsearch:
+  enabled: true
+  # Single node configuration
+  replicas: 1
+  minimumMasterNodes: 1
+
+  # Cluster name
+  clusterName: "opengatellm-elasticsearch"
+
+  # Resources
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "1Gi"
+    limits:
+      cpu: "1000m"
+      memory: "2Gi"
+
+  # Persistence
+  persistence:
+    enabled: true
+    size: 8Gi
+
+  # Disable security for simplicity (no TLS, no auth)
+  esConfig:
+    elasticsearch.yml: |
+      xpack.security.enabled: false
+      xpack.security.transport.ssl.enabled: false
+      xpack.security.http.ssl.enabled: false
+
+  # Service
+  service:
+    type: ClusterIP
+    name: opengatellm-stack-elasticsearch

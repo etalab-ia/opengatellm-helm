@@ -24,3 +24,9 @@ dependencies:
     condition: vllm-stack.enabled
     tags:
       - opengatellm-stack-inference
+  - name: elasticsearch
+    version: "7.17.3"
+    repository: "https://helm.elastic.co"
+    condition: elasticsearch.enabled
+    tags:
+      - opengatellm-stack-search

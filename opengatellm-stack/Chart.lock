@@ -8,5 +8,8 @@ dependencies:
 - name: vllm-stack
   repository: https://vllm-project.github.io/production-stack
   version: 0.1.8
-digest: sha256:221bd60373184854da0a3ffe2c102683d32744544fcbc469173da6cb01368e91
-generated: "2025-11-21T10:14:27.674754+01:00"
+- name: elasticsearch
+  repository: https://helm.elastic.co
+  version: 7.17.3
+digest: sha256:9713de617a288fb00876a9649b9f15c0a6379c43ae3565c85b0075af0ed0d20f
+generated: "2025-11-21T14:51:43.005651+01:00"
