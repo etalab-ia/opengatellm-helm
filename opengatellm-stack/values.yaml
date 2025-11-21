@@ -1,4 +1,3 @@
-# Global settings
 global:
   storage:
     storageClassName: default
@@ -30,7 +29,8 @@ opengatellm:
         providers:
           - type: vllm
             model_name: "mistralai/Voxtral-Mini-3B-2507"
-            url: "http://vllm-api.opengatellm.svc.cluster.local/"
+            # Note: Update service name based on your release name: <release-name>-router-service
+            url: "http://opengatellm-stack-router-service/"
             key: "changeme"
 
       - name: mistralai/Mistral-Small-3.2-24B-Instruct-2506
@@ -38,7 +38,8 @@ opengatellm:
         providers:
           - type: vllm
             model_name: "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
-            url: "http://vllm-api.opengatellm.svc.cluster.local/"
+            # Note: Update service name based on your release name: <release-name>-router-service
+            url: "http://opengatellm-stack-router-service/"
             key: "changeme"
 
       - name: embeddings
@@ -52,7 +53,8 @@ opengatellm:
     # -------------------------------- dependencies ---------------------------------
     dependencies:
       postgres:
-        url: "postgresql+asyncpg://postgres:changeme@postgres:5432/api"
+        # Note: Update service name based on your release name: <release-name>-postgresql
+        url: "postgresql+asyncpg://postgres:changeme@opengatellm-stack-postgresql:5432/api"
         echo: False
         pool_size: 5
         connect_args:
@@ -61,7 +63,8 @@ opengatellm:
           command_timeout: 60
 
       redis:
-        host: redis.opengatellm.svc.cluster.local
+        # Note: Update service name based on your release name: <release-name>-redis-master
+        host: opengatellm-stack-redis-master
         port: 6379
         password: changeme
 
@@ -72,7 +75,8 @@ opengatellm:
       session_secret_key: changeme
       proconnect_enabled: False
       postgres:
-        url: postgresql+asyncpg://postgres:changeme@postgres:5432/playground
+        # Note: Update service name based on your release name: <release-name>-postgresql
+        url: postgresql+asyncpg://postgres:changeme@opengatellm-stack-postgresql:5432/playground
 
   probes:
     readiness:
@@ -89,8 +93,8 @@ opengatellm:
 streamlit:
   replicas: 1
   image:
-    repository: ghcr.io/etalab-ia/opengatellm/ui
-    tag: latest
+    repository: ghcr.io/etalab-ia/opengatellm/playground
+    tag: 0.2.7
     pullPolicy: IfNotPresent
   service:
     type: LoadBalancer
@@ -106,115 +110,72 @@ streamlit:
       initialDelaySeconds: 10
       periodSeconds: 10
 
-vllm:
+vllm-stack:
   enabled: true
-  replicas: 1
-  api_key: "changeme"
-  image:
-    repository: vllm/vllm-openai
-    tag: v0.11.0
-    pullPolicy: IfNotPresent
-  service:
-    name: vllm-api
-    type: LoadBalancer
-    port: 80
-    targetPort: 8000
-  config:
-    # model: neuralmagic/Meta-Llama-3.1-70B-Instruct-FP8
-    # model: meta-llama/Llama-3.1-8B-Instruct
-    # model: google/gemma-3-27b-it
-    model: mistralai/Mistral-Small-3.2-24B-Instruct-2506
-    # model: Qwen/Qwen3-30B-A3B-Instruct-2507
-    # model: mistralai/Voxtral-Mini-3B-2507
-    # model: mistralai/Magistral-Small-2506
-    # --enable-auto-tool-choice --tool-call-parser llama3_json --chat-template examples/tool_chat_template_llama3.1_json.jinja
-    serveArgs: "--tokenizer_mode mistral --config_format mistral --load_format mistral --tensor-parallel-size 1 --tool-call-parser mistral --enable-auto-tool-choice --no-enable-prefix-caching"
-    # serveArgs: "--no-enable-prefix-caching --max-model-len 63440 --tool-call-parser openai --enable-auto-tool-choice"
-    # serveArgs: "--reasoning-parser qwen3 --enable-auto-tool-choice --tool-call-parser hermes --max-model-len 132896"
+  # Expose vLLM router service externally
+  serviceType: LoadBalancer
+  servicePort: 80
+  # Router resource configuration (default 500Mi is too small, causing OOMKills)
+  routerSpec:
+    resources:
+      requests:
+        cpu: 400m
+        memory: 1Gi
+      limits:
+        memory: 2Gi
+  servingEngineSpec:
+    enableEngine: true
+    # API key for securing vLLM - value will be overridden from values-secrets.yaml
+    vllmApiKey: "changeme"
+    modelSpec:
+      - name: "mistral-small"
+        repository: vllm/vllm-openai
+        tag: v0.11.0
+        imagePullPolicy: IfNotPresent
 
+        # Model configuration
+        modelURL: mistralai/Mistral-Small-3.2-24B-Instruct-2506
+        # modelURL: neuralmagic/Meta-Llama-3.1-70B-Instruct-FP8
+        # modelURL: meta-llama/Llama-3.1-8B-Instruct
+        # modelURL: google/gemma-3-27b-it
+        # modelURL: Qwen/Qwen3-30B-A3B-Instruct-2507
+        # modelURL: mistralai/Voxtral-Mini-3B-2507
+        # modelURL: mistralai/Magistral-Small-2506
 
-  persistence:
-    size: 230Gi
-    storageClassName: sbs-default
-  resources:
-#    limits:
-#      cpu: "44"
-#      memory: 460G
-#      gpu: 2
-#    requests:
-#      cpu: "40"
-#      memory: 400G
-#      gpu: 2
-    limits:
-      cpu: "22"
-      memory: 230G
-      gpu: 1
-    requests:
-      cpu: "20"
-      memory: 200G
-      gpu: 1
-  shm:
-    sizeLimit: 32Gi
-  secrets:
-    huggingfaceToken:
-      name: huggingface-token
-      key: token
-    apiKey:
-      name: vllm-api-key
-      key: api_key
-  probes:
-    readiness:
-      path: /health
-      initialDelaySeconds: 10
-      periodSeconds: 30
-    liveness:
-      path: /health
-      initialDelaySeconds: 300
-      periodSeconds: 30
+        replicaCount: 1
 
-whisperx:
-  enabled: false
-  replicas: 1
-  image:
-    repository: lasuite/whisper-api
-    tag: whisperx-002
-    pullPolicy: IfNotPresent
-  service:
-    name: whisper
-    type: LoadBalancer
-    port: 80
-    targetPort: 8000
-  persistence:
-    size: 100Gi
-    storageClassName: sbs-default
-  resources:
-    limits:
-      cpu: "22"
-      memory: 230G
-      gpu: 1
-    requests:
-      cpu: "20"
-      memory: 200G
-      gpu: 1
-  shm:
-    sizeLimit: 2Gi
-  secrets:
-    apiKey:
-      name: whisperx-api-key
-      key: api_key
-    huggingfaceToken:
-      name: huggingface-token
-      key: token
-  probes:
-    readiness:
-      path: /health
-      initialDelaySeconds: 30
-      periodSeconds: 30
-    liveness:
-      path: /health
-      initialDelaySeconds: 60
-      periodSeconds: 30
+        # Resource configuration
+        requestCPU: 20
+        requestMemory: "200G"
+        requestGPU: 1
+        limitCPU: "22"
+        limitMemory: "230G"
 
+        pvcStorage: "230Gi"
+        storageClass: sbs-default
+        pvcAccessMode:
+          - ReadWriteOnce
+
+        shmSize: "32Gi"
+
+        vllmConfig:
+          tensorParallelSize: 1
+          enablePrefixCaching: false
+          extraArgs:
+            - "--tokenizer_mode"
+            - "mistral"
+            - "--config_format"
+            - "mistral"
+            - "--load_format"
+            - "mistral"
+            - "--tool-call-parser"
+            - "mistral"
+            - "--enable-auto-tool-choice"
+
+        # Hugging Face token from existing secret
+        hf_token:
+          secretName: "huggingface-token"
+          secretKey: "token"
 
 # BGE Embeddings configuration
 embeddings:
@@ -250,73 +211,53 @@ embeddings:
       initialDelaySeconds: 60
       periodSeconds: 30
 
-# Redis configuration
 redis:
-  replicas: 1
-  image:
-    repository: redis/redis-stack-server
-    tag: 7.2.0-v11
-    pullPolicy: IfNotPresent
-  service:
-    type: ClusterIP
-    port: 6379
-  config:
-    args: "--dir /data --requirepass changeme --user username on >password ~* allcommands --save 60 1 --appendonly yes"
+  enabled: true
+  fullnameOverride: opengatellm-stack-redis
+  architecture: standalone
+  auth:
+    enabled: true
     password: "changeme"
-    username: "username"
-  persistence:
-    size: 10Gi
-  probes:
-    readiness:
-      initialDelaySeconds: 10
-      periodSeconds: 30
-    liveness:
-      initialDelaySeconds: 60
-      periodSeconds: 30
-
-postgres:
   image:
-    repository: postgres
-    tag: "16.5"
-    pullPolicy: IfNotPresent
+    registry: docker.io
+    repository: redis/redis-stack-server
+    tag: 7.4.0-v8
+  global:
+    security:
+      # Allow official Redis Stack image instead of the default minimal bitnami one
+      allowInsecureImages: true
+  commonConfiguration: |-
+    # Load Redis Stack modules from correct path
+    loadmodule /opt/redis-stack/lib/redistimeseries.so
+    loadmodule /opt/redis-stack/lib/rejson.so
+    loadmodule /opt/redis-stack/lib/redisearch.so
+    loadmodule /opt/redis-stack/lib/redisbloom.so
+    # Enable AOF https://redis.io/topics/persistence#append-only-file
+    appendonly yes
+    # Disable RDB persistence, AOF persistence already enabled.
+    save ""
+  master:
+    persistence:
+      enabled: true
+      size: 10Gi
+    resources: {}
+  replica:
+    # Single instance mode
+    replicaCount: 0
 
-  config:
-    user: postgres
+
+postgresql:
+  enabled: true
+  auth:
+    username: postgres
     password: changeme
-    db: postgres
-    create_db: api
-
-  service:
-    type: ClusterIP
-    port: 5432
-
-  persistence:
-    enabled: true
-    size: 8Gi
-  scripts:
-    enabled: true
-    content: |
-      #!/bin/bash
-
-      function create_database() {
-        local database=$1
-        echo "  Creating database '$database'"
-        psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
-            CREATE DATABASE $database WITH ENCODING 'utf8';
-      EOSQL
-      }
-
-      if [[ -n "$CREATE_DB" ]]; then
-        echo "Multiple database creation requested: $CREATE_DB"
-        for db in $(echo $CREATE_DB | tr ',' ' '); do
-         create_database $db
-        done
-        echo "Multiple databases created"
-      fi
-
-  healthcheck:
-    enabled: true
-    intervalSeconds: 4
-    timeoutSeconds: 10
-    failureThreshold: 5
-    startupDelaySeconds: 60
+    database: postgres
+  primary:
+    persistence:
+      enabled: true
+      size: 8Gi
+    initdb:
+      scripts:
+        init-db.sql: |
+          CREATE DATABASE api WITH ENCODING 'utf8';
+    resources: {}

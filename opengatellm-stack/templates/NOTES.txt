@@ -12,11 +12,13 @@ Access URLs:
   NOTE: It may take a few minutes for all services to be in "Running" state. OpengateLLM needs to be restarted once the vLLM pod is up, so that it can pick up the new model.
 
   To find the public IP addresses:
-    $ kubectl describe svc -n {{ .Values.global.namespace | default "default" }} opengatellm
-    $ kubectl describe svc -n {{ .Values.global.namespace | default "default" }} streamlit
-    $ kubectl describe svc -n {{ .Values.global.namespace | default "default" }} vllm-api
+    $ kubectl describe svc -n opengatellm opengatellm-stack-api
+    $ kubectl describe svc -n opengatellm opengatellm-stack-streamlit
+    $ kubectl describe svc -n opengatellm opengatellm-stack-vllm-api
 
   Use the "LoadBalancer Ingress" IP to access each service:
   - OpenGateLLM: http://<OGL LoadBalancer Ingress IP>:{{ .Values.opengatellm.service.port }}
   - Streamlit: http://<Streamlit LoadBalancer Ingress IP>:{{ .Values.streamlit.service.port }}
-  - vLLM: http://<vLLM-api LoadBalancer Ingress IP>:{{ .Values.vllm.service.port }}
+  {{- if index .Values "vllm-stack" "enabled" }}
+  - vLLM: http://<vLLM LoadBalancer Ingress IP>:8000
+  {{- end }}

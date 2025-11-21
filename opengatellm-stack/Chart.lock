@@ -1,0 +1,12 @@
+dependencies:
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 18.1.11
+- name: redis
+  repository: https://charts.bitnami.com/bitnami
+  version: 23.2.12
+- name: vllm-stack
+  repository: https://vllm-project.github.io/production-stack
+  version: 0.1.8
+digest: sha256:cfacaa42932d6eaa6f733846103fbc8302c1ccd9d0d0643ad7212c60063c7143
+generated: "2025-11-20T16:10:06.311209+01:00"
