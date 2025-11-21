@@ -19,10 +19,22 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
+
+      - name: Add Helm repositories and update dependencies
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add vllm https://vllm-project.github.io/production-stack
+          helm repo update
+          helm dependency update opengatellm-stack
+
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.6.0
         with:
-          charts_dir: opengatellm-stack
+          charts_dir: .
           skip_existing: true
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
