@@ -28,23 +28,27 @@ spec:
           - name: CONFIG_FILE
             value: "/home/opengatellm/conf/config.yml"
         ports:
-          - containerPort: {{ .Values.streamlit.service.port }}
+          - containerPort: {{ .Values.streamlit.service.targetPort }}
         volumeMounts:
           - name: streamlit-config-vol
             mountPath: /home/opengatellm/conf
             readOnly: true
+        {{- if .Values.streamlit.probes.readiness.enabled }}
         readinessProbe:
           httpGet:
             path: {{ .Values.streamlit.probes.readiness.path }}
             port: {{ .Values.streamlit.service.port }}
           initialDelaySeconds: {{ .Values.streamlit.probes.readiness.initialDelaySeconds }}
           periodSeconds: {{ .Values.streamlit.probes.readiness.periodSeconds }}
+        {{- end }}
+        {{- if .Values.streamlit.probes.liveness.enabled }}
         livenessProbe:
           httpGet:
             path: {{ .Values.streamlit.probes.liveness.path }}
             port: {{ .Values.streamlit.service.port }}
           initialDelaySeconds: {{ .Values.streamlit.probes.liveness.initialDelaySeconds }}
           periodSeconds: {{ .Values.streamlit.probes.liveness.periodSeconds }}
+        {{- end }}
       volumes:
         - name: streamlit-config-vol
           configMap:
