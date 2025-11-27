@@ -10,8 +10,11 @@ spec:
   selector:
     app: opengatellm-stack-playground
   ports:
-    - port: {{ .Values.streamlit.service.port }}
-      targetPort: {{ .Values.streamlit.service.targetPort }}
+    - port: {{ .Values.playground.service.port }}
+      targetPort: {{ .Values.playground.service.targetPort }}
       name: http
-  type: {{ .Values.streamlit.service.type }}
+    - port: 8500
+      targetPort: 8500
+      name: backend
+  type: {{ .Values.playground.service.type }}
 {{- end }}

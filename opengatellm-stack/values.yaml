@@ -42,24 +42,24 @@ opengatellm:
             url: "http://opengatellm-stack-router-service/"
             key: "changeme"
 
+      # If embeddings are deployed through vLLM, use this version :
+#      - name: BAAI/bge-m3
+#        type: text-embeddings-inference
+#        providers:
+#          - type: vllm
+#            model_name: "BAAI/bge-m3"
+#            url: "http://opengatellm-stack-router-service/"
+#            key: "changeme"
+
+        # If embeddings are deployed through TEI, use this version :
       - name: BAAI/bge-m3
         type: text-embeddings-inference
+        dimensions: 1024
         providers:
-          - type: vllm
-            model_name: "BAAI/bge-m3"
-            url: "http://opengatellm-stack-router-service/"
-            key: "changeme"
-
-      # Option 2: Use standalone TEI (CPU only)
-      # Uncomment when standalone embeddings service is enabled
-      # - name: BAAI/bge-m3
-      #   type: text-embeddings-inference
-      #   dimensions: 1024
-      #   providers:
-      #     - type: tei
-      #       model_name: "BAAI/bge-m3"
-      #       url: "http://bge-embeddings.opengatellm.svc.cluster.local/"
-      #       key: "changeme"
+         - type: tei
+           model_name: "BAAI/bge-m3"
+           url: "http://opengatellm-stack-embeddings/"
+           key: "changeme"
 
     # -------------------------------- dependencies ---------------------------------
     dependencies:
@@ -118,7 +118,7 @@ opengatellm:
       initialDelaySeconds: 60
       periodSeconds: 30
 
-streamlit:
+playground:
   replicas: 1
   image:
     repository: ghcr.io/etalab-ia/opengatellm/playground
@@ -204,42 +204,85 @@ vllm-stack:
           secretName: "huggingface-token"
           secretKey: "token"
 
-      # BGE Embeddings model (CPU only - minimal resources)
-      - name: "bge-embeddings"
-        repository: vllm/vllm-openai
-        tag: v0.11.0
-        imagePullPolicy: IfNotPresent
+# Embeddings through HF TEI
+embeddings:
+  enabled: true
+  replicas: 1
+  image:
+    repository: ghcr.io/huggingface/text-embeddings-inference
+    tag: cpu-latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8000
+  config:
+    model: BAAI/bge-m3
+    port: 8000
+  resources:
+    limits:
+      cpu: "4"
+      memory: 28Gi
+      gpu: 0
+    requests:
+      cpu: "2"
+      memory: 16Gi
+      gpu: 0
+  probes:
+    readiness:
+      enabled: true
+      path: /health
+      initialDelaySeconds: 30
+      periodSeconds: 120
+    liveness:
+      enabled: false
+      path: /health
+      initialDelaySeconds: 240
+      periodSeconds: 30
 
-        modelURL: BAAI/bge-m3
-        replicaCount: 1
-
-        # Override the default nvidia runtime - (we're running on CPU only)
-        runtimeClassName: ""
-
-        # Minimal resources (BGE-M3 is ~2GB, runs efficiently on CPU)
-        requestCPU: 2
-        requestMemory: "8Gi"
-        requestGPU: 0  # CPU only
-        limitCPU: "4"
-        limitMemory: "16Gi"
-
-        pvcStorage: "20Gi"
-        storageClass: sbs-default
-        pvcAccessMode:
-          - ReadWriteOnce
-
-        shmSize: "4Gi"
-
-        vllmConfig:
-          tensorParallelSize: 1
-          enablePrefixCaching: false
-          extraArgs:
-            - "--task"
-            - "embed"
-
-        hf_token:
-         secretName: "huggingface-token"
-         secretKey: "token"
+#      # Embeddings through VLLM - complicated to run on CPU (you have to build and publish the vllm image with CPU flag)
+#      - name: "bge-embeddings"
+#        repository: vllm/vllm-openai
+#        tag: v0.11.0
+#        imagePullPolicy: IfNotPresent
+#
+#        modelURL: BAAI/bge-m3
+#        replicaCount: 1
+#
+#        # Override the default nvidia runtime - (we're running on CPU only)
+#        runtimeClassName: ""
+#
+#        # Minimal resources (BGE-M3 is ~2GB, runs efficiently on CPU)
+#        requestCPU: 2
+#        requestMemory: "8Gi"
+#        requestGPU: 0  # CPU only
+#        limitCPU: "4"
+#        limitMemory: "16Gi"
+#
+#        pvcStorage: "20Gi"
+#        storageClass: sbs-default
+#        pvcAccessMode:
+#          - ReadWriteOnce
+#
+#        shmSize: "4Gi"
+#
+#        # Environment variables for debugging
+#        env:
+#          - name: VLLM_LOGGING_LEVEL
+#            value: "DEBUG"
+#
+#        vllmConfig:
+#          tensorParallelSize: 1
+#          enablePrefixCaching: false
+#          extraArgs:
+#            - "--task"
+#            - "embed"
+#            - "--device"
+#            - "cpu"
+#
+#        hf_token:
+#         secretName: "huggingface-token"
+#         secretKey: "token"
 
 redis:
   enabled: true
