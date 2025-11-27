@@ -2,6 +2,41 @@ apiVersion: v1
 entries:
   opengatellm-stack:
   - apiVersion: v2
+    appVersion: 0.3.0
+    created: "2025-11-27T17:11:14.262837428Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      tags:
+      - opengatellm-stack-database
+      version: 18.1.11
+    - condition: redis.enabled
+      name: redis
+      repository: https://charts.bitnami.com/bitnami
+      tags:
+      - opengatellm-stack-cache
+      version: 23.2.12
+    - condition: vllm-stack.enabled
+      name: vllm-stack
+      repository: https://vllm-project.github.io/production-stack
+      tags:
+      - opengatellm-stack-inference
+      version: 0.1.8
+    - condition: elasticsearch.enabled
+      name: elasticsearch
+      repository: https://helm.elastic.co
+      tags:
+      - opengatellm-stack-search
+      version: 7.17.3
+    description: A Helm chart for OpenGateLLM Stack
+    digest: 56e7d5209886ee3429e252be034d3f428d9e63a737f3f7aa7da06f1707a9bce5
+    name: opengatellm-stack
+    type: application
+    urls:
+    - https://github.com/etalab-ia/opengatellm-helm/releases/download/opengatellm-stack-0.3.0/opengatellm-stack-0.3.0.tgz
+    version: 0.3.0
+  - apiVersion: v2
     appVersion: 1.0.0
     created: "2025-11-21T09:37:04.020211644Z"
     dependencies:
@@ -50,4 +85,4 @@ entries:
     urls:
     - https://github.com/etalab-ia/opengatellm-helm/releases/download/opengatellm-stack-0.1.0-test/opengatellm-stack-0.1.0-test.tgz
     version: 0.1.0-test
-generated: "2025-11-21T09:37:04.020226124Z"
+generated: "2025-11-27T17:11:14.262853528Z"
