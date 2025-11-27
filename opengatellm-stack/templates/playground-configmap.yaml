@@ -1,0 +1,30 @@
+{{- if .Values.opengatellm.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: opengatellm-stack-playground-config
+  labels:
+    {{- include "opengatellm-stack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: playground
+data:
+  config.yml: |
+    # Playground configuration for OpenGateLLM 0.3.0+
+    settings:
+      app_title: {{ .Values.opengatellm.config.playground.app_title | default "OpenGateLLM" | quote }}
+      playground_opengatellm_url: {{ .Values.opengatellm.config.playground.api_url | quote }}
+      {{- if .Values.opengatellm.config.playground.default_model }}
+      playground_default_model: {{ .Values.opengatellm.config.playground.default_model | quote }}
+      {{- end }}
+      playground_theme_has_background: {{ .Values.opengatellm.config.playground.theme_has_background | default true }}
+      playground_theme_accent_color: {{ .Values.opengatellm.config.playground.theme_accent_color | default "purple" | quote }}
+      playground_theme_appearance: {{ .Values.opengatellm.config.playground.theme_appearance | default "light" | quote }}
+      playground_theme_gray_color: {{ .Values.opengatellm.config.playground.theme_gray_color | default "gray" | quote }}
+      playground_theme_panel_background: {{ .Values.opengatellm.config.playground.theme_panel_background | default "solid" | quote }}
+      playground_theme_radius: {{ .Values.opengatellm.config.playground.theme_radius | default "medium" | quote }}
+      playground_theme_scaling: {{ .Values.opengatellm.config.playground.theme_scaling | default "100%" | quote }}
+    {{- if .Values.opengatellm.config.dependencies.redis }}
+    dependencies:
+      redis:
+        {{- toYaml .Values.opengatellm.config.dependencies.redis | nindent 8 }}
+    {{- end }}
+{{- end }}

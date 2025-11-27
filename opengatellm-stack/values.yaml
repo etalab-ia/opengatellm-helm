@@ -7,7 +7,7 @@ opengatellm:
   replicas: 1
   image:
     repository: ghcr.io/etalab-ia/opengatellm/api
-    tag: 0.2.7
+    tag: 0.3.0
     pullPolicy: IfNotPresent
   service:
     type: LoadBalancer
@@ -42,13 +42,24 @@ opengatellm:
             url: "http://opengatellm-stack-router-service/"
             key: "changeme"
 
-      - name: embeddings
+      # If embeddings are deployed through vLLM, use this version :
+#      - name: BAAI/bge-m3
+#        type: text-embeddings-inference
+#        providers:
+#          - type: vllm
+#            model_name: "BAAI/bge-m3"
+#            url: "http://opengatellm-stack-router-service/"
+#            key: "changeme"
+
+        # If embeddings are deployed through TEI, use this version :
+      - name: BAAI/bge-m3
         type: text-embeddings-inference
+        dimensions: 1024
         providers:
-          - type: tei
-            model_name: "BAAI/bge-m3"
-            url: "http://bge-embeddings.opengatellm.svc.cluster.local/"
-            key: "changeme"
+         - type: tei
+           model_name: "BAAI/bge-m3"
+           url: "http://opengatellm-stack-embeddings/"
+           key: "changeme"
 
     # -------------------------------- dependencies ---------------------------------
     dependencies:
@@ -61,21 +72,37 @@ opengatellm:
           server_settings:
             statement_timeout: "120s"
           command_timeout: 60
-
       redis:
         # Note: Update service name based on your release name: <release-name>-redis-master
         host: opengatellm-stack-redis-master
         port: 6379
         password: changeme
 
-      # playground ---------------------------------------------------------------------------------------------------------------------------------------
+      elasticsearch:
+        # Service name from Elastic chart is <release>-elasticsearch-master
+        hosts: "http://opengatellm-elasticsearch-master:9200"
+
+    settings:
+      vector_store_model: "BAAI/bge-m3"
+
     playground:
-      api_url: "http://opengatellm.opengatellm.svc.cluster.local"
+      # Playground configuration used by 0.3.0+
+      api_url: "http://opengatellm-stack-api"
+      default_model: ""
+      app_title: "OpenGateLLM"
+      theme_has_background: true
+      theme_accent_color: "purple"
+      theme_appearance: "light"
+      theme_gray_color: "gray"
+      theme_panel_background: "solid"
+      theme_radius: "medium"
+      theme_scaling: "100%"
+      # Legacy settings
       encryption_key: changeme
       session_secret_key: changeme
       proconnect_enabled: False
       postgres:
-        # Note: Update service name based on your release name: <release-name>-postgresql
+        # Update service name based on your release name: <release-name>-postgresql
         url: postgresql+asyncpg://postgres:changeme@opengatellm-stack-postgresql:5432/playground
 
   probes:
@@ -90,16 +117,16 @@ opengatellm:
       initialDelaySeconds: 60
       periodSeconds: 30
 
-streamlit:
+playground:
   replicas: 1
   image:
     repository: ghcr.io/etalab-ia/opengatellm/playground
-    tag: 0.2.7
+    tag: 0.3.0
     pullPolicy: IfNotPresent
   service:
     type: LoadBalancer
-    port: 8501
-    targetPort: 8501
+    port: 80
+    targetPort: 80
   probes:
     readiness:
       path: /
@@ -112,11 +139,9 @@ streamlit:
 
 vllm-stack:
   enabled: true
-  # Expose vLLM router service externally
-  serviceType: LoadBalancer
-  servicePort: 80
-  # Router resource configuration (default 500Mi is too small, causing OOMKills)
   routerSpec:
+    serviceType: LoadBalancer
+    servicePort: 80
     resources:
       requests:
         cpu: 400m
@@ -177,9 +202,9 @@ vllm-stack:
           secretName: "huggingface-token"
           secretKey: "token"
 
-# BGE Embeddings configuration
+# Embeddings through HF TEI
 embeddings:
-  enabled: false
+  enabled: true
   replicas: 1
   image:
     repository: ghcr.io/huggingface/text-embeddings-inference
@@ -195,21 +220,67 @@ embeddings:
   resources:
     limits:
       cpu: "4"
-      memory: 32Gi
-      #gpu: 1
+      memory: 28Gi
+      gpu: 0
     requests:
       cpu: "2"
       memory: 16Gi
-      #gpu: 1
+      gpu: 0
   probes:
     readiness:
+      enabled: true
       path: /health
-      initialDelaySeconds: 10
-      periodSeconds: 30
+      initialDelaySeconds: 30
+      periodSeconds: 120
     liveness:
+      enabled: false
       path: /health
-      initialDelaySeconds: 60
+      initialDelaySeconds: 240
       periodSeconds: 30
+
+#      # Embeddings through VLLM - complicated to run on CPU (you have to build and publish the vllm image with CPU flag)
+#      - name: "bge-embeddings"
+#        repository: vllm/vllm-openai
+#        tag: v0.11.0
+#        imagePullPolicy: IfNotPresent
+#
+#        modelURL: BAAI/bge-m3
+#        replicaCount: 1
+#
+#        # Override the default nvidia runtime - (we're running on CPU only)
+#        runtimeClassName: ""
+#
+#        # Minimal resources (BGE-M3 is ~2GB, runs efficiently on CPU)
+#        requestCPU: 2
+#        requestMemory: "8Gi"
+#        requestGPU: 0  # CPU only
+#        limitCPU: "4"
+#        limitMemory: "16Gi"
+#
+#        pvcStorage: "20Gi"
+#        storageClass: sbs-default
+#        pvcAccessMode:
+#          - ReadWriteOnce
+#
+#        shmSize: "4Gi"
+#
+#        # Environment variables for debugging
+#        env:
+#          - name: VLLM_LOGGING_LEVEL
+#            value: "DEBUG"
+#
+#        vllmConfig:
+#          tensorParallelSize: 1
+#          enablePrefixCaching: false
+#          extraArgs:
+#            - "--task"
+#            - "embed"
+#            - "--device"
+#            - "cpu"
+#
+#        hf_token:
+#         secretName: "huggingface-token"
+#         secretKey: "token"
 
 redis:
   enabled: true
@@ -261,3 +332,37 @@ postgresql:
         init-db.sql: |
           CREATE DATABASE api WITH ENCODING 'utf8';
     resources: {}
+
+elasticsearch:
+  enabled: true
+  # Single node configuration
+  replicas: 1
+  minimumMasterNodes: 1
+
+  # Cluster name
+  clusterName: "opengatellm-elasticsearch"
+
+  # Resources
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "1Gi"
+    limits:
+      cpu: "1000m"
+      memory: "2Gi"
+
+  # Persistence
+  persistence:
+    enabled: true
+    size: 8Gi
+
+  # Disable security for simplicity (no TLS, no auth)
+  esConfig:
+    elasticsearch.yml: |
+      xpack.security.enabled: false
+      xpack.security.transport.ssl.enabled: false
+      xpack.security.http.ssl.enabled: false
+
+  # Service (actual name will be: <release>-elasticsearch-master)
+  service:
+    type: ClusterIP

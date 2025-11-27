@@ -1,0 +1,56 @@
+{{- if .Values.opengatellm.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opengatellm-stack-playground
+  labels:
+    {{- include "opengatellm-stack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: playground
+spec:
+  replicas: {{ .Values.playground.replicas }}
+  selector:
+    matchLabels:
+      app: opengatellm-stack-playground
+  template:
+    metadata:
+      labels:
+        app: opengatellm-stack-playground
+    spec:
+      {{- with .Values.playground.nodeSelector }}
+      nodeSelector:
+        {{ . | toYaml }}
+      {{- end }}
+      containers:
+      - name: playground
+        image: {{ .Values.playground.image.repository }}:{{ .Values.playground.image.tag }}
+        imagePullPolicy: {{ .Values.playground.image.pullPolicy }}
+        env:
+          - name: CONFIG_FILE
+            value: "/home/opengatellm/conf/config.yml"
+        ports:
+          - containerPort: {{ .Values.playground.service.targetPort }}
+        volumeMounts:
+          - name: playground-config-vol
+            mountPath: /home/opengatellm/conf
+            readOnly: true
+        {{- if .Values.playground.probes.readiness.enabled }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.playground.probes.readiness.path }}
+            port: {{ .Values.playground.service.port }}
+          initialDelaySeconds: {{ .Values.playground.probes.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.playground.probes.readiness.periodSeconds }}
+        {{- end }}
+        {{- if .Values.playground.probes.liveness.enabled }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.playground.probes.liveness.path }}
+            port: {{ .Values.playground.service.port }}
+          initialDelaySeconds: {{ .Values.playground.probes.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.playground.probes.liveness.periodSeconds }}
+        {{- end }}
+      volumes:
+        - name: playground-config-vol
+          configMap:
+            name: opengatellm-stack-playground-config
+{{- end }}

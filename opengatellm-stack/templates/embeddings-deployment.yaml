@@ -39,6 +39,7 @@ spec:
             cpu: {{ .Values.embeddings.resources.requests.cpu | quote }}
             memory: {{ .Values.embeddings.resources.requests.memory }}
             nvidia.com/gpu: {{ .Values.embeddings.resources.requests.gpu }}
+        {{- if .Values.embeddings.probes.liveness.enabled }}
         livenessProbe:
           httpGet:
             path: {{ .Values.embeddings.probes.liveness.path }}
@@ -46,6 +47,8 @@ spec:
           initialDelaySeconds: {{ .Values.embeddings.probes.liveness.initialDelaySeconds }}
           timeoutSeconds: 30
           periodSeconds: {{ .Values.embeddings.probes.liveness.periodSeconds }}
+        {{- end }}
+        {{- if .Values.embeddings.probes.readiness.enabled }}
         readinessProbe:
           httpGet:
             path: {{ .Values.embeddings.probes.readiness.path }}
@@ -53,4 +56,5 @@ spec:
           initialDelaySeconds: {{ .Values.embeddings.probes.readiness.initialDelaySeconds }}
           timeoutSeconds: 30
           periodSeconds: {{ .Values.embeddings.probes.readiness.periodSeconds }}
+        {{- end }}
 {{- end }}
