@@ -79,18 +79,17 @@ opengatellm:
         password: changeme
 
       elasticsearch:
-        # Note: Service name from Elastic chart is <release>-elasticsearch-master
+        # Service name from Elastic chart is <release>-elasticsearch-master
         hosts: "http://opengatellm-elasticsearch-master:9200"
 
     settings:
       vector_store_model: "BAAI/bge-m3"
 
     playground:
-      # Playground configuration (used by 0.3.0+)
+      # Playground configuration used by 0.3.0+
       api_url: "http://opengatellm-stack-api"
-      default_model: ""  # Optional: first model selected in chat page
+      default_model: ""
       app_title: "OpenGateLLM"
-      # Theme configuration
       theme_has_background: true
       theme_accent_color: "purple"
       theme_appearance: "light"
@@ -98,12 +97,12 @@ opengatellm:
       theme_panel_background: "solid"
       theme_radius: "medium"
       theme_scaling: "100%"
-      # Legacy settings (kept for backward compatibility if needed)
+      # Legacy settings
       encryption_key: changeme
       session_secret_key: changeme
       proconnect_enabled: False
       postgres:
-        # Note: Update service name based on your release name: <release-name>-postgresql
+        # Update service name based on your release name: <release-name>-postgresql
         url: postgresql+asyncpg://postgres:changeme@opengatellm-stack-postgresql:5432/playground
 
   probes:
@@ -140,10 +139,9 @@ playground:
 
 vllm-stack:
   enabled: true
-  serviceType: LoadBalancer
-  servicePort: 80
-  # Router resource configuration (default 500Mi is too small, causing OOMKills)
   routerSpec:
+    serviceType: LoadBalancer
+    servicePort: 80
     resources:
       requests:
         cpu: 400m

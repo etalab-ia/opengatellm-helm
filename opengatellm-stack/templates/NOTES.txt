@@ -12,13 +12,11 @@ Access URLs:
   NOTE: It may take a few minutes for all services to be in "Running" state. OpengateLLM needs to be restarted once the vLLM pod is up, so that it can pick up the new model.
 
   To find the public IP addresses:
-    $ kubectl describe svc -n opengatellm opengatellm-stack-api
-    $ kubectl describe svc -n opengatellm opengatellm-stack-playground
-    $ kubectl describe svc -n opengatellm opengatellm-stack-vllm-api
+    $ kubectl get svc -n {{ .Release.Namespace }} | grep LoadBalancer
 
-  Use the "LoadBalancer Ingress" IP to access each service:
-  - OpenGateLLM: http://<OGL LoadBalancer Ingress IP>:{{ .Values.opengatellm.service.port }}
-  - Playground: http://<Playground LoadBalancer Ingress IP>:{{ .Values.playground.service.port }}
+  Use the "EXTERNAL-IP" to access each service:
+  - API: http://<API-EXTERNAL-IP>:{{ .Values.opengatellm.service.port }}
+  - Playground: http://<Playground-EXTERNAL-IP>:{{ .Values.playground.service.port }}
   {{- if index .Values "vllm-stack" "enabled" }}
-  - vLLM: http://<vLLM LoadBalancer Ingress IP>:8000
+  - vLLM Router: http://<Router-EXTERNAL-IP>:{{ index .Values "vllm-stack" "routerSpec" "servicePort" }}
   {{- end }}
