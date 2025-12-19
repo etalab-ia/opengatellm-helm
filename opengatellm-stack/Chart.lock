@@ -8,8 +8,11 @@ dependencies:
 - name: vllm-stack
   repository: https://vllm-project.github.io/production-stack
   version: 0.1.8
-- name: elasticsearch
+- name: eck-operator-crds
   repository: https://helm.elastic.co
-  version: 7.17.3
-digest: sha256:9713de617a288fb00876a9649b9f15c0a6379c43ae3565c85b0075af0ed0d20f
-generated: "2025-11-21T14:51:43.005651+01:00"
+  version: 3.2.0
+- name: eck-operator
+  repository: https://helm.elastic.co
+  version: 3.2.0
+digest: sha256:8052457b717e5f31d85d74aab8d791f50084e75783b5775e6dfc61104241299b
+generated: "2025-12-19T12:37:11.511818+01:00"
