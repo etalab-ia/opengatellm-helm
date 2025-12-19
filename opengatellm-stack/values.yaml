@@ -1,13 +1,13 @@
 global:
   storage:
-    storageClassName: default
+    storageClassName: sbs-default
 
 opengatellm:
   enabled: true
   replicas: 1
   image:
     repository: ghcr.io/etalab-ia/opengatellm/api
-    tag: 0.3.0
+    tag: 0.3.5post2
     pullPolicy: IfNotPresent
   service:
     type: LoadBalancer
@@ -24,14 +24,6 @@ opengatellm:
             url: "http://albert-testbed.etalab.gouv.fr:8000"
             key: "changeme"
 
-      - name: mistralai/Voxtral-Mini-3B-2507
-        type: automatic-speech-recognition
-        providers:
-          - type: vllm
-            model_name: "mistralai/Voxtral-Mini-3B-2507"
-            # Note: Update service name based on your release name: <release-name>-router-service
-            url: "http://opengatellm-stack-router-service/"
-            key: "changeme"
 
       - name: mistralai/Mistral-Small-3.2-24B-Instruct-2506
         type: text-generation
@@ -41,6 +33,15 @@ opengatellm:
             # Note: Update service name based on your release name: <release-name>-router-service
             url: "http://opengatellm-stack-router-service/"
             key: "changeme"
+
+#      - name: mistralai/Voxtral-Mini-3B-2507
+#        type: automatic-speech-recognition
+#        providers:
+#          - type: vllm
+#            model_name: "mistralai/Voxtral-Mini-3B-2507"
+#            # Note: Update service name based on your release name: <release-name>-router-service
+#            url: "http://opengatellm-stack-router-service/"
+#            key: "changeme"
 
       # If embeddings are deployed through vLLM, use this version :
 #      - name: BAAI/bge-m3
@@ -74,13 +75,10 @@ opengatellm:
           command_timeout: 60
       redis:
         # Note: Update service name based on your release name: <release-name>-redis-master
-        host: opengatellm-stack-redis-master
-        port: 6379
-        password: changeme
+        url: "redis://:changeme@opengatellm-stack-redis-master:6379"
 
       elasticsearch:
-        # Service name from Elastic chart is <release>-elasticsearch-master
-        hosts: "http://opengatellm-elasticsearch-master:9200"
+        hosts: "http://opengatellm-stack-elasticsearch-master:9200"
 
     settings:
       vector_store_model: "BAAI/bge-m3"
@@ -121,12 +119,12 @@ playground:
   replicas: 1
   image:
     repository: ghcr.io/etalab-ia/opengatellm/playground
-    tag: 0.3.0
+    tag: 0.3.5post2
     pullPolicy: IfNotPresent
   service:
     type: LoadBalancer
     port: 80
-    targetPort: 80
+    targetPort: 8501
   probes:
     readiness:
       path: /
@@ -333,14 +331,13 @@ postgresql:
           CREATE DATABASE api WITH ENCODING 'utf8';
     resources: {}
 
+# ES deployment follows this recommended deployment : https://www.elastic.co/docs/deploy-manage/deploy/cloud-on-k8s/install-using-helm-chart
 elasticsearch:
   enabled: true
+  version: "9.0.8"
+
   # Single node configuration
   replicas: 1
-  minimumMasterNodes: 1
-
-  # Cluster name
-  clusterName: "opengatellm-elasticsearch"
 
   # Resources
   resources:
@@ -356,13 +353,22 @@ elasticsearch:
     enabled: true
     size: 8Gi
 
-  # Disable security for simplicity (no TLS, no auth)
-  esConfig:
-    elasticsearch.yml: |
-      xpack.security.enabled: false
-      xpack.security.transport.ssl.enabled: false
-      xpack.security.http.ssl.enabled: false
+eck-operator-crds:
+  {}
 
-  # Service (actual name will be: <release>-elasticsearch-master)
-  service:
-    type: ClusterIP
+eck-operator:
+  installCRDs: false
+  createClusterScopedResources: true
+  webhook:
+    enabled: false
+  config:
+    validateStorageClass: false
+
+  # Resources for the operator
+  resources:
+    limits:
+      cpu: 1
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 150Mi

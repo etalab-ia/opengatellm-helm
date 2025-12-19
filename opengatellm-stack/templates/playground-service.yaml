@@ -13,6 +13,9 @@ spec:
     - port: {{ .Values.playground.service.port }}
       targetPort: {{ .Values.playground.service.targetPort }}
       name: http
+    - port: 8501
+      targetPort: 8501
+      name: frontend
     - port: 8500
       targetPort: 8500
       name: backend

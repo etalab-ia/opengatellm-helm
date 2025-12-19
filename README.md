@@ -13,14 +13,13 @@ This repository contains the helm chart to deploy [opengatellm](https://github.c
 ## Deployment 
 - Customize the deployment in `opengatellm-stack/values.yaml`, for example the tag of the API version to deploy, rate limiting, API keys for the different deployed services (redis, elastic search, etc), ports, hardware configuration requested by each pod, etc.
 - In `opengatellm-stack/values-secret.yaml`, replace the secrets and API keys with values of your choice.
-- Create a namespace for the deployment `kubectl create namespace opengatellm`  
 - If you want to deploy from source, install the helm chart from the `opengatellm-stack` folder : `helm install opengatellm-stack . --namespace opengatellm --create-namespace -f values-secrets.yaml -f values.yaml`
 - If you want to deploy from the published version, add the repo with `helm repo add opengatellm https://etalab-ia.github.io/opengatellm-helm/; helm repo update` and install it with `helm install opengatellm-stack opengatellm/opengatellm-stack --namespace opengatellm --create-namespace -f values-secrets.yaml -f values.yaml`
 - Monitor the deployment via the kubernetes dashboard, or via a tool like `k9s`.
 - If some components don't start, or are stuck in "Pending", check why with `kubectl describe <pod_name>`.
 - If they start but remain in error, you can check the logs with `kubectl logs <pod_name>`
-- The entire stack can take 10-15 minutes to deploy. The longest is usually vLLM, depending on the model you are deploying.
-- The "opengatellm" deployment needs to be restarted once the vLLM is up, so that it loads the vLLM model router.
+- The entire stack can take 10-15 minutes to deploy. The longest is usually the embedding model as it runs on CPU (~10 minutes).
+- The "API" deployment needs to be restarted once the embedding is ready, so that it can load it.
 - Once all services are "Running", you can get the public IP of the load balancer with `kubectl describe svc opengatellm`.
 - Use the value of `LoadBalancer Ingress` to contact the API, for example:
 
