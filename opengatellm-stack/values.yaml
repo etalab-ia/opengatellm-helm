@@ -24,14 +24,6 @@ opengatellm:
             url: "http://albert-testbed.etalab.gouv.fr:8000"
             key: "changeme"
 
-      - name: mistralai/Voxtral-Mini-3B-2507
-        type: automatic-speech-recognition
-        providers:
-          - type: vllm
-            model_name: "mistralai/Voxtral-Mini-3B-2507"
-            # Note: Update service name based on your release name: <release-name>-router-service
-            url: "http://opengatellm-stack-router-service/"
-            key: "changeme"
 
       - name: mistralai/Mistral-Small-3.2-24B-Instruct-2506
         type: text-generation
@@ -41,6 +33,15 @@ opengatellm:
             # Note: Update service name based on your release name: <release-name>-router-service
             url: "http://opengatellm-stack-router-service/"
             key: "changeme"
+
+#      - name: mistralai/Voxtral-Mini-3B-2507
+#        type: automatic-speech-recognition
+#        providers:
+#          - type: vllm
+#            model_name: "mistralai/Voxtral-Mini-3B-2507"
+#            # Note: Update service name based on your release name: <release-name>-router-service
+#            url: "http://opengatellm-stack-router-service/"
+#            key: "changeme"
 
       # If embeddings are deployed through vLLM, use this version :
 #      - name: BAAI/bge-m3
