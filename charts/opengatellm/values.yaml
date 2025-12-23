@@ -1,0 +1,336 @@
+fullnameOverride: ""
+nameOverride: ""
+namespaceOverride: ""
+image:
+  pullSecrets: []
+
+opengatellm:
+  serviceAccount:
+    create: false
+    name: ""
+    annotations: {}
+    labels: {}
+  image:
+    repository: ghcr.io/etalab-ia/opengatellm/api
+    #tag: ""
+    pullPolicy: IfNotPresent
+
+  replicas: 1
+  revisionHistoryLimit: null
+
+  resources:
+    limits:
+      cpu: 100m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 512Mi
+
+  # Additional API container arguments
+  extraArgs: {}
+
+  # -- The name of the PriorityClass for API pods
+  priorityClassName: null
+
+  dnsConfig: {}
+  nodeSelector: {}
+  affinity: {}
+
+  # -- topologySpreadConstraints
+  topologySpreadConstraints: {}
+
+  annotations: {}
+  persistence:
+    subPath:
+
+  # -- API probes configuration
+  probes:
+    readiness:
+      httpGet:
+        path: /health
+        port: http
+      initialDelaySeconds: 10
+      periodSeconds: 30
+    liveness:
+      httpGet:
+        path: /health
+        port: http
+      initialDelaySeconds: 60
+      periodSeconds: 30
+
+  # -- The SecurityContext for API deployment
+  securityContext: {}
+
+  # -- The SecurityContext for API containers
+  containerSecurityContext: {}
+
+  # -- GracePeriod of API container
+  terminationGracePeriodSeconds: 10
+
+  tolerations: []
+  initContainers: []
+  extraContainers: []
+  extraVolumes: []
+  extraVolumeMounts: []
+  env: []
+  extraEnvFrom: []
+
+  service:
+    type: ClusterIP
+    port: 8000
+
+  # -- Base config file for opengatellm. Contains Helm templates that are evaulated at install/upgrade.
+  # To modify the resulting configuration, either copy and alter 'opengatellm.config' as a whole or use the 'opengatellm.structuredConfig' to add and modify certain YAML elements.
+  config: |
+    models: 
+      {{ toYaml .Values.opengatellm.models | nindent 8 }}
+
+  # -- Additional structured values on top of the text based 'opengatellm.config'. Applied after the text based config is evaluated for templates. Enables adding and modifying YAML elements in the evaulated 'opengatellm.config'.
+  #
+  # Example:
+  #
+  # structuredConfig:
+  #   common:
+  #     example_key: example_value
+  structuredConfig:
+    dependencies:
+      postgres:
+        #url: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-changeme}@${POSTGRES_HOST:-localhost}:${POSTGRES_PORT:-5432}/api
+        url: ${POSTGRES_URI}
+
+      redis:
+        #url: redis://:${REDIS_PASSWORD:-changeme}@${REDIS_HOST:-localhost}:${REDIS_PORT:-6379}
+        url: redis://:test@${REDIS_HOST}:${REDIS_PORT:-6379}
+    settings:
+      log_level: DEBUG
+
+  #
+  # -- Models list to append to opengatellm.config
+  #
+  # Example:
+  #
+  #models:
+  # - name: albert
+  #   type: text-generation
+  #   providers:
+  #     - type: vllm
+  #       model_name: "gemma3:1b"
+  #       url: ${ALBERT_URL}
+  #       key: ${ALBERT_KEY}
+  models: []
+
+  #
+  # -- Secret loaded into env variable
+  #
+  # Example:
+  #
+  # existingModelSecret: "my-model-secrets"
+  #
+  # You need to create secret before install/upgrade
+  #
+  # apiVersion: v1
+  # kind: Secret
+  # metadata:
+  #   name: my-models-secrets
+  # type: Opaque
+  # data:
+  #   ALBERT_URL: aHR0cHM6Ly9leGFtcGxlLmNvbS9hcGk=
+  #   ALBERT_KEY: YWRtaW4=
+  #
+  existingModelSecret: ""
+
+  #
+  # -- Secret loaded into env variable
+  #
+  # Example:
+  #
+  # existingModelSecret: "my-settings-secrets"
+  #
+  # You need to create secret before install/upgrade
+  #
+  # apiVersion: v1
+  # kind: Secret
+  # metadata:
+  #   name: my-settings-secrets
+  # type: Opaque
+  # data:
+  #   MASTER_USERNAME: YWRtaW4=
+  #   MASTER_KEY: YWRtaW4=
+  #
+  existingSettingSecret: ""
+
+ingress:
+  # -- Specifies whether an ingress for the api should be created
+  enabled: false
+  # -- Ingress Class Name.
+  ingressClassName: ""
+  # -- Annotations for the gateway ingress
+  annotations: {}
+  # -- Labels for the gateway ingress
+  labels: {}
+  # -- Hosts configuration for the api ingress, passed through the `tpl` function to allow templating
+  hosts:
+    - host: api.example.com
+      paths:
+        - path: /
+          # -- pathType (e.g. ImplementationSpecific, Prefix, .. etc.) might also be required by some Ingress Controllers
+          # pathType: Prefix
+  # -- TLS configuration for the gateway ingress. Hosts passed through the `tpl` function to allow templating
+  tls:
+    - secretName: api-example-com-tls
+      hosts:
+        - api.example.com
+
+postgresql:
+  # -- Install or not cnpg cluster
+  # Ensure CNPG Operator is installed on your cluster
+  enabled: false
+  # Values from cnpg/cluster charts https://github.com/cloudnative-pg/charts/tree/main/charts/cluster
+  fullnameOverride: "cluster-opengatellm"
+  version:
+    # -- PostgreSQL major version to use
+    postgresql: "16"
+  mode: standalone
+  # -- The original cluster name when used in backups. Also known as serverName.
+  clusterName: "cluster-opengatellm"
+  # -- Name of the database used by the application. Default: `api`.
+  database: api
+  pgBaseBackup:
+    database: api
+    source:
+      database: "api"
+  cluster:
+    # -- Number of instances
+    instances: 1
+    storage:
+      size: 1Gi
+      storageClass: ""
+    walStorage:
+      size: 1Gi
+      storageClass: ""
+    resources:
+      limits:
+        cpu: 250m
+        memory: 512Mi
+      requests:
+        cpu: 250m
+        memory: 512Mi
+    affinity:
+      topologyKey: topology.kubernetes.io/zone
+    logLevel: info
+    primaryUpdateMethod: switchover
+    primaryUpdateStrategy: unsupervised
+    enableSuperuserAccess: true
+    monitoring:
+      # -- Whether to enable monitoring
+      enabled: true
+      podMonitor:
+        # -- Whether to enable the PodMonitor
+        enabled: true
+    # -- BootstrapInitDB is the configuration of the bootstrap process when initdb is used.
+    initdb:
+      database: api
+      encoding: UTF8
+
+  # -- Configuration secret for an external PostgreSQL
+  #
+  # existingPostgresSecret: "postgres-secret"
+  #
+  # You need to create secret before install/upgrade
+  #
+  # apiVersion: v1
+  # kind: Secret
+  # metadata:
+  #   name: postgres-secret
+  # type: Opaque
+  # stringData:
+  #   POSTGRES_USER: api
+  #   POSTGRES_PASSWORD: changeme
+  #   POSTGRES_HOST: localhost
+  #   POSTGRES_PORT:5432
+  #   POSTGRES_URI: postgresql+asyncpg://api:changeme@localhost:5432/api
+  #
+  existingPostgresSecret: ""
+
+redis:
+  # -- Install or not redis-ha cluster
+  enabled: false
+  # Values from redis-ha chart https://github.com/DandyDeveloper/charts/tree/master/charts/redis-ha
+  # -- Redis name
+  name: redis
+  ## Redis image
+  image: {}
+    # -- Redis repository
+    #repository: ""
+    # -- Redis tag
+    #tag: ""
+  ## Prometheus redis-exporter sidecar
+  exporter:
+    # -- Enable Prometheus redis-exporter sidecar
+    enabled: false
+    # -- Repository to use for the redis-exporter
+    #image: ""
+    # -- Tag to use for the redis-exporter
+    #tag: ""
+  persistentVolume:
+    # -- Configures persistence on Redis nodes
+    enabled: false
+  ## Redis specific configuration options
+  redis:
+    # -- Redis convention for naming the cluster group: must match `^[\\w-\\.]+$` and can be templated
+    masterGroupName: opengatellm
+    # -- Any valid redis config options in this section will be applied to each server (see `redis-ha` chart)
+    # @default -- See [values.yaml]
+    config:
+      # -- Will save the DB if both the given number of seconds and the given number of write operations against the DB occurred. `""`  is disabled
+      # @default -- `'""'`
+      save: '""'
+
+  # -- Configures redis-ha with AUTH
+  auth: false
+  redisPassword: ""
+  ## Use existing secret containing key `authKey` (ignores redisPassword)
+  ## Can also store AWS S3 or SSH secrets in this secret
+  ## Supports templates like "{{ .Release.Name }}-creds"
+  # -- An existing secret containing a key defined by `authKey` that configures `requirepass` and `masterauth` in the conf
+  # parameters (Requires `auth: enabled`, cannot be used in conjunction with `.Values.redisPassword`)
+  existingSecret: ~
+  # -- Defines the key holding the redis password in existing secret.
+  authKey: REDIS_PASSWORD
+
+  sentinel:
+    auth: false
+    password: ~
+    # -- An existing secret containing a key defined by `sentinel.authKey` that configures `requirepass`
+    # in the conf parameters (Requires `sentinel.auth: enabled`, cannot be used in conjunction with `.Values.sentinel.password`)
+    # Supports templates like "{{ .Release.Name }}-sentinel-creds"
+    existingSecret: ""
+    ## Defines the key holding the sentinel password in existing secret.
+    # -- The key holding the sentinel password in an existing secret.
+    authKey: REDIS_PASSWORD
+
+  # -- Whether the Redis server pods should be forced to run on separate nodes.
+  hardAntiAffinity: true
+
+  # -- Redis HA statefulset container-level security context
+  # @default -- See [values.yaml]
+  containerSecurityContext:
+    readOnlyRootFilesystem: true
+
+  # -- Configuration secret for an external Redis
+  #
+  # existingRedisSecret: "redis-secret"
+  #
+  # You need to create secret before install/upgrade
+  #
+  # apiVersion: v1
+  # kind: Secret
+  # metadata:
+  #   name: redis-secret
+  # type: Opaque
+  # data:
+  #   REDIS_HOST: cmVkaXMub3BlbmdhdGVsbG0uc3ZjLmNsdXN0ZXIubG9jYWw=
+  #   REDIS_PORT: NjM3OQ==
+  #   REDIS_PASSWORD: Y2hhbmdlbWU=
+  #
+  existingRedisSecret: ""
