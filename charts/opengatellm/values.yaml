@@ -16,7 +16,7 @@ opengatellm:
     pullPolicy: IfNotPresent
 
   replicas: 1
-  revisionHistoryLimit: null
+  revisionHistoryLimit: ""
 
   resources:
     limits:
@@ -30,7 +30,7 @@ opengatellm:
   extraArgs: {}
 
   # -- The name of the PriorityClass for API pods
-  priorityClassName: null
+  priorityClassName: ""
 
   dnsConfig: {}
   nodeSelector: {}
@@ -49,8 +49,8 @@ opengatellm:
       httpGet:
         path: /health
         port: http
-      initialDelaySeconds: 10
-      periodSeconds: 30
+      initialDelaySeconds: 20
+      periodSeconds: 15
     liveness:
       httpGet:
         path: /health
@@ -95,14 +95,13 @@ opengatellm:
   structuredConfig:
     dependencies:
       postgres:
-        #url: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-changeme}@${POSTGRES_HOST:-localhost}:${POSTGRES_PORT:-5432}/api
+        #url: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/api
         url: ${POSTGRES_URI}
 
       redis:
-        #url: redis://:${REDIS_PASSWORD:-changeme}@${REDIS_HOST:-localhost}:${REDIS_PORT:-6379}
-        url: redis://:test@${REDIS_HOST}:${REDIS_PORT:-6379}
+        url: redis://:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}
     settings:
-      log_level: DEBUG
+      log_level: INFO
 
   #
   # -- Models list to append to opengatellm.config
@@ -133,9 +132,9 @@ opengatellm:
   # metadata:
   #   name: my-models-secrets
   # type: Opaque
-  # data:
-  #   ALBERT_URL: aHR0cHM6Ly9leGFtcGxlLmNvbS9hcGk=
-  #   ALBERT_KEY: YWRtaW4=
+  # stringData:
+  #   ALBERT_URL: https://example.com/api
+  #   ALBERT_KEY: changeme
   #
   existingModelSecret: ""
 
@@ -153,9 +152,9 @@ opengatellm:
   # metadata:
   #   name: my-settings-secrets
   # type: Opaque
-  # data:
-  #   MASTER_USERNAME: YWRtaW4=
-  #   MASTER_KEY: YWRtaW4=
+  # stringData:
+  #   MASTER_USERNAME: admin
+  #   MASTER_KEY: admin
   #
   existingSettingSecret: ""
 
@@ -189,7 +188,7 @@ postgresql:
   fullnameOverride: "cluster-opengatellm"
   version:
     # -- PostgreSQL major version to use
-    postgresql: "16"
+    postgresql: "17"
   mode: standalone
   # -- The original cluster name when used in backups. Also known as serverName.
   clusterName: "cluster-opengatellm"
@@ -223,10 +222,10 @@ postgresql:
     enableSuperuserAccess: true
     monitoring:
       # -- Whether to enable monitoring
-      enabled: true
+      enabled: false
       podMonitor:
         # -- Whether to enable the PodMonitor
-        enabled: true
+        enabled: false
     # -- BootstrapInitDB is the configuration of the bootstrap process when initdb is used.
     initdb:
       database: api
@@ -328,9 +327,10 @@ redis:
   # metadata:
   #   name: redis-secret
   # type: Opaque
-  # data:
-  #   REDIS_HOST: cmVkaXMub3BlbmdhdGVsbG0uc3ZjLmNsdXN0ZXIubG9jYWw=
-  #   REDIS_PORT: NjM3OQ==
-  #   REDIS_PASSWORD: Y2hhbmdlbWU=
+  # stringData:
+  #   REDIS_HOST: redis.opengatellm.svc.cluster.local
+  #   REDIS_PORT: 6379
+  #   REDIS_PASSWORD: changeme
+  #   REDISèUSER: api
   #
   existingRedisSecret: ""
