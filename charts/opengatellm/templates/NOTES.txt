@@ -1,0 +1,18 @@
+# File: opengatellm-stack/templates/NOTES.txt
+Thank you for installing {{ .Chart.Name }}.
+
+Your release is named {{ .Release.Name }}.
+
+To learn more about the release, try:
+
+  $ helm status {{ .Release.Name }}
+  $ helm get all {{ .Release.Name }}
+
+Access URLs:
+  NOTE: It may take a few minutes for all services to be in "Running" state. OpengateLLM needs to be restarted once the vLLM pod is up, so that it can pick up the new model.
+
+  To find the public IP addresses:
+    $ kubectl describe svc -n {{ default .Release.Namespace .Values.namespaceOverride | default "default" }} opengatellm
+
+  Use the "LoadBalancer Ingress" IP to access to service:
+  - OpenGateLLM: http://<OGL LoadBalancer Ingress IP>:{{ .Values.opengatellm.service.port }}

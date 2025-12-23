@@ -1,0 +1,17 @@
+apiVersion: v2
+name: opengatellm
+description: A Helm chart for OpenGateLLM
+type: application
+version: 0.1.0
+appVersion: "0.3.6"
+dependencies:
+  - name: redis-ha
+    alias: redis
+    repository: https://dandydeveloper.github.io/charts/
+    version: 4.35.5
+    conditions: redis.enabled
+  - name: cluster
+    alias: postgresql
+    repository: https://cloudnative-pg.github.io/charts
+    version: 0.3.1
+    conditions: postgresql.enabled
