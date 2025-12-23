@@ -68,6 +68,11 @@ spec:
             value: {{ printf "%s-redis" .Release.Name }}
           - name: REDIS_PORT
             value: "{{ default 6379 .Values.redis.redis.port }}"
+          - name: REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ printf "%s-redis" .Release.Name }}
+                key: {{ default .Values.redis.authKey .Values.redis.sentinel.authKey }}
           {{- end }}
           {{- if not .Values.postgresql.existingPostgresSecret }}
           - name: POSTGRES_URI
