@@ -1,5 +1,15 @@
 This repository contains the helm chart to deploy [opengatellm](https://github.com/etalab-ia/OpenGateLLM/tree/main) and its components on Kubernetes.
 
+> ⚠️ Disclaimer  
+> This Helm chart is maintained on a **best-effort basis** by the OGL team.
+>  
+> Our production deployment is currently **not running on Kubernetes**, as we are still in the process of migrating.
+> As a result, this chart may not yet include all Kubernetes production best practices.
+>  
+> That said, migrating to Kubernetes is an active goal for us, and this repository will be continuously improved along the way.
+> If you notice any unexpected behavior or bugs, please feel free to open an issue — we’ll do our best to respond quickly.
+
+
 ## Repository structure
 
 - In `opengatellm-stack` folder, there is the helm chart to deploy opengatellm and its components on Kubernetes.
