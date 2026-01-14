@@ -5,7 +5,6 @@ global:
 opengatellm:
   enabled: true
 
-  # PostgreSQL configuration override to create playground database
   postgresql:
     cluster:
       initdb:
@@ -19,11 +18,14 @@ opengatellm:
       tag: 0.3.6
       pullPolicy: IfNotPresent
     service:
-      type: LoadBalancer
+      type: ClusterIP
       port: 80
       targetPort: 8000
 
-    gunicornArgs: "--workers 4 --worker-connections 1000 --timeout 120 --keep-alive 75 --graceful-timeout 75 --access-logfile -"
+    gunicornArgs: "--workers 4 --worker-connections 1000 --timeout 120 --keep-alive 75 --graceful-timeout 75 --log-config /home/opengatellm/logging/logging.conf"
+
+    logging:
+      level: "INFO"
 
     # ----------------------------------- models ------------------------------------
     models:
@@ -82,8 +84,6 @@ opengatellm:
     structuredConfig:
       dependencies:
         postgres:
-          # Use environment variable from CNPG cluster secret
-          # The deployment will automatically set POSTGRES_URI from the cluster secret
           url: ${POSTGRES_URI}
           echo: False
           pool_size: 5
@@ -92,8 +92,6 @@ opengatellm:
               statement_timeout: "120s"
             command_timeout: 60
         redis:
-          # Use environment variables from redis-ha secret
-          # The deployment will automatically set these from the redis secret
           url: redis://:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}
 
         elasticsearch:
@@ -101,7 +99,7 @@ opengatellm:
           hosts: "http://opengatellm-elasticsearch-es-http:9200"
 
       settings:
-        log_level: DEBUG
+        log_level: INFO
         vector_store_model: "BAAI/bge-m3"
 
       playground:
@@ -122,8 +120,6 @@ opengatellm:
         session_secret_key: changeme
         proconnect_enabled: False
         postgres:
-          # Build playground database URL from individual CNPG secret components
-          # The deployment injects POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASSWORD
           url: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/playground
 
     probes:
@@ -147,7 +143,7 @@ playground:
     tag: 0.3.6
     pullPolicy: IfNotPresent
   service:
-    type: LoadBalancer
+    type: ClusterIP
     port: 80
     targetPort: 8501
   probes:
@@ -163,7 +159,7 @@ playground:
 vllm-stack:
   enabled: true
   routerSpec:
-    serviceType: LoadBalancer
+    serviceType: ClusterIP
     servicePort: 80
     resources:
       requests:
@@ -173,15 +169,12 @@ vllm-stack:
         memory: 2Gi
   servingEngineSpec:
     enableEngine: true
-    # API key for securing vLLM - value will be overridden from values-secrets.yaml
     vllmApiKey: "changeme"
     modelSpec:
       - name: "mistral-small"
         repository: vllm/vllm-openai
         tag: v0.11.0
         imagePullPolicy: IfNotPresent
-
-        # Model configuration
         modelURL: mistralai/Mistral-Small-3.2-24B-Instruct-2506
         # modelURL: neuralmagic/Meta-Llama-3.1-70B-Instruct-FP8
         # modelURL: meta-llama/Llama-3.1-8B-Instruct
@@ -191,10 +184,10 @@ vllm-stack:
         # modelURL: mistralai/Magistral-Small-2506
 
         replicaCount: 1
-
-        # Resource configuration
         requestCPU: 20
         requestMemory: "200G"
+        # IMPORTANT: Set requestGPU to 0 if no GPU available, otherwise pod stays in Pending state
+        # Use `kubectl describe pod <vllm-pod>` to check GPU availability
         requestGPU: 1
         limitCPU: "22"
         limitMemory: "230G"
@@ -220,7 +213,6 @@ vllm-stack:
             - "mistral"
             - "--enable-auto-tool-choice"
 
-        # Hugging Face token from existing secret
         hf_token:
           secretName: "huggingface-token"
           secretKey: "token"
@@ -312,11 +304,7 @@ huggingface:
 elasticsearch:
   enabled: true
   version: "9.0.8"
-
-  # Single node configuration
   replicas: 1
-
-  # Resources
   resources:
     requests:
       cpu: "100m"
@@ -324,8 +312,6 @@ elasticsearch:
     limits:
       cpu: "400m"
       memory: "4Gi"
-
-  # Persistence
   persistence:
     enabled: true
     size: 8Gi

@@ -20,6 +20,9 @@ opengatellm:
 
   gunicornArgs: ""
 
+  logging:
+    level: "INFO"
+
   resources:
     limits:
       cpu: "200m"
@@ -91,7 +94,7 @@ opengatellm:
         url: redis://:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}
 
     settings:
-      log_level: DEBUG
+      log_level: INFO
 
     models:
       {{ toYaml .Values.opengatellm.models | nindent 8 }}

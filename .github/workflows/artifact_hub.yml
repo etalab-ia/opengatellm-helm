@@ -29,13 +29,18 @@ jobs:
           helm repo add bitnami https://charts.bitnami.com/bitnami
           helm repo add vllm https://vllm-project.github.io/production-stack
           helm repo add elastic https://helm.elastic.co
+          helm repo add dandydeveloper https://dandydeveloper.github.io/charts/
+          helm repo add cloudnative-pg https://cloudnative-pg.github.io/charts
           helm repo update
-          helm dependency update opengatellm-stack
+
+          # Update dependencies for both charts
+          helm dependency update charts/opengatellm
+          helm dependency update charts/opengatellm-stack
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.6.0
         with:
-          charts_dir: .
+          charts_dir: charts
           skip_existing: true
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"

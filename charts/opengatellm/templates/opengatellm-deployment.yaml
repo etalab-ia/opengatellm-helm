@@ -60,6 +60,9 @@ spec:
             - name: config
               mountPath: /home/opengatellm/conf
               readOnly: true
+            - name: logging-config
+              mountPath: /home/opengatellm/logging
+              readOnly: true
           env:
           - name: CONFIG_FILE
             value: "/home/opengatellm/conf/config.yml"
@@ -154,8 +157,11 @@ spec:
         - name: config
           projected:
             sources:
-            - configMap: 
+            - configMap:
                 name: opengatellm-config
+        - name: logging-config
+          configMap:
+            name: opengatellm-logging-config
         {{- if .Values.opengatellm.extraVolumes }}
         {{- toYaml .Values.opengatellm.extraVolumes | nindent 8}}
         {{- end }}
