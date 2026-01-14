@@ -4,16 +4,25 @@ global:
 
 opengatellm:
   enabled: true
-  replicas: 1
-  image:
-    repository: ghcr.io/etalab-ia/opengatellm/api
-    tag: 0.3.5post2
-    pullPolicy: IfNotPresent
-  service:
-    type: LoadBalancer
-    port: 80
-    targetPort: 8000
-  config:
+
+  # PostgreSQL configuration override to create playground database
+  postgresql:
+    cluster:
+      initdb:
+        postInitApplicationSQL:
+          - CREATE DATABASE playground WITH ENCODING 'UTF8';
+
+  opengatellm:
+    replicas: 1
+    image:
+      repository: ghcr.io/etalab-ia/opengatellm/api
+      tag: 0.3.6
+      pullPolicy: IfNotPresent
+    service:
+      type: LoadBalancer
+      port: 80
+      targetPort: 8000
+
     # ----------------------------------- models ------------------------------------
     models:
       - name: albert-testbed
@@ -24,14 +33,14 @@ opengatellm:
             url: "http://albert-testbed.etalab.gouv.fr:8000"
             key: "changeme"
 
-
       - name: mistralai/Mistral-Small-3.2-24B-Instruct-2506
         type: text-generation
         providers:
           - type: vllm
             model_name: "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
-            # Note: Update service name based on your release name: <release-name>-router-service
-            url: "http://opengatellm-stack-router-service/"
+            # Note: vLLM router service name follows pattern: <release-name>-router-service
+            # Update this URL if you change the Helm release name
+            url: "http://opengatellm-router-service/"
             key: "changeme"
 
 #      - name: mistralai/Voxtral-Mini-3B-2507
@@ -39,8 +48,9 @@ opengatellm:
 #        providers:
 #          - type: vllm
 #            model_name: "mistralai/Voxtral-Mini-3B-2507"
-#            # Note: Update service name based on your release name: <release-name>-router-service
-#            url: "http://opengatellm-stack-router-service/"
+#            # Note: vLLM router service name follows pattern: <release-name>-router-service
+#            # Update this URL if you change the Helm release name
+#            url: "http://opengatellm-router-service/"
 #            key: "changeme"
 
       # If embeddings are deployed through vLLM, use this version :
@@ -49,77 +59,90 @@ opengatellm:
 #        providers:
 #          - type: vllm
 #            model_name: "BAAI/bge-m3"
-#            url: "http://opengatellm-stack-router-service/"
+#            # Note: vLLM router service name follows pattern: <release-name>-router-service
+#            # Update this URL if you change the Helm release name
+#            url: "http://opengatellm-router-service/"
 #            key: "changeme"
 
-        # If embeddings are deployed through TEI, use this version :
+      # If embeddings are deployed through TEI, use this version :
       - name: BAAI/bge-m3
         type: text-embeddings-inference
         dimensions: 1024
         providers:
-         - type: tei
-           model_name: "BAAI/bge-m3"
-           url: "http://opengatellm-stack-embeddings/"
-           key: "changeme"
+          - type: tei
+            model_name: "BAAI/bge-m3"
+            # Note: TEI embeddings service name is defined in this stack chart
+            # Pattern: opengatellm-stack-embeddings (hardcoded in templates/embeddings-service.yaml)
+            url: "http://opengatellm-stack-embeddings/"
+            key: "changeme"
 
-    # -------------------------------- dependencies ---------------------------------
-    dependencies:
-      postgres:
-        # Note: Update service name based on your release name: <release-name>-postgresql
-        url: "postgresql+asyncpg://postgres:changeme@opengatellm-stack-postgresql:5432/api"
-        echo: False
-        pool_size: 5
-        connect_args:
-          server_settings:
-            statement_timeout: "120s"
-          command_timeout: 60
-      redis:
-        # Note: Update service name based on your release name: <release-name>-redis-master
-        url: "redis://:changeme@opengatellm-stack-redis-master:6379"
+    # -------------------------------- structured config override ---------------------------------
+    structuredConfig:
+      dependencies:
+        postgres:
+          # Use environment variable from CNPG cluster secret
+          # The deployment will automatically set POSTGRES_URI from the cluster secret
+          url: ${POSTGRES_URI}
+          echo: False
+          pool_size: 5
+          connect_args:
+            server_settings:
+              statement_timeout: "120s"
+            command_timeout: 60
+        redis:
+          # Use environment variables from redis-ha secret
+          # The deployment will automatically set these from the redis secret
+          url: redis://:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}
 
-      elasticsearch:
-        hosts: "http://opengatellm-stack-elasticsearch-master:9200"
+        elasticsearch:
+          # Note: Service name follows pattern: <release-name>-elasticsearch-es-http (ECK pattern)
+          hosts: "http://opengatellm-elasticsearch-es-http:9200"
 
-    settings:
-      vector_store_model: "BAAI/bge-m3"
+      settings:
+        log_level: INFO
+        vector_store_model: "BAAI/bge-m3"
 
-    playground:
-      # Playground configuration used by 0.3.0+
-      api_url: "http://opengatellm-stack-api"
-      default_model: ""
-      app_title: "OpenGateLLM"
-      theme_has_background: true
-      theme_accent_color: "purple"
-      theme_appearance: "light"
-      theme_gray_color: "gray"
-      theme_panel_background: "solid"
-      theme_radius: "medium"
-      theme_scaling: "100%"
-      # Legacy settings
-      encryption_key: changeme
-      session_secret_key: changeme
-      proconnect_enabled: False
-      postgres:
-        # Update service name based on your release name: <release-name>-postgresql
-        url: postgresql+asyncpg://postgres:changeme@opengatellm-stack-postgresql:5432/playground
+      playground:
+        # Note: The OpenGateLLM API service name is 'opengatellm' by default
+        # Update this if you override the service name with opengatellm.fullnameOverride
+        api_url: "http://opengatellm:8000"
+        default_model: ""
+        app_title: "OpenGateLLM"
+        theme_has_background: true
+        theme_accent_color: "purple"
+        theme_appearance: "light"
+        theme_gray_color: "gray"
+        theme_panel_background: "solid"
+        theme_radius: "medium"
+        theme_scaling: "100%"
+        # Legacy settings
+        encryption_key: changeme
+        session_secret_key: changeme
+        proconnect_enabled: False
+        postgres:
+          # Build playground database URL from individual CNPG secret components
+          # The deployment injects POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASSWORD
+          url: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/playground
 
-  probes:
-    readiness:
-      enabled: false
-      path: /health
-      initialDelaySeconds: 10
-      periodSeconds: 30
-    liveness:
-      enabled: false
-      path: /health
-      initialDelaySeconds: 60
-      periodSeconds: 30
+    probes:
+      readiness:
+        httpGet:
+          path: /health
+          port: http
+        initialDelaySeconds: 10
+        periodSeconds: 30
+      liveness:
+        httpGet:
+          path: /health
+          port: http
+        initialDelaySeconds: 60
+        periodSeconds: 30
 
 playground:
   replicas: 1
   image:
     repository: ghcr.io/etalab-ia/opengatellm/playground
-    tag: 0.3.5post2
+    tag: 0.3.6
     pullPolicy: IfNotPresent
   service:
     type: LoadBalancer
@@ -280,56 +303,8 @@ embeddings:
 #         secretName: "huggingface-token"
 #         secretKey: "token"
 
-redis:
-  enabled: true
-  fullnameOverride: opengatellm-stack-redis
-  architecture: standalone
-  auth:
-    enabled: true
-    password: "changeme"
-  image:
-    registry: docker.io
-    repository: redis/redis-stack-server
-    tag: 7.4.0-v8
-  global:
-    security:
-      # Allow official Redis Stack image instead of the default minimal bitnami one
-      allowInsecureImages: true
-  commonConfiguration: |-
-    # Load Redis Stack modules from correct path
-    loadmodule /opt/redis-stack/lib/redistimeseries.so
-    loadmodule /opt/redis-stack/lib/rejson.so
-    loadmodule /opt/redis-stack/lib/redisearch.so
-    loadmodule /opt/redis-stack/lib/redisbloom.so
-    # Enable AOF https://redis.io/topics/persistence#append-only-file
-    appendonly yes
-    # Disable RDB persistence, AOF persistence already enabled.
-    save ""
-  master:
-    persistence:
-      enabled: true
-      size: 10Gi
-    resources: {}
-  replica:
-    # Single instance mode
-    replicaCount: 0
-
-
-postgresql:
-  enabled: true
-  auth:
-    username: postgres
-    password: changeme
-    database: postgres
-  primary:
-    persistence:
-      enabled: true
-      size: 8Gi
-    initdb:
-      scripts:
-        init-db.sql: |
-          CREATE DATABASE api WITH ENCODING 'utf8';
-    resources: {}
+huggingface:
+  token: "changeme"
 
 # ES deployment follows this recommended deployment : https://www.elastic.co/docs/deploy-manage/deploy/cloud-on-k8s/install-using-helm-chart
 elasticsearch:
@@ -345,7 +320,7 @@ elasticsearch:
       cpu: "100m"
       memory: "1Gi"
     limits:
-      cpu: "1000m"
+      cpu: "200m"
       memory: "2Gi"
 
   # Persistence

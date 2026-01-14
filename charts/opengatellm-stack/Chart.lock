@@ -1,0 +1,15 @@
+dependencies:
+- name: opengatellm
+  repository: file://../opengatellm
+  version: 0.1.0
+- name: vllm-stack
+  repository: https://vllm-project.github.io/production-stack
+  version: 0.1.8
+- name: eck-operator-crds
+  repository: https://helm.elastic.co
+  version: 3.2.0
+- name: eck-operator
+  repository: https://helm.elastic.co
+  version: 3.2.0
+digest: sha256:607c84e74cc877fa3fc5899033559e5adc7406850a8367cc4fdddca40a8e96e0
+generated: "2026-01-13T14:56:59.284381+01:00"

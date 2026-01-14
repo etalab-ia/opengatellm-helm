@@ -15,7 +15,7 @@ Access URLs:
     $ kubectl get svc -n {{ .Release.Namespace }} | grep LoadBalancer
 
   Use the "EXTERNAL-IP" to access each service:
-  - API: http://<API-EXTERNAL-IP>:{{ .Values.opengatellm.service.port }}
+  - API: http://<API-EXTERNAL-IP>:{{ .Values.opengatellm.opengatellm.service.port }}
   - Playground: http://<Playground-EXTERNAL-IP>:{{ .Values.playground.service.port }}
   {{- if index .Values "vllm-stack" "enabled" }}
   - vLLM Router: http://<Router-EXTERNAL-IP>:{{ index .Values "vllm-stack" "routerSpec" "servicePort" }}

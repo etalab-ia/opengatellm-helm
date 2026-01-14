@@ -27,6 +27,48 @@ spec:
         env:
           - name: CONFIG_FILE
             value: "/home/opengatellm/conf/config.yml"
+          {{- if not .Values.opengatellm.redis.existingRedisSecret }}
+          - name: REDIS_HOST
+            value: {{ printf "%s-redis" .Release.Name }}
+          - name: REDIS_PORT
+            value: "{{ default 6379 .Values.opengatellm.redis.redis.port }}"
+          - name: REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ printf "%s-redis" .Release.Name }}
+                key: {{ default .Values.opengatellm.redis.authKey .Values.opengatellm.redis.sentinel.authKey }}
+          {{- end }}
+          {{- if not .Values.opengatellm.postgresql.existingPostgresSecret }}
+          - name: POSTGRES_HOST
+            valueFrom:
+              secretKeyRef:
+                name: {{ printf "%s-app" .Values.opengatellm.postgresql.clusterName }}
+                key: host
+          - name: POSTGRES_PORT
+            valueFrom:
+              secretKeyRef:
+                name: {{ printf "%s-app" .Values.opengatellm.postgresql.clusterName }}
+                key: port
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ printf "%s-app" .Values.opengatellm.postgresql.clusterName }}
+                key: user
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ printf "%s-app" .Values.opengatellm.postgresql.clusterName }}
+                key: password
+          {{- end }}
+        envFrom:
+          {{- if .Values.opengatellm.redis.existingRedisSecret }}
+          - secretRef:
+              name: {{ .Values.opengatellm.redis.existingRedisSecret }}
+          {{- end }}
+          {{- if .Values.opengatellm.postgresql.existingPostgresSecret }}
+          - secretRef:
+              name: {{ .Values.opengatellm.postgresql.existingPostgresSecret }}
+          {{- end }}
         ports:
           - containerPort: {{ .Values.playground.service.targetPort }}
         volumeMounts:

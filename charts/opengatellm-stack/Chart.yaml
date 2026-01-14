@@ -6,18 +6,10 @@ version: 0.4.0
 appVersion: "0.3.5post2"
 
 dependencies:
-  - name: postgresql
-    version: "18.1.11"
-    repository: "https://charts.bitnami.com/bitnami"
-    condition: postgresql.enabled
-    tags:
-      - opengatellm-stack-database
-  - name: redis
-    version: "23.2.12"
-    repository: "https://charts.bitnami.com/bitnami"
-    condition: redis.enabled
-    tags:
-      - opengatellm-stack-cache
+  - name: opengatellm
+    version: "0.1.0"
+    repository: "file://../opengatellm"
+    condition: opengatellm.enabled
   - name: vllm-stack
     version: "0.1.8"
     repository: "https://vllm-project.github.io/production-stack"

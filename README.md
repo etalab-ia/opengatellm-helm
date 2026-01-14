@@ -12,8 +12,11 @@ This repository contains the helm chart to deploy [opengatellm](https://github.c
 
 ## Repository structure
 
-- In `opengatellm-stack` folder, there is the helm chart to deploy opengatellm and its components on Kubernetes.
-- `manifests` contains an old helm chart version used for deployment on LaSuite.
+This repository provides two Helm charts:
+
+- **`charts/opengatellm`** - Core chart for deploying OpenGateLLM with Redis (Stack) and PostgreSQL (CloudNative-PG) dependencies
+- **`charts/opengatellm-stack`** - Complete stack chart including OpenGateLLM core + inference (vLLM), embeddings (TEI), and search (Elasticsearch)
+- `manifests` - Legacy helm chart version used for deployment on LaSuite (deprecated)
 
 ## Infrastructure provisioning
 - Create a kubernetes cluster with the provider of your choice.

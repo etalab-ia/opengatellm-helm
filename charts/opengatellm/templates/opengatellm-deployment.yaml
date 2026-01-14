@@ -1,0 +1,158 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opengatellm
+  namespace: {{ default .Release.Namespace .Values.namespaceOverride | quote }}
+  labels:
+    {{- include "opengatellm.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+  annotations:
+    {{- toYaml .Values.opengatellm.annotations | nindent 4 }}
+spec:
+  replicas: {{ .Values.opengatellm.replicas }}
+  {{- with .Values.opengatellm.revisionHistoryLimit }}
+  revisionHistoryLimit: {{ . }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: opengatellm
+  strategy:
+    {{- toYaml .Values.opengatellm.strategy | nindent 4 }}
+  template:
+    metadata:
+      annotations:
+        {{- include "opengatellm.config.checksum" . | nindent 8 }}
+      labels:
+        app: opengatellm
+        app.kubernetes.io/component: api
+      namespace: {{ default .Release.Namespace .Values.namespaceOverride | quote }}
+    spec:
+      serviceAccountName: {{ template "opengatellm.serviceAccountName" . }}
+      {{- if .Values.opengatellm.priorityClassName }}
+      priorityClassName: {{ .Values.opengatellm.priorityClassName }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.opengatellm.securityContext | nindent 8 }}
+      {{- with .Values.opengatellm.initContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.image.pullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.image.pullSecrets }}
+        - name: {{ . }}
+      {{- end }}
+      {{- end }}
+      containers:
+        - name: opengatellm
+          image: "{{ .Values.opengatellm.image.repository }}:{{ .Values.opengatellm.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.opengatellm.image.pullPolicy }}
+          {{- if .Values.opengatellm.extraArgs }}
+          args:
+          {{- range $key, $value := .Values.opengatellm.extraArgs }}
+            - -{{ $key }}={{ $value }}
+          {{- end }}
+          {{- end }}
+          volumeMounts:
+            {{- if .Values.opengatellm.extraVolumeMounts }}
+              {{ toYaml .Values.opengatellm.extraVolumeMounts | nindent 12}}
+            {{- end }}
+            - name: config
+              mountPath: /home/opengatellm/conf
+              readOnly: true
+          env:
+          - name: CONFIG_FILE
+            value: "/home/opengatellm/conf/config.yml"
+          {{- if not .Values.redis.existingRedisSecret }}
+          - name: REDIS_HOST
+            value: {{ printf "%s-redis" .Release.Name }}
+          - name: REDIS_PORT
+            value: "{{ default 6379 .Values.redis.redis.port }}"
+          - name: REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ printf "%s-redis" .Release.Name }}
+                key: {{ default .Values.redis.authKey .Values.redis.sentinel.authKey }}
+          {{- end }}
+          {{- if not .Values.postgresql.existingPostgresSecret }}
+          - name: POSTGRES_URI
+            valueFrom:
+              secretKeyRef:
+                name: {{ printf "%s-app" .Values.postgresql.clusterName }}
+                key: uri
+          - name: POSTGRES_HOST
+            valueFrom:
+              secretKeyRef:
+                name: {{ printf "%s-app" .Values.postgresql.clusterName }}
+                key: host
+          - name: POSTGRES_PORT
+            valueFrom:
+              secretKeyRef:
+                name: {{ printf "%s-app" .Values.postgresql.clusterName }}
+                key: port
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ printf "%s-app" .Values.postgresql.clusterName }}
+                key: user
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ printf "%s-app" .Values.postgresql.clusterName }}
+                key: password
+          {{- end }}
+          envFrom:
+            {{- if .Values.existingModelSecret }}
+            - secretRef:
+                name: {{ .Values.existingModelSecret }}
+            {{- end }}
+            {{- if .Values.postgresql.existingPostgresSecret }}
+            - secretRef:
+                name: {{ .Values.postgresql.existingPostgresSecret }}
+            {{- end }}
+            {{- if .Values.redis.existingRedisSecret }}
+            - secretRef:
+                name: {{ .Values.redis.existingRedisSecret }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          livenessProbe:
+            {{- toYaml .Values.opengatellm.probes.liveness | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.opengatellm.probes.readiness | nindent 12 }}
+          resources:
+            {{- toYaml .Values.opengatellm.resources | nindent 12 }}
+          securityContext:
+            {{- toYaml .Values.opengatellm.containerSecurityContext | nindent 12 }}   
+{{- if .Values.opengatellm.extraContainers }}
+{{ toYaml .Values.opengatellm.extraContainers | indent 8}}
+{{- end }}
+      {{- with .Values.opengatellm.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.opengatellm.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.opengatellm.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.opengatellm.terminationGracePeriodSeconds }}
+      {{- with .Values.opengatellm.dnsConfig }}
+      dnsConfig:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: config
+          projected:
+            sources:
+            - configMap: 
+                name: opengatellm-config
+        {{- if .Values.opengatellm.extraVolumes }}
+        {{- toYaml .Values.opengatellm.extraVolumes | nindent 8}}
+        {{- end }}
+
