@@ -27,6 +27,8 @@ spec:
         env:
           - name: CONFIG_FILE
             value: "/home/opengatellm/conf/config.yml"
+          - name: OPENGATELLM_URL
+            value: {{ .Values.opengatellm.opengatellm.structuredConfig.playground.api_url | quote }}
           {{- if not .Values.opengatellm.redis.existingRedisSecret }}
           - name: REDIS_HOST
             value: {{ printf "%s-redis" .Release.Name }}

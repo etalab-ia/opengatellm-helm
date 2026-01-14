@@ -63,6 +63,10 @@ spec:
           env:
           - name: CONFIG_FILE
             value: "/home/opengatellm/conf/config.yml"
+          {{- with .Values.opengatellm.gunicornArgs }}
+          - name: GUNICORN_CMD_ARGS
+            value: {{ . | quote }}
+          {{- end }}
           {{- if not .Values.redis.existingRedisSecret }}
           - name: REDIS_HOST
             value: {{ printf "%s-redis" .Release.Name }}

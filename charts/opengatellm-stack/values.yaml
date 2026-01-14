@@ -23,6 +23,8 @@ opengatellm:
       port: 80
       targetPort: 8000
 
+    gunicornArgs: "--workers 4 --worker-connections 1000 --timeout 120 --keep-alive 75 --graceful-timeout 75 --access-logfile -"
+
     # ----------------------------------- models ------------------------------------
     models:
       - name: albert-testbed
@@ -99,13 +101,13 @@ opengatellm:
           hosts: "http://opengatellm-elasticsearch-es-http:9200"
 
       settings:
-        log_level: INFO
+        log_level: DEBUG
         vector_store_model: "BAAI/bge-m3"
 
       playground:
         # Note: The OpenGateLLM API service name is 'opengatellm' by default
         # Update this if you override the service name with opengatellm.fullnameOverride
-        api_url: "http://opengatellm:8000"
+        api_url: "http://opengatellm"
         default_model: ""
         app_title: "OpenGateLLM"
         theme_has_background: true
@@ -320,8 +322,8 @@ elasticsearch:
       cpu: "100m"
       memory: "1Gi"
     limits:
-      cpu: "200m"
-      memory: "2Gi"
+      cpu: "400m"
+      memory: "4Gi"
 
   # Persistence
   persistence:

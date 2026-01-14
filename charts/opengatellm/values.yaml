@@ -12,11 +12,13 @@ opengatellm:
     labels: {}
   image:
     repository: ghcr.io/etalab-ia/opengatellm/api
-    #tag: ""
+    tag: "0.3.6"
     pullPolicy: IfNotPresent
 
   replicas: 1
   revisionHistoryLimit: ""
+
+  gunicornArgs: ""
 
   resources:
     limits:
@@ -55,7 +57,7 @@ opengatellm:
       httpGet:
         path: /health
         port: http
-      initialDelaySeconds: 60
+      initialDelaySeconds: 120
       periodSeconds: 30
 
   # -- The SecurityContext for API deployment
