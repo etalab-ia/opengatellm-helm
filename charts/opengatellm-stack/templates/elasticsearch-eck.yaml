@@ -6,10 +6,6 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "opengatellm-stack.labels" . | nindent 4 }}
-  annotations:
-    "helm.sh/hook": post-install,post-upgrade
-    "helm.sh/hook-weight": "5"
-    "helm.sh/hook-delete-policy": before-hook-creation
 spec:
   version: {{ .Values.elasticsearch.version }}
   nodeSets:
@@ -48,29 +44,4 @@ spec:
         resources:
           requests:
             storage: {{ .Values.elasticsearch.persistence.size | default "8Gi" }}
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{ .Release.Name }}-elasticsearch-master
-  namespace: {{ .Release.Namespace }}
-  labels:
-    {{- include "opengatellm-stack.labels" . | nindent 4 }}
-  annotations:
-    "helm.sh/hook": post-install,post-upgrade
-    "helm.sh/hook-weight": "10"
-    "helm.sh/hook-delete-policy": before-hook-creation
-spec:
-  type: ClusterIP
-  ports:
-    - port: 9200
-      name: http
-      protocol: TCP
-      targetPort: 9200
-    - port: 9300
-      name: transport
-      protocol: TCP
-      targetPort: 9300
-  selector:
-    elasticsearch.k8s.elastic.co/cluster-name: {{ .Release.Name }}-elasticsearch
 {{- end }}

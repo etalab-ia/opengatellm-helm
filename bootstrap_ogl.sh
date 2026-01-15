@@ -6,7 +6,7 @@
 set -e  # Exit on error
 
 # Configuration
-BASE_URL="http://212.47.237.34"
+BASE_URL="http://localhost:8000"
 ADMIN_API_KEY="changeme"
 
 echo "=== OpenGateLLM Bootstrap Script ==="
@@ -37,6 +37,41 @@ fi
 # 2. Create Missing Providers
 # ============================================================================
 echo "2. Creating missing providers..."
+
+# Check if albert-testbed router exists and needs a provider
+ALBERT_ROUTER_ID=$(echo $ROUTERS | jq -r '.data[] | select(.name == "albert-testbed") | .id')
+if [ -n "$ALBERT_ROUTER_ID" ] && [ "$ALBERT_ROUTER_ID" != "null" ]; then
+  ALBERT_PROVIDERS=$(echo $ROUTERS | jq -r ".data[] | select(.id == $ALBERT_ROUTER_ID) | .providers")
+
+  if [ "$ALBERT_PROVIDERS" = "0" ]; then
+    echo "   Creating provider for albert-testbed (Router ID ${ALBERT_ROUTER_ID})..."
+    PROVIDER_ALBERT=$(curl -s -X POST "${BASE_URL}/v1/admin/providers" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer ${ADMIN_API_KEY}" \
+      -d '{
+        "router": '${ALBERT_ROUTER_ID}',
+        "type": "vllm",
+        "url": "http://albert-testbed.etalab.gouv.fr:8000",
+        "key": "changeme",
+        "model_name": "gemma3:1b",
+        "timeout": 300,
+        "model_carbon_footprint_zone": "WOR",
+        "model_carbon_footprint_total_params": 0,
+        "model_carbon_footprint_active_params": 0
+      }')
+
+    PROVIDER_ALBERT_ID=$(echo $PROVIDER_ALBERT | jq -r '.id')
+    if [ "$PROVIDER_ALBERT_ID" != "null" ]; then
+      echo "   ✓ Provider created for albert-testbed with ID: ${PROVIDER_ALBERT_ID}"
+    else
+      echo "   ✗ Failed to create provider. Response: $PROVIDER_ALBERT"
+    fi
+  else
+    echo "   ✓ Provider already exists for albert-testbed (Router ID ${ALBERT_ROUTER_ID})"
+  fi
+else
+  echo "   ⚠ Router 'albert-testbed' not found, skipping provider creation"
+fi
 
 # Check if router ID 3 exists and needs a provider
 ROUTER_3_EXISTS=$(echo $ROUTERS | jq -r '.data[] | select(.id == 3) | .id')
