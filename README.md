@@ -14,8 +14,8 @@ This repository contains the helm chart to deploy [opengatellm](https://github.c
 
 This repository provides two Helm charts:
 
-- **`charts/opengatellm`** - Core chart for deploying OpenGateLLM API with Redis and PostgreSQL (CloudNative-PG)
-- **`charts/opengatellm-stack`** - Complete stack chart including OpenGateLLM core + vLLM inference, TEI embeddings, and Elasticsearch
+- **`charts/opengatellm`** - Core chart for deploying OpenGateLLM API and its mandatory dependencies : Redis and PostgreSQL
+- **`charts/opengatellm-stack`** - Chart based on OpenGateLLM core + optional dependencies : vLLM inference, TEI embeddings, and Elasticsearch
 - `manifests` - Legacy helm chart version used for deployment on LaSuite (deprecated)
 
 Each chart has its own README with detailed documentation:
@@ -24,28 +24,31 @@ Each chart has its own README with detailed documentation:
 
 ## Prerequisites
 
-### CloudNative-PG Operator
-
-Before deploying any chart, you must install the CloudNative-PG operator for PostgreSQL:
-
-```bash
-# Install CloudNative-PG operator
-helm repo add cnpg https://cloudnative-pg.github.io/charts
-helm repo update
-helm install cnpg \
-  --namespace cnpg-system \
-  --create-namespace \
-  cnpg/cloudnative-pg
-
-# Verify the operator is running
-kubectl get pods -n cnpg-system
-```
-
 ### Infrastructure provisioning
 
 - Create a kubernetes cluster with the provider of your choice
 - We recommend having at least 3 nodes, including one with a GPU sized for the LLM you wish to use (if using vLLM)
 - Verify the connection with your cluster: `kubectl get nodes`
+
+
+### K8S Operator
+
+Before deploying the core chart, you must install the PostgreSQL operator :
+
+```bash
+# Install CloudNative-PG operator
+helm repo add cnpg https://cloudnative-pg.github.io/charts
+helm install cnpg cnpg/cloudnative-pg --namespace cnpg-system --create-namespace
+```
+
+If you deploy the stack chart, you also need the ECK operator
+```bash
+# Install ECK operator 
+helm repo add elastic https://helm.elastic.co
+helm install elastic-operator elastic/eck-operator --namespace elastic-system --create-namespace
+
+```
+
 
 ## Deployment
 
@@ -54,19 +57,16 @@ kubectl get pods -n cnpg-system
 ```bash
 cd charts/opengatellm-stack
 
+# Customize values.yaml for your needs (resources, models, etc.)
 # Copy and customize the secrets file
 cp values-secrets.example.yaml values-secrets.yaml
-vim values-secrets.yaml
 
-# Customize values.yaml for your needs (resources, models, etc.)
-vim values.yaml
 ```
 
 ### 2. Install the chart
 
 **From source:**
 ```bash
-# Update dependencies (important!)
 helm dependency update
 
 # Install
@@ -104,18 +104,16 @@ helm upgrade opengatellm-stack . \
   -f values.yaml
 ```
 
-**Important:** Always run `helm dependency update` after modifying the opengatellm subchart or changing dependency versions.
-
 ### 4. Accessing services
 
-By default, services use ClusterIP. Use port-forwarding:
+By default, services use ClusterIP. Use port-forwarding to test locally :
 
 ```bash
-# Access the API
+# API
 kubectl port-forward -n opengatellm svc/opengatellm 8000:8000
 
-# Access the Playground
-kubectl port-forward -n opengatellm svc/opengatellm-stack-playground 8501:80
+# Playground
+kubectl port-forward -n opengatellm svc/opengatellm-stack-playground 8501:8501
 ```
 
 ### 5. Monitoring
@@ -127,7 +125,7 @@ kubectl port-forward -n opengatellm svc/opengatellm-stack-playground 8501:80
 
 ## Testing the API
 
-Once services are running:
+Once services are running and port forward is running:
 
 List available models:
 ```bash
@@ -142,7 +140,7 @@ curl http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer changeme" \
   -d '{
-    "model": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+    "model": "albert-testbed",
     "messages": [
       {
         "role": "system",
@@ -168,4 +166,10 @@ curl -X 'POST' 'http://localhost:8000/v1/embeddings' \
         "encoding_format": "float",
         "additionalProp1": {}
     }'
+```
+
+You can also run the bootstrap script : 
+```bash
+chmod +x ./bootstrap_ogl.sh
+./bootstrap_ogl.sh
 ```

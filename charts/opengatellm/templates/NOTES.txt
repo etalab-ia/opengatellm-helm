@@ -5,14 +5,15 @@ Your release is named {{ .Release.Name }}.
 
 To learn more about the release, try:
 
-  $ helm status {{ .Release.Name }}
-  $ helm get all {{ .Release.Name }}
+  $ helm status {{ .Release.Name }} -n {{ .Release.Namespace }}
+  $ helm get all {{ .Release.Name }} -n {{ .Release.Namespace }}
 
-Access URLs:
-  NOTE: It may take a few minutes for all services to be in "Running" state. OpengateLLM needs to be restarted once the vLLM pod is up, so that it can pick up the new model.
+You can test the deployments using a port forward :
+  $ kubectl port-forward -n opengatellm svc/opengatellm 8000:8000
+  $
 
-  To find the public IP addresses:
-    $ kubectl describe svc -n {{ default .Release.Namespace .Values.namespaceOverride | default "default" }} opengatellm
+Test request :
+  $ curl --request POST --url http://localhost:8000/v1/chat/completions --header 'authorization: Bearer changeme' --header 'content-type: application/json' --data '{"model": "albert-testbed", "messages": [{"role": "system", "content": "You are a helpful assistant."}, { "role": "user", "content": "Bonjour"}]}'
 
-  Use the "LoadBalancer Ingress" IP to access to service:
-  - OpenGateLLM: http://<OGL LoadBalancer Ingress IP>:{{ .Values.opengatellm.service.port }}
+Or run the bootscrap script :
+  $ ./bootstrap_ogl.sh

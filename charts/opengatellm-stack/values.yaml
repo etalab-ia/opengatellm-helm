@@ -19,8 +19,7 @@ opengatellm:
       pullPolicy: IfNotPresent
     service:
       type: ClusterIP
-      port: 80
-      targetPort: 8000
+      port: 8000
 
     gunicornArgs: "--workers 4 --worker-connections 1000 --timeout 120 --keep-alive 75 --graceful-timeout 75 --log-config /home/opengatellm/logging/logging.conf"
 
@@ -46,16 +45,6 @@ opengatellm:
             # Update this URL if you change the Helm release name
             url: "http://opengatellm-router-service/"
             key: "changeme"
-
-#      - name: mistralai/Voxtral-Mini-3B-2507
-#        type: automatic-speech-recognition
-#        providers:
-#          - type: vllm
-#            model_name: "mistralai/Voxtral-Mini-3B-2507"
-#            # Note: vLLM router service name follows pattern: <release-name>-router-service
-#            # Update this URL if you change the Helm release name
-#            url: "http://opengatellm-router-service/"
-#            key: "changeme"
 
       # If embeddings are deployed through vLLM, use this version :
 #      - name: BAAI/bge-m3
@@ -95,7 +84,7 @@ opengatellm:
           url: redis://:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}
 
         elasticsearch:
-          # Note: Service name follows pattern: <release-name>-elasticsearch-es-http (ECK pattern)
+          # Service name follows pattern: <release-name>-elasticsearch-es-http (ECK pattern)
           hosts: "http://opengatellm-elasticsearch-es-http:9200"
 
       settings:
@@ -103,8 +92,6 @@ opengatellm:
         vector_store_model: "BAAI/bge-m3"
 
       playground:
-        # Note: The OpenGateLLM API service name is 'opengatellm' by default
-        # Update this if you override the service name with opengatellm.fullnameOverride
         api_url: "http://opengatellm"
         default_model: ""
         app_title: "OpenGateLLM"
@@ -115,7 +102,6 @@ opengatellm:
         theme_panel_background: "solid"
         theme_radius: "medium"
         theme_scaling: "100%"
-        # Legacy settings
         encryption_key: changeme
         session_secret_key: changeme
         proconnect_enabled: False
@@ -127,13 +113,13 @@ opengatellm:
         httpGet:
           path: /health
           port: http
-        initialDelaySeconds: 10
-        periodSeconds: 30
+        initialDelaySeconds: 40
+        periodSeconds: 15
       liveness:
         httpGet:
           path: /health
           port: http
-        initialDelaySeconds: 60
+        initialDelaySeconds: 120
         periodSeconds: 30
 
 playground:
@@ -176,18 +162,10 @@ vllm-stack:
         tag: v0.11.0
         imagePullPolicy: IfNotPresent
         modelURL: mistralai/Mistral-Small-3.2-24B-Instruct-2506
-        # modelURL: neuralmagic/Meta-Llama-3.1-70B-Instruct-FP8
-        # modelURL: meta-llama/Llama-3.1-8B-Instruct
-        # modelURL: google/gemma-3-27b-it
-        # modelURL: Qwen/Qwen3-30B-A3B-Instruct-2507
-        # modelURL: mistralai/Voxtral-Mini-3B-2507
-        # modelURL: mistralai/Magistral-Small-2506
 
         replicaCount: 1
         requestCPU: 20
         requestMemory: "200G"
-        # IMPORTANT: Set requestGPU to 0 if no GPU available, otherwise pod stays in Pending state
-        # Use `kubectl describe pod <vllm-pod>` to check GPU availability
         requestGPU: 1
         limitCPU: "22"
         limitMemory: "230G"
@@ -327,7 +305,6 @@ eck-operator:
   config:
     validateStorageClass: false
 
-  # Resources for the operator
   resources:
     limits:
       cpu: 1

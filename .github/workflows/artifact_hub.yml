@@ -26,12 +26,14 @@ jobs:
 
       - name: Add Helm repositories and update dependencies
         run: |
-          helm repo add bitnami https://charts.bitnami.com/bitnami
           helm repo add vllm https://vllm-project.github.io/production-stack
           helm repo add elastic https://helm.elastic.co
           helm repo add dandydeveloper https://dandydeveloper.github.io/charts/
           helm repo add cloudnative-pg https://cloudnative-pg.github.io/charts
           helm repo update
+
+          # Replace file:// dependency with published repo URL for opengatellm-stack
+          sed -i 's|repository: "file://../opengatellm"|repository: "https://etalab-ia.github.io/albert-api-helm"|g' charts/opengatellm-stack/Chart.yaml
 
           # Update dependencies for both charts
           helm dependency update charts/opengatellm
