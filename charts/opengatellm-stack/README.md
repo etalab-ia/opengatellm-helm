@@ -8,7 +8,7 @@ A Helm chart for OpenGateLLM Stack
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../opengatellm | opengatellm | 0.1.0 |
+| file://../opengatellm-core | opengatellm-core | 0.1.0 |
 | https://helm.elastic.co | eck-operator | 3.2.0 |
 | https://helm.elastic.co | eck-operator-crds | 3.2.0 |
 | https://vllm-project.github.io/production-stack | vllm-stack | 0.1.8 |
@@ -61,67 +61,67 @@ A Helm chart for OpenGateLLM Stack
 | embeddings.service.type | string | `"ClusterIP"` |  |
 | global.storage.storageClassName | string | `"sbs-default"` |  |
 | huggingface.token | string | `"changeme"` |  |
-| opengatellm.enabled | bool | `true` |  |
-| opengatellm.opengatellm.gunicornArgs | string | `"--workers 4 --worker-connections 1000 --timeout 120 --keep-alive 75 --graceful-timeout 75 --log-config /home/opengatellm/logging/logging.conf"` |  |
-| opengatellm.opengatellm.image.pullPolicy | string | `"IfNotPresent"` |  |
-| opengatellm.opengatellm.image.repository | string | `"ghcr.io/etalab-ia/opengatellm/api"` |  |
-| opengatellm.opengatellm.image.tag | string | `"0.3.6"` |  |
-| opengatellm.opengatellm.logging.level | string | `"INFO"` |  |
-| opengatellm.opengatellm.models[0].name | string | `"albert-testbed"` |  |
-| opengatellm.opengatellm.models[0].providers[0].key | string | `"changeme"` |  |
-| opengatellm.opengatellm.models[0].providers[0].model_name | string | `"gemma3:1b"` |  |
-| opengatellm.opengatellm.models[0].providers[0].type | string | `"vllm"` |  |
-| opengatellm.opengatellm.models[0].providers[0].url | string | `"http://albert-testbed.etalab.gouv.fr:8000"` |  |
-| opengatellm.opengatellm.models[0].type | string | `"text-generation"` |  |
-| opengatellm.opengatellm.models[1].name | string | `"mistralai/Mistral-Small-3.2-24B-Instruct-2506"` |  |
-| opengatellm.opengatellm.models[1].providers[0].key | string | `"changeme"` |  |
-| opengatellm.opengatellm.models[1].providers[0].model_name | string | `"mistralai/Mistral-Small-3.2-24B-Instruct-2506"` |  |
-| opengatellm.opengatellm.models[1].providers[0].type | string | `"vllm"` |  |
-| opengatellm.opengatellm.models[1].providers[0].url | string | `"http://opengatellm-router-service/"` |  |
-| opengatellm.opengatellm.models[1].type | string | `"text-generation"` |  |
-| opengatellm.opengatellm.models[2].dimensions | int | `1024` |  |
-| opengatellm.opengatellm.models[2].name | string | `"BAAI/bge-m3"` |  |
-| opengatellm.opengatellm.models[2].providers[0].key | string | `"changeme"` |  |
-| opengatellm.opengatellm.models[2].providers[0].model_name | string | `"BAAI/bge-m3"` |  |
-| opengatellm.opengatellm.models[2].providers[0].type | string | `"tei"` |  |
-| opengatellm.opengatellm.models[2].providers[0].url | string | `"http://opengatellm-stack-embeddings/"` |  |
-| opengatellm.opengatellm.models[2].type | string | `"text-embeddings-inference"` |  |
-| opengatellm.opengatellm.probes.liveness.httpGet.path | string | `"/health"` |  |
-| opengatellm.opengatellm.probes.liveness.httpGet.port | string | `"http"` |  |
-| opengatellm.opengatellm.probes.liveness.initialDelaySeconds | int | `60` |  |
-| opengatellm.opengatellm.probes.liveness.periodSeconds | int | `30` |  |
-| opengatellm.opengatellm.probes.readiness.httpGet.path | string | `"/health"` |  |
-| opengatellm.opengatellm.probes.readiness.httpGet.port | string | `"http"` |  |
-| opengatellm.opengatellm.probes.readiness.initialDelaySeconds | int | `10` |  |
-| opengatellm.opengatellm.probes.readiness.periodSeconds | int | `30` |  |
-| opengatellm.opengatellm.replicas | int | `1` |  |
-| opengatellm.opengatellm.service.port | int | `80` |  |
-| opengatellm.opengatellm.service.targetPort | int | `8000` |  |
-| opengatellm.opengatellm.service.type | string | `"ClusterIP"` |  |
-| opengatellm.opengatellm.structuredConfig.dependencies.elasticsearch.hosts | string | `"http://opengatellm-elasticsearch-es-http:9200"` |  |
-| opengatellm.opengatellm.structuredConfig.dependencies.postgres.connect_args.command_timeout | int | `60` |  |
-| opengatellm.opengatellm.structuredConfig.dependencies.postgres.connect_args.server_settings.statement_timeout | string | `"120s"` |  |
-| opengatellm.opengatellm.structuredConfig.dependencies.postgres.echo | bool | `false` |  |
-| opengatellm.opengatellm.structuredConfig.dependencies.postgres.pool_size | int | `5` |  |
-| opengatellm.opengatellm.structuredConfig.dependencies.postgres.url | string | `"${POSTGRES_URI}"` |  |
-| opengatellm.opengatellm.structuredConfig.dependencies.redis.url | string | `"redis://:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}"` |  |
-| opengatellm.opengatellm.structuredConfig.playground.api_url | string | `"http://opengatellm"` |  |
-| opengatellm.opengatellm.structuredConfig.playground.app_title | string | `"OpenGateLLM"` |  |
-| opengatellm.opengatellm.structuredConfig.playground.default_model | string | `""` |  |
-| opengatellm.opengatellm.structuredConfig.playground.encryption_key | string | `"changeme"` |  |
-| opengatellm.opengatellm.structuredConfig.playground.postgres.url | string | `"postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/playground"` |  |
-| opengatellm.opengatellm.structuredConfig.playground.proconnect_enabled | bool | `false` |  |
-| opengatellm.opengatellm.structuredConfig.playground.session_secret_key | string | `"changeme"` |  |
-| opengatellm.opengatellm.structuredConfig.playground.theme_accent_color | string | `"purple"` |  |
-| opengatellm.opengatellm.structuredConfig.playground.theme_appearance | string | `"light"` |  |
-| opengatellm.opengatellm.structuredConfig.playground.theme_gray_color | string | `"gray"` |  |
-| opengatellm.opengatellm.structuredConfig.playground.theme_has_background | bool | `true` |  |
-| opengatellm.opengatellm.structuredConfig.playground.theme_panel_background | string | `"solid"` |  |
-| opengatellm.opengatellm.structuredConfig.playground.theme_radius | string | `"medium"` |  |
-| opengatellm.opengatellm.structuredConfig.playground.theme_scaling | string | `"100%"` |  |
-| opengatellm.opengatellm.structuredConfig.settings.log_level | string | `"INFO"` |  |
-| opengatellm.opengatellm.structuredConfig.settings.vector_store_model | string | `"BAAI/bge-m3"` |  |
-| opengatellm.postgresql.cluster.initdb.postInitApplicationSQL[0] | string | `"CREATE DATABASE playground WITH ENCODING 'UTF8';"` |  |
+| opengatellm-core.enabled | bool | `true` |  |
+| opengatellm-core.opengatellm-core.gunicornArgs | string | `"--workers 4 --worker-connections 1000 --timeout 120 --keep-alive 75 --graceful-timeout 75 --log-config /home/opengatellm/logging/logging.conf"` |  |
+| opengatellm-core.opengatellm-core.image.pullPolicy | string | `"IfNotPresent"` |  |
+| opengatellm-core.opengatellm-core.image.repository | string | `"ghcr.io/etalab-ia/opengatellm/api"` |  |
+| opengatellm-core.opengatellm-core.image.tag | string | `"0.3.6"` |  |
+| opengatellm-core.opengatellm-core.logging.level | string | `"INFO"` |  |
+| opengatellm-core.opengatellm-core.models[0].name | string | `"albert-testbed"` |  |
+| opengatellm-core.opengatellm-core.models[0].providers[0].key | string | `"changeme"` |  |
+| opengatellm-core.opengatellm-core.models[0].providers[0].model_name | string | `"gemma3:1b"` |  |
+| opengatellm-core.opengatellm-core.models[0].providers[0].type | string | `"vllm"` |  |
+| opengatellm-core.opengatellm-core.models[0].providers[0].url | string | `"http://albert-testbed.etalab.gouv.fr:8000"` |  |
+| opengatellm-core.opengatellm-core.models[0].type | string | `"text-generation"` |  |
+| opengatellm-core.opengatellm-core.models[1].name | string | `"mistralai/Mistral-Small-3.2-24B-Instruct-2506"` |  |
+| opengatellm-core.opengatellm-core.models[1].providers[0].key | string | `"changeme"` |  |
+| opengatellm-core.opengatellm-core.models[1].providers[0].model_name | string | `"mistralai/Mistral-Small-3.2-24B-Instruct-2506"` |  |
+| opengatellm-core.opengatellm-core.models[1].providers[0].type | string | `"vllm"` |  |
+| opengatellm-core.opengatellm-core.models[1].providers[0].url | string | `"http://opengatellm-router-service/"` |  |
+| opengatellm-core.opengatellm-core.models[1].type | string | `"text-generation"` |  |
+| opengatellm-core.opengatellm-core.models[2].dimensions | int | `1024` |  |
+| opengatellm-core.opengatellm-core.models[2].name | string | `"BAAI/bge-m3"` |  |
+| opengatellm-core.opengatellm-core.models[2].providers[0].key | string | `"changeme"` |  |
+| opengatellm-core.opengatellm-core.models[2].providers[0].model_name | string | `"BAAI/bge-m3"` |  |
+| opengatellm-core.opengatellm-core.models[2].providers[0].type | string | `"tei"` |  |
+| opengatellm-core.opengatellm-core.models[2].providers[0].url | string | `"http://opengatellm-stack-embeddings/"` |  |
+| opengatellm-core.opengatellm-core.models[2].type | string | `"text-embeddings-inference"` |  |
+| opengatellm-core.opengatellm-core.probes.liveness.httpGet.path | string | `"/health"` |  |
+| opengatellm-core.opengatellm-core.probes.liveness.httpGet.port | string | `"http"` |  |
+| opengatellm-core.opengatellm-core.probes.liveness.initialDelaySeconds | int | `60` |  |
+| opengatellm-core.opengatellm-core.probes.liveness.periodSeconds | int | `30` |  |
+| opengatellm-core.opengatellm-core.probes.readiness.httpGet.path | string | `"/health"` |  |
+| opengatellm-core.opengatellm-core.probes.readiness.httpGet.port | string | `"http"` |  |
+| opengatellm-core.opengatellm-core.probes.readiness.initialDelaySeconds | int | `10` |  |
+| opengatellm-core.opengatellm-core.probes.readiness.periodSeconds | int | `30` |  |
+| opengatellm-core.opengatellm-core.replicas | int | `1` |  |
+| opengatellm-core.opengatellm-core.service.port | int | `80` |  |
+| opengatellm-core.opengatellm-core.service.targetPort | int | `8000` |  |
+| opengatellm-core.opengatellm-core.service.type | string | `"ClusterIP"` |  |
+| opengatellm-core.opengatellm-core.structuredConfig.dependencies.elasticsearch.hosts | string | `"http://opengatellm-elasticsearch-es-http:9200"` |  |
+| opengatellm-core.opengatellm-core.structuredConfig.dependencies.postgres.connect_args.command_timeout | int | `60` |  |
+| opengatellm-core.opengatellm-core.structuredConfig.dependencies.postgres.connect_args.server_settings.statement_timeout | string | `"120s"` |  |
+| opengatellm-core.opengatellm-core.structuredConfig.dependencies.postgres.echo | bool | `false` |  |
+| opengatellm-core.opengatellm-core.structuredConfig.dependencies.postgres.pool_size | int | `5` |  |
+| opengatellm-core.opengatellm-core.structuredConfig.dependencies.postgres.url | string | `"${POSTGRES_URI}"` |  |
+| opengatellm-core.opengatellm-core.structuredConfig.dependencies.redis.url | string | `"redis://:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}"` |  |
+| opengatellm-core.opengatellm-core.structuredConfig.playground.api_url | string | `"http://opengatellm"` |  |
+| opengatellm-core.opengatellm-core.structuredConfig.playground.app_title | string | `"OpenGateLLM"` |  |
+| opengatellm-core.opengatellm-core.structuredConfig.playground.default_model | string | `""` |  |
+| opengatellm-core.opengatellm-core.structuredConfig.playground.encryption_key | string | `"changeme"` |  |
+| opengatellm-core.opengatellm-core.structuredConfig.playground.postgres.url | string | `"postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/playground"` |  |
+| opengatellm-core.opengatellm-core.structuredConfig.playground.proconnect_enabled | bool | `false` |  |
+| opengatellm-core.opengatellm-core.structuredConfig.playground.session_secret_key | string | `"changeme"` |  |
+| opengatellm-core.opengatellm-core.structuredConfig.playground.theme_accent_color | string | `"purple"` |  |
+| opengatellm-core.opengatellm-core.structuredConfig.playground.theme_appearance | string | `"light"` |  |
+| opengatellm-core.opengatellm-core.structuredConfig.playground.theme_gray_color | string | `"gray"` |  |
+| opengatellm-core.opengatellm-core.structuredConfig.playground.theme_has_background | bool | `true` |  |
+| opengatellm-core.opengatellm-core.structuredConfig.playground.theme_panel_background | string | `"solid"` |  |
+| opengatellm-core.opengatellm-core.structuredConfig.playground.theme_radius | string | `"medium"` |  |
+| opengatellm-core.opengatellm-core.structuredConfig.playground.theme_scaling | string | `"100%"` |  |
+| opengatellm-core.opengatellm-core.structuredConfig.settings.log_level | string | `"INFO"` |  |
+| opengatellm-core.opengatellm-core.structuredConfig.settings.vector_store_model | string | `"BAAI/bge-m3"` |  |
+| opengatellm-core.postgresql.cluster.initdb.postInitApplicationSQL[0] | string | `"CREATE DATABASE playground WITH ENCODING 'UTF8';"` |  |
 | playground.image.pullPolicy | string | `"IfNotPresent"` |  |
 | playground.image.repository | string | `"ghcr.io/etalab-ia/opengatellm/playground"` |  |
 | playground.image.tag | string | `"0.3.6"` |  |

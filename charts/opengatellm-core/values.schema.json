@@ -75,7 +75,7 @@
         "namespaceOverride": {
             "type": "string"
         },
-        "opengatellm": {
+        "opengatellm-core": {
             "type": "object",
             "properties": {
                 "affinity": {

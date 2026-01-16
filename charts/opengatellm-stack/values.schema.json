@@ -15,7 +15,7 @@
                 }
             }
         },
-        "opengatellm": {
+        "opengatellm-core": {
             "type": "object",
             "properties": {
                 "enabled": {
@@ -24,7 +24,7 @@
                 "postgresql": {
                     "type": "object"
                 },
-                "opengatellm": {
+                "opengatellm-core": {
                     "type": "object",
                     "properties": {
                         "replicas": {

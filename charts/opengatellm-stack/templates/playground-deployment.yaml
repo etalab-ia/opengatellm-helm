@@ -1,4 +1,4 @@
-{{- if .Values.opengatellm.enabled }}
+{{- if .Values.opengatellm-stack.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -28,48 +28,48 @@ spec:
           - name: CONFIG_FILE
             value: "/home/opengatellm/conf/config.yml"
           - name: OPENGATELLM_URL
-            value: {{ .Values.opengatellm.opengatellm.structuredConfig.playground.api_url | quote }}
-          {{- if not .Values.opengatellm.redis.existingRedisSecret }}
+            value: {{ .Values.opengatellm-stack.opengatellm-core.structuredConfig.playground.api_url | quote }}
+          {{- if not .Values.opengatellm-stack.redis.existingRedisSecret }}
           - name: REDIS_HOST
             value: {{ printf "%s-redis" .Release.Name }}
           - name: REDIS_PORT
-            value: "{{ default 6379 .Values.opengatellm.redis.redis.port }}"
+            value: "{{ default 6379 .Values.opengatellm-stack.redis.redis.port }}"
           - name: REDIS_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: {{ printf "%s-redis" .Release.Name }}
-                key: {{ default .Values.opengatellm.redis.authKey .Values.opengatellm.redis.sentinel.authKey }}
+                key: {{ default .Values.opengatellm-stack.redis.authKey .Values.opengatellm-stack.redis.sentinel.authKey }}
           {{- end }}
-          {{- if not .Values.opengatellm.postgresql.existingPostgresSecret }}
+          {{- if not .Values.opengatellm-stack.postgresql.existingPostgresSecret }}
           - name: POSTGRES_HOST
             valueFrom:
               secretKeyRef:
-                name: {{ printf "%s-app" .Values.opengatellm.postgresql.clusterName }}
+                name: {{ printf "%s-app" .Values.opengatellm-stack.postgresql.clusterName }}
                 key: host
           - name: POSTGRES_PORT
             valueFrom:
               secretKeyRef:
-                name: {{ printf "%s-app" .Values.opengatellm.postgresql.clusterName }}
+                name: {{ printf "%s-app" .Values.opengatellm-stack.postgresql.clusterName }}
                 key: port
           - name: POSTGRES_USER
             valueFrom:
               secretKeyRef:
-                name: {{ printf "%s-app" .Values.opengatellm.postgresql.clusterName }}
+                name: {{ printf "%s-app" .Values.opengatellm-stack.postgresql.clusterName }}
                 key: user
           - name: POSTGRES_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: {{ printf "%s-app" .Values.opengatellm.postgresql.clusterName }}
+                name: {{ printf "%s-app" .Values.opengatellm-stack.postgresql.clusterName }}
                 key: password
           {{- end }}
         envFrom:
-          {{- if .Values.opengatellm.redis.existingRedisSecret }}
+          {{- if .Values.opengatellm-stack.redis.existingRedisSecret }}
           - secretRef:
-              name: {{ .Values.opengatellm.redis.existingRedisSecret }}
+              name: {{ .Values.opengatellm-stack.redis.existingRedisSecret }}
           {{- end }}
-          {{- if .Values.opengatellm.postgresql.existingPostgresSecret }}
+          {{- if .Values.opengatellm-stack.postgresql.existingPostgresSecret }}
           - secretRef:
-              name: {{ .Values.opengatellm.postgresql.existingPostgresSecret }}
+              name: {{ .Values.opengatellm-stack.postgresql.existingPostgresSecret }}
           {{- end }}
         ports:
           - containerPort: {{ .Values.playground.service.targetPort }}

@@ -2,7 +2,7 @@ global:
   storage:
     storageClassName: sbs-default
 
-opengatellm:
+opengatellm-stack:
   enabled: true
 
   postgresql:
@@ -11,7 +11,7 @@ opengatellm:
         postInitApplicationSQL:
           - CREATE DATABASE playground WITH ENCODING 'UTF8';
 
-  opengatellm:
+  opengatellm-core:
     replicas: 1
     image:
       repository: ghcr.io/etalab-ia/opengatellm/api
@@ -20,13 +20,10 @@ opengatellm:
     service:
       type: ClusterIP
       port: 8000
-
     gunicornArgs: "--workers 4 --worker-connections 1000 --timeout 120 --keep-alive 75 --graceful-timeout 75 --log-config /home/opengatellm/logging/logging.conf"
-
     logging:
       level: "INFO"
 
-    # ----------------------------------- models ------------------------------------
     models:
       - name: albert-testbed
         type: text-generation
@@ -41,8 +38,6 @@ opengatellm:
         providers:
           - type: vllm
             model_name: "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
-            # Note: vLLM router service name follows pattern: <release-name>-router-service
-            # Update this URL if you change the Helm release name
             url: "http://opengatellm-router-service/"
             key: "changeme"
 
@@ -52,8 +47,6 @@ opengatellm:
 #        providers:
 #          - type: vllm
 #            model_name: "BAAI/bge-m3"
-#            # Note: vLLM router service name follows pattern: <release-name>-router-service
-#            # Update this URL if you change the Helm release name
 #            url: "http://opengatellm-router-service/"
 #            key: "changeme"
 
@@ -64,12 +57,9 @@ opengatellm:
         providers:
           - type: tei
             model_name: "BAAI/bge-m3"
-            # Note: TEI embeddings service name is defined in this stack chart
-            # Pattern: opengatellm-stack-embeddings (hardcoded in templates/embeddings-service.yaml)
             url: "http://opengatellm-stack-embeddings/"
             key: "changeme"
 
-    # -------------------------------- structured config override ---------------------------------
     structuredConfig:
       dependencies:
         postgres:
@@ -84,29 +74,11 @@ opengatellm:
           url: redis://:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}
 
         elasticsearch:
-          # Service name follows pattern: <release-name>-elasticsearch-es-http (ECK pattern)
           hosts: "http://opengatellm-elasticsearch-es-http:9200"
 
       settings:
         log_level: INFO
         vector_store_model: "BAAI/bge-m3"
-
-      playground:
-        api_url: "http://opengatellm"
-        default_model: ""
-        app_title: "OpenGateLLM"
-        theme_has_background: true
-        theme_accent_color: "purple"
-        theme_appearance: "light"
-        theme_gray_color: "gray"
-        theme_panel_background: "solid"
-        theme_radius: "medium"
-        theme_scaling: "100%"
-        encryption_key: changeme
-        session_secret_key: changeme
-        proconnect_enabled: False
-        postgres:
-          url: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/playground
 
     probes:
       readiness:
@@ -141,6 +113,11 @@ playground:
       path: /
       initialDelaySeconds: 10
       periodSeconds: 10
+  config:
+    api_url: "http://opengatellm"
+    default_model: ""
+    postgres:
+      url: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/playground
 
 vllm-stack:
   enabled: true
@@ -195,7 +172,6 @@ vllm-stack:
           secretName: "huggingface-token"
           secretKey: "token"
 
-# Embeddings through HF TEI
 embeddings:
   enabled: true
   replicas: 1
@@ -230,50 +206,6 @@ embeddings:
       path: /health
       initialDelaySeconds: 240
       periodSeconds: 30
-
-#      # Embeddings through VLLM - complicated to run on CPU (you have to build and publish the vllm image with CPU flag)
-#      - name: "bge-embeddings"
-#        repository: vllm/vllm-openai
-#        tag: v0.11.0
-#        imagePullPolicy: IfNotPresent
-#
-#        modelURL: BAAI/bge-m3
-#        replicaCount: 1
-#
-#        # Override the default nvidia runtime - (we're running on CPU only)
-#        runtimeClassName: ""
-#
-#        # Minimal resources (BGE-M3 is ~2GB, runs efficiently on CPU)
-#        requestCPU: 2
-#        requestMemory: "8Gi"
-#        requestGPU: 0  # CPU only
-#        limitCPU: "4"
-#        limitMemory: "16Gi"
-#
-#        pvcStorage: "20Gi"
-#        storageClass: sbs-default
-#        pvcAccessMode:
-#          - ReadWriteOnce
-#
-#        shmSize: "4Gi"
-#
-#        # Environment variables for debugging
-#        env:
-#          - name: VLLM_LOGGING_LEVEL
-#            value: "DEBUG"
-#
-#        vllmConfig:
-#          tensorParallelSize: 1
-#          enablePrefixCaching: false
-#          extraArgs:
-#            - "--task"
-#            - "embed"
-#            - "--device"
-#            - "cpu"
-#
-#        hf_token:
-#         secretName: "huggingface-token"
-#         secretKey: "token"
 
 huggingface:
   token: "changeme"

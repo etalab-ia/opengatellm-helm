@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: opengatellm-config
+  name: opengatellm-core-config
   namespace: {{ default .Release.Namespace .Values.namespaceOverride }}
   labels:
-    {{- include "opengatellm.labels" . | nindent 4 }}
+    {{- include "opengatellm-core.labels" . | nindent 4 }}
     app.kubernetes.io/component: api
 data:
   config.yml: |
-    {{- include "opengatellm.calculatedConfig" . | nindent 4 }}
+    {{- include "opengatellm-core.calculatedConfig" . | nindent 4 }}

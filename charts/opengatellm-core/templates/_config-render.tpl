@@ -1,0 +1,1 @@
+{{- tpl .Values.opengatellm-core.config . -}}

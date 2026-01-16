@@ -1,4 +1,4 @@
-{{- if .Values.opengatellm.enabled }}
+{{- if .Values.opengatellm-core.enabled }}
 apiVersion: v1
 kind: Service
 metadata:

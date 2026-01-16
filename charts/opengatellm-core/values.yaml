@@ -4,7 +4,7 @@ namespaceOverride: ""
 image:
   pullSecrets: []
 
-opengatellm:
+opengatellm-core:
   serviceAccount:
     create: false
     name: ""
@@ -18,7 +18,7 @@ opengatellm:
   replicas: 1
   revisionHistoryLimit: ""
 
-  gunicornArgs: ""
+  gunicornArgs: "--workers 4 --worker-connections 1000 --timeout 120 --keep-alive 75 --graceful-timeout 75 --log-config /home/opengatellm/logging/logging.conf"
 
   logging:
     level: "INFO"
@@ -84,8 +84,8 @@ opengatellm:
     type: ClusterIP
     port: 8000
 
-  # -- Base config file for opengatellm. Contains Helm templates that are evaluated at install/upgrade.
-  # To modify the resulting configuration, either copy and alter 'opengatellm.config' as a whole or use the 'opengatellm.structuredConfig' to add and modify certain YAML elements.
+  # -- Base config file for opengatellm-core.
+  # To modify, either copy and alter 'opengatellm-core.config' as a whole or use the 'opengatellm-core.structuredConfig' to add and modify certain YAML elements.
   config: |
     dependencies:
       postgres:
@@ -97,16 +97,16 @@ opengatellm:
       log_level: INFO
 
     models:
-      {{ toYaml .Values.opengatellm.models | nindent 8 }}
+      {{ toYaml .Values.opengatellm-core.models | nindent 8 }}
 
-  # -- Additional structured values on top of the text based 'opengatellm.config'. Applied after the text based config is evaluated for templates. Enables adding and modifying YAML elements in the evaluated 'opengatellm.config'.
+  # -- Additional structured values on top of the text based 'opengatellm-core.config'. Applied after the text based config is evaluated for templates. Enables adding and modifying YAML elements in the evaluated 'opengatellm-core.config'.
   #
   # The base configuration (postgres, redis, settings) is defined in 'config' above.
   # Use structuredConfig to override or add additional configuration when using this chart as a dependency.
   #
   # Example for parent chart adding Elasticsearch:
   #
-  # opengatellm:
+  # opengatellm-core:
   #   structuredConfig:
   #     dependencies:
   #       elasticsearch:
@@ -117,7 +117,7 @@ opengatellm:
   structuredConfig: {}
 
   #
-  # -- Models list to append to opengatellm.config
+  # -- Models list to append to opengatellm-core.config
   #
   # Example:
   #
@@ -179,47 +179,35 @@ opengatellm:
   existingSettingSecret: ""
 
 ingress:
-  # -- Specifies whether an ingress for the api should be created
   enabled: false
-  # -- Ingress Class Name.
   ingressClassName: ""
-  # -- Annotations for the gateway ingress
   annotations: {}
-  # -- Labels for the gateway ingress
   labels: {}
-  # -- Hosts configuration for the api ingress, passed through the `tpl` function to allow templating
   hosts:
     - host: api.example.com
       paths:
         - path: /
           # -- pathType (e.g. ImplementationSpecific, Prefix, .. etc.) might also be required by some Ingress Controllers
           # pathType: Prefix
-  # -- TLS configuration for the gateway ingress. Hosts passed through the `tpl` function to allow templating
   tls:
     - secretName: api-example-com-tls
       hosts:
         - api.example.com
 
 postgresql:
-  # -- Install or not cnpg cluster
-  # Ensure CNPG Operator is installed on your cluster
   enabled: true
   # Values from cnpg/cluster charts https://github.com/cloudnative-pg/charts/tree/main/charts/cluster
-  fullnameOverride: "cluster-opengatellm"
+  fullnameOverride: "cluster-opengatellm-core"
   version:
-    # -- PostgreSQL major version to use
     postgresql: "17"
   mode: standalone
-  # -- The original cluster name when used in backups. Also known as serverName.
-  clusterName: "cluster-opengatellm"
-  # -- Name of the database used by the application. Default: `api`.
+  clusterName: "cluster-opengatellm-core"
   database: api
   pgBaseBackup:
     database: api
     source:
       database: "api"
   cluster:
-    # -- Number of instances
     instances: 1
     storage:
       size: 1Gi
@@ -241,12 +229,9 @@ postgresql:
     primaryUpdateStrategy: unsupervised
     enableSuperuserAccess: true
     monitoring:
-      # -- Whether to enable monitoring
       enabled: false
       podMonitor:
-        # -- Whether to enable the PodMonitor
         enabled: false
-    # -- BootstrapInitDB is the configuration of the bootstrap process when initdb is used.
     initdb:
       database: api
       encoding: UTF8
@@ -272,39 +257,28 @@ postgresql:
   existingPostgresSecret: ""
 
 redis:
-  # -- Install or not redis-ha cluster
   enabled: true
   # Values from redis-ha chart https://github.com/DandyDeveloper/charts/tree/master/charts/redis-ha
-  # -- Redis name
   name: redis
-  # -- Number of redis replicas (1 for standalone, 3+ for HA)
   replicas: 1
   ## Redis image - Using Redis Stack to support JSON, Search, TimeSeries, and Bloom modules
   image:
-    # -- Redis repository
     repository: "redis/redis-stack-server"
-    # -- Redis tag
     tag: "7.4.0-v8"
   ## Prometheus redis-exporter sidecar
   exporter:
-    # -- Enable Prometheus redis-exporter sidecar
     enabled: false
-    # -- Repository to use for the redis-exporter
     #image: ""
-    # -- Tag to use for the redis-exporter
     #tag: ""
   persistentVolume:
-    # -- Configures persistence on Redis nodes
     enabled: true
     size: 10Gi
-  ## Redis specific configuration options
   redis:
     # -- Redis convention for naming the cluster group: must match `^[\\w-\\.]+$` and can be templated
-    masterGroupName: opengatellm
+    masterGroupName: opengatellm-core
     # -- Any valid redis config options in this section will be applied to each server (see `redis-ha` chart)
-    # @default -- See [values.yaml]
     config:
-      # Load Redis Stack modules from correct path
+      # Load Redis Stack modules
       loadmodule:
         - /opt/redis-stack/lib/redistimeseries.so
         - /opt/redis-stack/lib/rejson.so
@@ -362,9 +336,9 @@ redis:
   #   name: redis-secret
   # type: Opaque
   # stringData:
-  #   REDIS_HOST: redis.opengatellm.svc.cluster.local
+  #   REDIS_HOST: redis.opengatellm-core.svc.cluster.local
   #   REDIS_PORT: 6379
   #   REDIS_PASSWORD: changeme
-  #   REDISèUSER: api
+  #   REDIS_USER: api
   #
   existingRedisSecret: ""

@@ -7,11 +7,11 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   labels:
-    {{- include "opengatellm.labels" . | nindent 4 }}
+    {{- include "opengatellm-core.labels" . | nindent 4 }}
     {{- range $labelKey, $labelValue := .Values.ingress.labels }}
     {{ $labelKey }}: {{ $labelValue | toYaml }}
     {{- end }}
-  name: {{ include "opengatellm.fullname" $ }}
+  name: {{ include "opengatellm-core.fullname" $ }}
   namespace: {{ .Release.Namespace }}
 spec:
   ingressClassName: {{ .Values.ingress.ingressClassName }}
