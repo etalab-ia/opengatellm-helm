@@ -19,6 +19,8 @@ opengatellm:
       runAsNonRoot: true
       seccompProfile:
         type: RuntimeDefault
+      runAsUser: 1100
+      runAsGroup: 1100
 
 vllm-stack:
   routerSpec:
