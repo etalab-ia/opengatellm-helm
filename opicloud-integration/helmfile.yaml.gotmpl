@@ -12,7 +12,7 @@ releases:
     namespace: {{ .Namespace }}
     chart: ../charts/opengatellm-stack/
     values:
-      - ./values.yaml
+      - ./values.yaml.gotmpl
   - name: elasticsearch
     namespace: {{ .Namespace }}
     chart: elastic/elasticsearch
