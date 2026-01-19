@@ -21,6 +21,10 @@ spec:
       nodeSelector:
         {{ . | toYaml }}
       {{- end }}
+      {{- if .Values.embeddings.securityContext }}
+      securityContext:
+        {{- toYaml .Values.embeddings.securityContext | nindent 12 }}
+      {{- end }}
       containers:
       - name: bge-embeddings
         image: {{ .Values.embeddings.image.repository }}:{{ .Values.embeddings.image.tag }}
@@ -56,5 +60,9 @@ spec:
           initialDelaySeconds: {{ .Values.embeddings.probes.readiness.initialDelaySeconds }}
           timeoutSeconds: 30
           periodSeconds: {{ .Values.embeddings.probes.readiness.periodSeconds }}
+        {{- end }}
+        {{- if .Values.embeddings.containerSecurityContext }}
+        securityContext:
+          {{- toYaml .Values.embeddings.containerSecurityContext | nindent 12 }}
         {{- end }}
 {{- end }}
