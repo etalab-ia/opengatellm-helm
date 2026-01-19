@@ -1,0 +1,14 @@
+elasticsearch:
+  enabled: false
+
+opengatellm:
+  postgresql:
+    enabled: false
+    clusterName: cnpg-cluster-albert-ppr
+
+  opengatellm:
+    structuredConfig:
+      dependencies:
+        elasticsearch:
+          hosts: http://elasticsearch-master:9200
+

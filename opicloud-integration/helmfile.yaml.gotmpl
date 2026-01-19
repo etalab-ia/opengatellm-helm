@@ -1,0 +1,18 @@
+environments:
+  poc: {}
+---
+repositories:
+  - name: elastic
+    url: https://helm.elastic.co
+  - name: vllm-stack
+    url: "https://vllm-project.github.io/production-stack"
+---
+releases:
+  - name: opengatellm-stack
+    namespace: {{ .Namespace }}
+    chart: ../charts/opengatellm-stack/
+    values:
+      - ./values.yaml
+  - name: elasticsearch
+    namespace: {{ .Namespace }}
+    chart: elastic/elasticsearch
