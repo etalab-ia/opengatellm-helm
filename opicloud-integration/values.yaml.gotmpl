@@ -48,6 +48,11 @@ playground:
       type: RuntimeDefault
     runAsUser: 1100
     runAsGroup: 1100
+  resources:
+    requests:
+      memory: 512Mi
+    limits:
+      memory: 512Mi
 embeddings:
   containerSecurityContext:
     allowPrivilegeEscalation: false

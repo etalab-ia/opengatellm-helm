@@ -101,6 +101,10 @@ spec:
         securityContext:
           {{- toYaml .Values.playground.containerSecurityContext | nindent 12 }}
         {{- end }}
+        {{- if .Values.playground.resources }}
+        resources:
+          {{- toYaml .Values.playground.resources | nindent 12 }}
+        {{- end }}
       volumes:
         - name: playground-config-vol
           configMap:
