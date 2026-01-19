@@ -20,6 +20,10 @@ spec:
       nodeSelector:
         {{ . | toYaml }}
       {{- end }}
+      {{- if .Values.playground.securityContext }}
+      securityContext:
+        {{- toYaml .Values.playground.securityContext | nindent 12 }}
+      {{- end }}
       containers:
       - name: playground
         image: {{ .Values.playground.image.repository }}:{{ .Values.playground.image.tag }}
@@ -92,6 +96,10 @@ spec:
             port: {{ .Values.playground.service.targetPort }}
           initialDelaySeconds: {{ .Values.playground.probes.liveness.initialDelaySeconds }}
           periodSeconds: {{ .Values.playground.probes.liveness.periodSeconds }}
+        {{- end }}
+        {{- if .Values.playground.containerSecurityContext }}
+        securityContext:
+          {{- toYaml .Values.playground.containerSecurityContext | nindent 12 }}
         {{- end }}
       volumes:
         - name: playground-config-vol

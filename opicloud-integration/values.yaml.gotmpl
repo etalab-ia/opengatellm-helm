@@ -29,7 +29,7 @@ vllm-stack:
       runAsNonRoot: true
       seccompProfile:
         type: RuntimeDefault
-  serviceEngineSpec:
+  servingEngineSpec:
     containerSecurityContext:
       allowPrivilegeEscalation: false
       capabilities:
@@ -37,3 +37,12 @@ vllm-stack:
       runAsNonRoot: true
       seccompProfile:
         type: RuntimeDefault
+
+playground:
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
