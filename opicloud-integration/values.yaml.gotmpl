@@ -46,6 +46,8 @@ playground:
     runAsNonRoot: true
     seccompProfile:
       type: RuntimeDefault
+    runAsUser: 1100
+    runAsGroup: 1100
 embeddings:
   containerSecurityContext:
     allowPrivilegeEscalation: false
@@ -54,3 +56,5 @@ embeddings:
     runAsNonRoot: true
     seccompProfile:
       type: RuntimeDefault
+    runAsUser: 1100
+    runAsGroup: 1100
