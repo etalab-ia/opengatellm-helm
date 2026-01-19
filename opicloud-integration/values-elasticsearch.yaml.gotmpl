@@ -1,0 +1,11 @@
+securityContext:
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+
+sysctlInitContainer:
+  enabled: false

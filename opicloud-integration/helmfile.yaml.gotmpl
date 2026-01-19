@@ -16,3 +16,5 @@ releases:
   - name: elasticsearch
     namespace: {{ .Namespace }}
     chart: elastic/elasticsearch
+    values:
+      - ./values-elasticsearch.yaml.gotmpl

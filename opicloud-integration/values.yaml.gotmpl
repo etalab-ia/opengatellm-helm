@@ -12,3 +12,28 @@ opengatellm:
         elasticsearch:
           hosts: http://elasticsearch-master:9200
 
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: [ALL]
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+
+vllm-stack:
+  routerSpec:
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: [ALL]
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+  serviceEngineSpec:
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: [ALL]
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
