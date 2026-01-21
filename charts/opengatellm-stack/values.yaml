@@ -171,7 +171,7 @@ vllm-stack:
         limitMemory: "230G"
 
         pvcStorage: "230Gi"
-        storageClass: sbs-default
+        storageClass: bsu-gp2
         pvcAccessMode:
           - ReadWriteOnce
 
