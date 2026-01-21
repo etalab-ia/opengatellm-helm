@@ -161,7 +161,7 @@ vllm-stack:
         repository: vllm/vllm-openai
         tag: v0.11.0
         imagePullPolicy: IfNotPresent
-        modelURL: mistralai/Mistral-Small-3.2-24B-Instruct-2506
+        modelURL: mistralai/Ministral-3-3B-Instruct-2512
 
         replicaCount: 1
         requestCPU: 20
