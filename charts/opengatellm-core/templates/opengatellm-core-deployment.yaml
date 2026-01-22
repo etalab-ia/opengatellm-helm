@@ -115,9 +115,9 @@ spec:
                 key: password
           {{- end }}
           envFrom:
-            {{- if .Values.existingModelSecret }}
+            {{- if .Values.opengatellmCore.existingModelSecret }}
             - secretRef:
-                name: {{ .Values.existingModelSecret }}
+                name: {{ .Values.opengatellmCore.existingModelSecret }}
             {{- end }}
             {{- if .Values.postgresql.existingPostgresSecret }}
             - secretRef:

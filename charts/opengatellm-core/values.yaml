@@ -4,6 +4,7 @@ namespaceOverride: ""
 image:
   pullSecrets: []
 
+# TODO: renommer en api
 opengatellmCore:
   serviceAccount:
     create: false
