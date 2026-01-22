@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: opengatellm-core
   namespace: {{ default .Release.Namespace .Values.namespaceOverride | quote }}
-  {{- with .Values.opengatellm-core.annotations }}
+  {{- with .Values.opengatellmCore.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
@@ -11,14 +11,14 @@ metadata:
     {{- include "opengatellm-core.labels" . | nindent 4 }}
     app.kubernetes.io/component: api
 spec:
-  replicas: {{ .Values.opengatellm-core.replicas }}
-  {{- with .Values.opengatellm-core.revisionHistoryLimit }}
+  replicas: {{ .Values.opengatellmCore.replicas }}
+  {{- with .Values.opengatellmCore.revisionHistoryLimit }}
   revisionHistoryLimit: {{ . }}
   {{- end }}
   selector:
     matchLabels:
       app: opengatellm-core
-  {{- with .Values.opengatellm-core.strategy }}
+  {{- with .Values.opengatellmCore.strategy }}
   strategy:
     {{- toYaml . | nindent 4 }}
   {{- end }}
@@ -32,14 +32,14 @@ spec:
       namespace: {{ default .Release.Namespace .Values.namespaceOverride | quote }}
     spec:
       serviceAccountName: {{ template "opengatellm-core.serviceAccountName" . }}
-      {{- if .Values.opengatellm-core.priorityClassName }}
-      priorityClassName: {{ .Values.opengatellm-core.priorityClassName }}
+      {{- if .Values.opengatellmCore.priorityClassName }}
+      priorityClassName: {{ .Values.opengatellmCore.priorityClassName }}
       {{- end }}
-      {{- with .Values.opengatellm-core.securityContext }}
+      {{- with .Values.opengatellmCore.securityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.opengatellm-core.initContainers }}
+      {{- with .Values.opengatellmCore.initContainers }}
       initContainers:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -51,28 +51,28 @@ spec:
       {{- end }}
       containers:
         - name: opengatellm-core
-          image: "{{ .Values.opengatellm-core.image.repository }}:{{ .Values.opengatellm-core.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.opengatellm-core.image.pullPolicy }}
-          {{- if .Values.opengatellm-core.extraArgs }}
+          image: "{{ .Values.opengatellmCore.image.repository }}:{{ .Values.opengatellmCore.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.opengatellmCore.image.pullPolicy }}
+          {{- if .Values.opengatellmCore.extraArgs }}
           args:
-          {{- range $key, $value := .Values.opengatellm-core.extraArgs }}
+          {{- range $key, $value := .Values.opengatellmCore.extraArgs }}
             - -{{ $key }}={{ $value }}
           {{- end }}
           {{- end }}
           volumeMounts:
-            {{- if .Values.opengatellm-core.extraVolumeMounts }}
-              {{ toYaml .Values.opengatellm-core.extraVolumeMounts | nindent 12}}
+            {{- if .Values.opengatellmCore.extraVolumeMounts }}
+              {{ toYaml .Values.opengatellmCore.extraVolumeMounts | nindent 12}}
             {{- end }}
             - name: config
-              mountPath: /home/opengatellm-core/conf
+              mountPath: /home/opengatellm/conf
               readOnly: true
             - name: logging-config
-              mountPath: /home/opengatellm-core/logging
+              mountPath: /home/opengatellm/logging
               readOnly: true
           env:
           - name: CONFIG_FILE
-            value: "/home/opengatellm-core/conf/config.yml"
-          {{- with .Values.opengatellm-core.gunicornArgs }}
+            value: "/home/opengatellm/conf/config.yml"
+          {{- with .Values.opengatellmCore.gunicornArgs }}
           - name: GUNICORN_CMD_ARGS
             value: {{ . | quote }}
           {{- end }}
@@ -132,30 +132,30 @@ spec:
               containerPort: 8000
               protocol: TCP
           livenessProbe:
-            {{- toYaml .Values.opengatellm-core.probes.liveness | nindent 12 }}
+            {{- toYaml .Values.opengatellmCore.probes.liveness | nindent 12 }}
           readinessProbe:
-            {{- toYaml .Values.opengatellm-core.probes.readiness | nindent 12 }}
+            {{- toYaml .Values.opengatellmCore.probes.readiness | nindent 12 }}
           resources:
-            {{- toYaml .Values.opengatellm-core.resources | nindent 12 }}
+            {{- toYaml .Values.opengatellmCore.resources | nindent 12 }}
           securityContext:
-            {{- toYaml .Values.opengatellm-core.containerSecurityContext | nindent 12 }}
-{{- if .Values.opengatellm-core.extraContainers }}
-{{ toYaml .Values.opengatellm-core.extraContainers | indent 8}}
+            {{- toYaml .Values.opengatellmCore.containerSecurityContext | nindent 12 }}
+{{- if .Values.opengatellmCore.extraContainers }}
+{{ toYaml .Values.opengatellmCore.extraContainers | indent 8}}
 {{- end }}
-      {{- with .Values.opengatellm-core.nodeSelector }}
+      {{- with .Values.opengatellmCore.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.opengatellm-core.affinity }}
+      {{- with .Values.opengatellmCore.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.opengatellm-core.tolerations }}
+      {{- with .Values.opengatellmCore.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      terminationGracePeriodSeconds: {{ .Values.opengatellm-core.terminationGracePeriodSeconds }}
-      {{- with .Values.opengatellm-core.dnsConfig }}
+      terminationGracePeriodSeconds: {{ .Values.opengatellmCore.terminationGracePeriodSeconds }}
+      {{- with .Values.opengatellmCore.dnsConfig }}
       dnsConfig:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -168,7 +168,7 @@ spec:
         - name: logging-config
           configMap:
             name: opengatellm-core-logging-config
-        {{- if .Values.opengatellm-core.extraVolumes }}
-        {{- toYaml .Values.opengatellm-core.extraVolumes | nindent 8}}
+        {{- if .Values.opengatellmCore.extraVolumes }}
+        {{- toYaml .Values.opengatellmCore.extraVolumes | nindent 8}}
         {{- end }}
 

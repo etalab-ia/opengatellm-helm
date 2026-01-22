@@ -17,30 +17,30 @@ data:
     keys=default, access
 
     [logger_root]
-    level={{ .Values.opengatellm-core.logging.level | default "INFO" }}
+    level={{ .Values.opengatellmCore.logging.level | default "INFO" }}
     handlers=console
 
     [logger_gunicorn.error]
-    level={{ .Values.opengatellm-core.logging.level | default "INFO" }}
+    level={{ .Values.opengatellmCore.logging.level | default "INFO" }}
     handlers=console
     propagate=0
     qualname=gunicorn.error
 
     [logger_gunicorn.access]
-    level={{ .Values.opengatellm-core.logging.level | default "INFO" }}
+    level={{ .Values.opengatellmCore.logging.level | default "INFO" }}
     handlers=access
     propagate=0
     qualname=gunicorn.access
 
     [handler_console]
     class=StreamHandler
-    level={{ .Values.opengatellm-core.logging.level | default "INFO" }}
+    level={{ .Values.opengatellmCore.logging.level | default "INFO" }}
     formatter=default
     args=(sys.stdout,)
 
     [handler_access]
     class=StreamHandler
-    level={{ .Values.opengatellm-core.logging.level | default "INFO" }}
+    level={{ .Values.opengatellmCore.logging.level | default "INFO" }}
     formatter=access
     args=(sys.stdout,)
 

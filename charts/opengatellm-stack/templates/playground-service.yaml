@@ -1,4 +1,5 @@
-{{- if .Values.opengatellm-core.enabled }}
+{{- $coreValues := index .Values "opengatellm-core" }}
+{{- if $coreValues.enabled }}
 apiVersion: v1
 kind: Service
 metadata:

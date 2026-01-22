@@ -9,7 +9,7 @@ To learn more about the release, try:
   $ helm get all {{ .Release.Name }} -n {{ .Release.Namespace }}
 
 You can test the deployments using a port forward :
-  $ kubectl port-forward -n opengatellm svc/opengatellm 8000:8000
+  $ kubectl port-forward -n opengatellm svc/opengatellm-core 8000:8000
   $ kubectl port-forward -n opengatellm svc/opengatellm-stack-playground 8501:8501
 
 Test request :

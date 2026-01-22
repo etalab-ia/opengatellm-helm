@@ -2,16 +2,17 @@ global:
   storage:
     storageClassName: sbs-default
 
-opengatellm-stack:
+# values for opengateLLM chart (enabled, postgres, redis)
+opengatellm-core:
   enabled: true
-
   postgresql:
     cluster:
       initdb:
         postInitApplicationSQL:
           - CREATE DATABASE playground WITH ENCODING 'UTF8';
 
-  opengatellm-core:
+  # values for opengateLLM
+  opengatellmCore:
     replicas: 1
     image:
       repository: ghcr.io/etalab-ia/opengatellm/api
@@ -20,7 +21,6 @@ opengatellm-stack:
     service:
       type: ClusterIP
       port: 8000
-    gunicornArgs: "--workers 4 --worker-connections 1000 --timeout 120 --keep-alive 75 --graceful-timeout 75 --log-config /home/opengatellm/logging/logging.conf"
     logging:
       level: "INFO"
 
@@ -79,6 +79,23 @@ opengatellm-stack:
       settings:
         log_level: INFO
         vector_store_model: "BAAI/bge-m3"
+
+      playground:
+        api_url: "http://opengatellm-core"
+        app_title: "OpenGateLLM"
+        default_model: ""
+        encryption_key: "changeme"
+        session_secret_key: "changeme"
+        proconnect_enabled: false
+        postgres:
+          url: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/playground
+        theme_accent_color: "purple"
+        theme_appearance: "light"
+        theme_gray_color: "gray"
+        theme_has_background: true
+        theme_panel_background: "solid"
+        theme_radius: "medium"
+        theme_scaling: "100%"
 
     probes:
       readiness:
