@@ -18,10 +18,6 @@ This repository provides two Helm charts:
 - **`charts/opengatellm-stack`** - Chart based on OpenGateLLM core + optional dependencies : vLLM inference, TEI embeddings, and Elasticsearch
 - `manifests` - Legacy helm chart version used for deployment on LaSuite (deprecated)
 
-Each chart has its own README with detailed documentation:
-- [opengatellm-core chart documentation](charts/opengatellm-core/README.md)
-- [opengatellm-stack chart documentation](./charts/opengatellm-stack/README.md)
-
 ## Prerequisites
 
 ### Infrastructure provisioning
