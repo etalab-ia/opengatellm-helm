@@ -37,9 +37,9 @@ spec:
             pathType: {{ .pathType }}
             backend:
               service:
-                name: {{ include "proxy.fullname" $ }}
+                name: opengatellm-core
                 port:
-                  number: {{ $.Values.service.port }}
+                  number: {{ $.Values.api.service.port }}
           {{- end }}
     {{- end }}
 {{- end }}

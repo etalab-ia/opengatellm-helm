@@ -11,7 +11,7 @@ opengatellm-core:
         postInitApplicationSQL:
           - CREATE DATABASE playground WITH ENCODING 'UTF8';
 
-  # values for opengateLLM
+  # values for opengateLLM API
   api:
     replicas: 1
     image:
@@ -33,6 +33,7 @@ opengatellm-core:
             url: "http://albert-testbed.etalab.gouv.fr:8000"
             key: "changeme"
 
+# Example config for a model deployed with the vllm of this stack
 #      - name: mistralai/Mistral-Small-3.2-24B-Instruct-2506
 #        type: text-generation
 #        providers:
@@ -41,14 +42,6 @@ opengatellm-core:
 #            url: "http://opengatellm-router-service/"
 #            key: "changeme"
 
-      # If embeddings are deployed through vLLM, use this version :
-#      - name: BAAI/bge-m3
-#        type: text-embeddings-inference
-#        providers:
-#          - type: vllm
-#            model_name: "BAAI/bge-m3"
-#            url: "http://opengatellm-router-service/"
-#            key: "changeme"
 
       # If embeddings are deployed through TEI, use this version :
       - name: BAAI/bge-m3
@@ -59,6 +52,15 @@ opengatellm-core:
             model_name: "BAAI/bge-m3"
             url: "http://opengatellm-stack-embeddings/"
             key: "changeme"
+
+# If embeddings are deployed through vLLM, use this version :
+#      - name: BAAI/bge-m3
+#        type: text-embeddings-inference
+#        providers:
+#          - type: vllm
+#            model_name: "BAAI/bge-m3"
+#            url: "http://opengatellm-router-service/"
+#            key: "changeme"
 
     structuredConfig:
       dependencies:

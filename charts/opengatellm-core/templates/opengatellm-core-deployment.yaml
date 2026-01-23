@@ -127,6 +127,10 @@ spec:
             - secretRef:
                 name: {{ .Values.redis.existingRedisSecret }}
             {{- end }}
+            {{- if .Values.api.existingSettingSecret }}
+            - secretRef:
+                name: {{ .Values.api.existingSettingSecret }}
+            {{- end }}
           ports:
             - name: http
               containerPort: 8000

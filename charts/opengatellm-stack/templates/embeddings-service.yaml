@@ -2,9 +2,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-embeddings
+  name: opengatellm-stack-embeddings
   labels:
-    app: {{ .Release.Name }}-embeddings
+    app: opengatellm-stack-embeddings
     {{- include "opengatellm-stack.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.embeddings.service.type }}
@@ -13,5 +13,5 @@ spec:
       targetPort: {{ .Values.embeddings.service.targetPort }}
       protocol: TCP
   selector:
-    app: {{ .Release.Name }}-embeddings
+    app: opengatellm-stack-embeddings
 {{- end }}

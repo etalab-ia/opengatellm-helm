@@ -2,20 +2,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-embeddings
+  name: opengatellm-stack-embeddings
   labels:
-    app: {{ .Release.Name }}-embeddings
+    app: opengatellm-stack-embeddings
     {{- include "opengatellm-stack.labels" . | nindent 4 }}
     app.kubernetes.io/component: embeddings
 spec:
   replicas: {{ .Values.embeddings.replicas }}
   selector:
     matchLabels:
-      app: {{ .Release.Name }}-embeddings
+      app: opengatellm-stack-embeddings
   template:
     metadata:
       labels:
-        app: {{ .Release.Name }}-embeddings
+        app: opengatellm-stack-embeddings
     spec:
       {{- with .Values.embeddings.nodeSelector }}
       nodeSelector:
