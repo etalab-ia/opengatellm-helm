@@ -1,36 +1,37 @@
-{{- if .Values.opengatellm.enabled }}
+{{- $coreValues := index .Values "opengatellm-core" }}
+{{- if $coreValues.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: opengatellm-stack-playground-config
+  name: {{ .Release.Name }}-playground-config
   labels:
     {{- include "opengatellm-stack.labels" . | nindent 4 }}
     app.kubernetes.io/component: playground
 data:
   config.yml: |
     settings:
-      app_title: {{ .Values.opengatellm.opengatellm.structuredConfig.playground.app_title | default "OpenGateLLM" | quote }}
-      playground_opengatellm_url: {{ .Values.opengatellm.opengatellm.structuredConfig.playground.api_url | quote }}
-      {{- if .Values.opengatellm.opengatellm.structuredConfig.playground.default_model }}
-      playground_default_model: {{ .Values.opengatellm.opengatellm.structuredConfig.playground.default_model | quote }}
+      app_title: {{ $coreValues.api.structuredConfig.playground.app_title | default "OpenGateLLM" | quote }}
+      playground_opengatellm_url: {{ $coreValues.api.structuredConfig.playground.api_url | quote }}
+      {{- if $coreValues.api.structuredConfig.playground.default_model }}
+      playground_default_model: {{ $coreValues.api.structuredConfig.playground.default_model | quote }}
       {{- end }}
-      playground_theme_has_background: {{ .Values.opengatellm.opengatellm.structuredConfig.playground.theme_has_background | default true }}
-      playground_theme_accent_color: {{ .Values.opengatellm.opengatellm.structuredConfig.playground.theme_accent_color | default "purple" | quote }}
-      playground_theme_appearance: {{ .Values.opengatellm.opengatellm.structuredConfig.playground.theme_appearance | default "light" | quote }}
-      playground_theme_gray_color: {{ .Values.opengatellm.opengatellm.structuredConfig.playground.theme_gray_color | default "gray" | quote }}
-      playground_theme_panel_background: {{ .Values.opengatellm.opengatellm.structuredConfig.playground.theme_panel_background | default "solid" | quote }}
-      playground_theme_radius: {{ .Values.opengatellm.opengatellm.structuredConfig.playground.theme_radius | default "medium" | quote }}
-      playground_theme_scaling: {{ .Values.opengatellm.opengatellm.structuredConfig.playground.theme_scaling | default "100%" | quote }}
-      encryption_key: {{ .Values.opengatellm.opengatellm.structuredConfig.playground.encryption_key | default "changeme" | quote }}
-      session_secret_key: {{ .Values.opengatellm.opengatellm.structuredConfig.playground.session_secret_key | default "changeme" | quote }}
-      proconnect_enabled: {{ .Values.opengatellm.opengatellm.structuredConfig.playground.proconnect_enabled | default false }}
+      playground_theme_has_background: {{ $coreValues.api.structuredConfig.playground.theme_has_background | default true }}
+      playground_theme_accent_color: {{ $coreValues.api.structuredConfig.playground.theme_accent_color | default "purple" | quote }}
+      playground_theme_appearance: {{ $coreValues.api.structuredConfig.playground.theme_appearance | default "light" | quote }}
+      playground_theme_gray_color: {{ $coreValues.api.structuredConfig.playground.theme_gray_color | default "gray" | quote }}
+      playground_theme_panel_background: {{ $coreValues.api.structuredConfig.playground.theme_panel_background | default "solid" | quote }}
+      playground_theme_radius: {{ $coreValues.api.structuredConfig.playground.theme_radius | default "medium" | quote }}
+      playground_theme_scaling: {{ $coreValues.api.structuredConfig.playground.theme_scaling | default "100%" | quote }}
+      encryption_key: {{ $coreValues.api.structuredConfig.playground.encryption_key | default "changeme" | quote }}
+      session_secret_key: {{ $coreValues.api.structuredConfig.playground.session_secret_key | default "changeme" | quote }}
+      proconnect_enabled: {{ $coreValues.api.structuredConfig.playground.proconnect_enabled | default false }}
     dependencies:
-      {{- if .Values.opengatellm.opengatellm.structuredConfig.playground.postgres }}
+      {{- if $coreValues.api.structuredConfig.playground.postgres }}
       postgres:
-        {{- toYaml .Values.opengatellm.opengatellm.structuredConfig.playground.postgres | nindent 8 }}
+        {{- toYaml $coreValues.api.structuredConfig.playground.postgres | nindent 8 }}
       {{- end }}
-      {{- if .Values.opengatellm.opengatellm.structuredConfig.dependencies.redis }}
+      {{- if $coreValues.api.structuredConfig.dependencies.redis }}
       redis:
-        {{- toYaml .Values.opengatellm.opengatellm.structuredConfig.dependencies.redis | nindent 8 }}
+        {{- toYaml $coreValues.api.structuredConfig.dependencies.redis | nindent 8 }}
       {{- end }}
 {{- end }}

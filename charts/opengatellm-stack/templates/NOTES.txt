@@ -9,8 +9,8 @@ To learn more about the release, try:
   $ helm get all {{ .Release.Name }} -n {{ .Release.Namespace }}
 
 You can test the deployments using a port forward :
-  $ kubectl port-forward -n opengatellm svc/opengatellm 8000:8000
-  $ kubectl port-forward -n opengatellm svc/opengatellm-stack-playground 8501:8501
+  $ kubectl port-forward -n {{ .Release.Namespace }} svc/opengatellm-core 8000:8000
+  $ kubectl port-forward -n {{ .Release.Namespace }} svc/{{ .Release.Name }}-playground 8501:8501
 
 Test request :
   $ curl --request POST --url http://localhost:8000/v1/chat/completions --header 'authorization: Bearer changeme' --header 'content-type: application/json' --data '{"model": "albert-testbed", "messages": [{"role": "system", "content": "You are a helpful assistant."}, { "role": "user", "content": "Bonjour"}]}'

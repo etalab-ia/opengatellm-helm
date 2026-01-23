@@ -1,8 +1,9 @@
-{{- if .Values.opengatellm.enabled }}
+{{- $coreValues := index .Values "opengatellm-core" }}
+{{- if $coreValues.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: opengatellm-stack-playground
+  name: {{ .Release.Name }}-playground
   labels:
     {{- include "opengatellm-stack.labels" . | nindent 4 }}
     app.kubernetes.io/component: playground
@@ -10,11 +11,11 @@ spec:
   replicas: {{ .Values.playground.replicas }}
   selector:
     matchLabels:
-      app: opengatellm-stack-playground
+      app: {{ .Release.Name }}-playground
   template:
     metadata:
       labels:
-        app: opengatellm-stack-playground
+        app: {{ .Release.Name }}-playground
     spec:
       {{- with .Values.playground.nodeSelector }}
       nodeSelector:
@@ -28,48 +29,48 @@ spec:
           - name: CONFIG_FILE
             value: "/home/opengatellm/conf/config.yml"
           - name: OPENGATELLM_URL
-            value: {{ .Values.opengatellm.opengatellm.structuredConfig.playground.api_url | quote }}
-          {{- if not .Values.opengatellm.redis.existingRedisSecret }}
+            value: {{ $coreValues.api.structuredConfig.playground.api_url | quote }}
+          {{- if not $coreValues.redis.existingRedisSecret }}
           - name: REDIS_HOST
             value: {{ printf "%s-redis" .Release.Name }}
           - name: REDIS_PORT
-            value: "{{ default 6379 .Values.opengatellm.redis.redis.port }}"
+            value: "{{ default 6379 $coreValues.redis.redis.port }}"
           - name: REDIS_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: {{ printf "%s-redis" .Release.Name }}
-                key: {{ default .Values.opengatellm.redis.authKey .Values.opengatellm.redis.sentinel.authKey }}
+                key: {{ default $coreValues.redis.authKey $coreValues.redis.sentinel.authKey }}
           {{- end }}
-          {{- if not .Values.opengatellm.postgresql.existingPostgresSecret }}
+          {{- if not $coreValues.postgresql.existingPostgresSecret }}
           - name: POSTGRES_HOST
             valueFrom:
               secretKeyRef:
-                name: {{ printf "%s-app" .Values.opengatellm.postgresql.clusterName }}
+                name: {{ printf "%s-app" $coreValues.postgresql.clusterName }}
                 key: host
           - name: POSTGRES_PORT
             valueFrom:
               secretKeyRef:
-                name: {{ printf "%s-app" .Values.opengatellm.postgresql.clusterName }}
+                name: {{ printf "%s-app" $coreValues.postgresql.clusterName }}
                 key: port
           - name: POSTGRES_USER
             valueFrom:
               secretKeyRef:
-                name: {{ printf "%s-app" .Values.opengatellm.postgresql.clusterName }}
+                name: {{ printf "%s-app" $coreValues.postgresql.clusterName }}
                 key: user
           - name: POSTGRES_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: {{ printf "%s-app" .Values.opengatellm.postgresql.clusterName }}
+                name: {{ printf "%s-app" $coreValues.postgresql.clusterName }}
                 key: password
           {{- end }}
         envFrom:
-          {{- if .Values.opengatellm.redis.existingRedisSecret }}
+          {{- if $coreValues.redis.existingRedisSecret }}
           - secretRef:
-              name: {{ .Values.opengatellm.redis.existingRedisSecret }}
+              name: {{ $coreValues.redis.existingRedisSecret }}
           {{- end }}
-          {{- if .Values.opengatellm.postgresql.existingPostgresSecret }}
+          {{- if $coreValues.postgresql.existingPostgresSecret }}
           - secretRef:
-              name: {{ .Values.opengatellm.postgresql.existingPostgresSecret }}
+              name: {{ $coreValues.postgresql.existingPostgresSecret }}
           {{- end }}
         ports:
           - containerPort: {{ .Values.playground.service.targetPort }}
@@ -96,5 +97,5 @@ spec:
       volumes:
         - name: playground-config-vol
           configMap:
-            name: opengatellm-stack-playground-config
+            name: {{ .Release.Name }}-playground-config
 {{- end }}

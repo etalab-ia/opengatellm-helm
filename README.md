@@ -14,13 +14,9 @@ This repository contains the helm chart to deploy [opengatellm](https://github.c
 
 This repository provides two Helm charts:
 
-- **`charts/opengatellm`** - Core chart for deploying OpenGateLLM API and its mandatory dependencies : Redis and PostgreSQL
+- **`charts/opengatellm-core`** - Core chart for deploying OpenGateLLM API and its mandatory dependencies : Redis and PostgreSQL
 - **`charts/opengatellm-stack`** - Chart based on OpenGateLLM core + optional dependencies : vLLM inference, TEI embeddings, and Elasticsearch
 - `manifests` - Legacy helm chart version used for deployment on LaSuite (deprecated)
-
-Each chart has its own README with detailed documentation:
-- [opengatellm chart documentation](./charts/opengatellm/README.md)
-- [opengatellm-stack chart documentation](./charts/opengatellm-stack/README.md)
 
 ## Prerequisites
 

@@ -1,39 +1,45 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: opengatellm
+  name: opengatellm-core
   namespace: {{ default .Release.Namespace .Values.namespaceOverride | quote }}
-  labels:
-    {{- include "opengatellm.labels" . | nindent 4 }}
-    app.kubernetes.io/component: api
+  {{- with .Values.api.annotations }}
   annotations:
-    {{- toYaml .Values.opengatellm.annotations | nindent 4 }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "opengatellm-core.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
 spec:
-  replicas: {{ .Values.opengatellm.replicas }}
-  {{- with .Values.opengatellm.revisionHistoryLimit }}
+  replicas: {{ .Values.api.replicas }}
+  {{- with .Values.api.revisionHistoryLimit }}
   revisionHistoryLimit: {{ . }}
   {{- end }}
   selector:
     matchLabels:
-      app: opengatellm
+      app: opengatellm-core
+  {{- with .Values.api.strategy }}
   strategy:
-    {{- toYaml .Values.opengatellm.strategy | nindent 4 }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   template:
     metadata:
       annotations:
-        {{- include "opengatellm.config.checksum" . | nindent 8 }}
+        {{- include "opengatellm-core.config.checksum" . | nindent 8 }}
       labels:
-        app: opengatellm
+        app: opengatellm-core
         app.kubernetes.io/component: api
       namespace: {{ default .Release.Namespace .Values.namespaceOverride | quote }}
     spec:
-      serviceAccountName: {{ template "opengatellm.serviceAccountName" . }}
-      {{- if .Values.opengatellm.priorityClassName }}
-      priorityClassName: {{ .Values.opengatellm.priorityClassName }}
+      serviceAccountName: {{ template "opengatellm-core.serviceAccountName" . }}
+      {{- if .Values.api.priorityClassName }}
+      priorityClassName: {{ .Values.api.priorityClassName }}
       {{- end }}
+      {{- with .Values.api.securityContext }}
       securityContext:
-        {{- toYaml .Values.opengatellm.securityContext | nindent 8 }}
-      {{- with .Values.opengatellm.initContainers }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.api.initContainers }}
       initContainers:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -44,18 +50,18 @@ spec:
       {{- end }}
       {{- end }}
       containers:
-        - name: opengatellm
-          image: "{{ .Values.opengatellm.image.repository }}:{{ .Values.opengatellm.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.opengatellm.image.pullPolicy }}
-          {{- if .Values.opengatellm.extraArgs }}
+        - name: opengatellm-core
+          image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.api.image.pullPolicy }}
+          {{- if .Values.api.extraArgs }}
           args:
-          {{- range $key, $value := .Values.opengatellm.extraArgs }}
+          {{- range $key, $value := .Values.api.extraArgs }}
             - -{{ $key }}={{ $value }}
           {{- end }}
           {{- end }}
           volumeMounts:
-            {{- if .Values.opengatellm.extraVolumeMounts }}
-              {{ toYaml .Values.opengatellm.extraVolumeMounts | nindent 12}}
+            {{- if .Values.api.extraVolumeMounts }}
+              {{ toYaml .Values.api.extraVolumeMounts | nindent 12}}
             {{- end }}
             - name: config
               mountPath: /home/opengatellm/conf
@@ -66,7 +72,7 @@ spec:
           env:
           - name: CONFIG_FILE
             value: "/home/opengatellm/conf/config.yml"
-          {{- with .Values.opengatellm.gunicornArgs }}
+          {{- with .Values.api.gunicornArgs }}
           - name: GUNICORN_CMD_ARGS
             value: {{ . | quote }}
           {{- end }}
@@ -109,9 +115,9 @@ spec:
                 key: password
           {{- end }}
           envFrom:
-            {{- if .Values.existingModelSecret }}
+            {{- if .Values.api.existingModelSecret }}
             - secretRef:
-                name: {{ .Values.existingModelSecret }}
+                name: {{ .Values.api.existingModelSecret }}
             {{- end }}
             {{- if .Values.postgresql.existingPostgresSecret }}
             - secretRef:
@@ -121,35 +127,39 @@ spec:
             - secretRef:
                 name: {{ .Values.redis.existingRedisSecret }}
             {{- end }}
+            {{- if .Values.api.existingSettingSecret }}
+            - secretRef:
+                name: {{ .Values.api.existingSettingSecret }}
+            {{- end }}
           ports:
             - name: http
               containerPort: 8000
               protocol: TCP
           livenessProbe:
-            {{- toYaml .Values.opengatellm.probes.liveness | nindent 12 }}
+            {{- toYaml .Values.api.probes.liveness | nindent 12 }}
           readinessProbe:
-            {{- toYaml .Values.opengatellm.probes.readiness | nindent 12 }}
+            {{- toYaml .Values.api.probes.readiness | nindent 12 }}
           resources:
-            {{- toYaml .Values.opengatellm.resources | nindent 12 }}
+            {{- toYaml .Values.api.resources | nindent 12 }}
           securityContext:
-            {{- toYaml .Values.opengatellm.containerSecurityContext | nindent 12 }}   
-{{- if .Values.opengatellm.extraContainers }}
-{{ toYaml .Values.opengatellm.extraContainers | indent 8}}
+            {{- toYaml .Values.api.containerSecurityContext | nindent 12 }}
+{{- if .Values.api.extraContainers }}
+{{ toYaml .Values.api.extraContainers | indent 8}}
 {{- end }}
-      {{- with .Values.opengatellm.nodeSelector }}
+      {{- with .Values.api.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.opengatellm.affinity }}
+      {{- with .Values.api.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.opengatellm.tolerations }}
+      {{- with .Values.api.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      terminationGracePeriodSeconds: {{ .Values.opengatellm.terminationGracePeriodSeconds }}
-      {{- with .Values.opengatellm.dnsConfig }}
+      terminationGracePeriodSeconds: {{ .Values.api.terminationGracePeriodSeconds }}
+      {{- with .Values.api.dnsConfig }}
       dnsConfig:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -158,11 +168,11 @@ spec:
           projected:
             sources:
             - configMap:
-                name: opengatellm-config
+                name: opengatellm-core-config
         - name: logging-config
           configMap:
-            name: opengatellm-logging-config
-        {{- if .Values.opengatellm.extraVolumes }}
-        {{- toYaml .Values.opengatellm.extraVolumes | nindent 8}}
+            name: opengatellm-core-logging-config
+        {{- if .Values.api.extraVolumes }}
+        {{- toYaml .Values.api.extraVolumes | nindent 8}}
         {{- end }}
 

@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: opengatellm-logging-config
+  name: opengatellm-core-logging-config
   namespace: {{ default .Release.Namespace .Values.namespaceOverride }}
   labels:
-    {{- include "opengatellm.labels" . | nindent 4 }}
+    {{- include "opengatellm-core.labels" . | nindent 4 }}
 data:
   logging.conf: |
     [loggers]
@@ -17,30 +17,30 @@ data:
     keys=default, access
 
     [logger_root]
-    level={{ .Values.opengatellm.logging.level | default "INFO" }}
+    level={{ .Values.api.logging.level | default "INFO" }}
     handlers=console
 
     [logger_gunicorn.error]
-    level={{ .Values.opengatellm.logging.level | default "INFO" }}
+    level={{ .Values.api.logging.level | default "INFO" }}
     handlers=console
     propagate=0
     qualname=gunicorn.error
 
     [logger_gunicorn.access]
-    level={{ .Values.opengatellm.logging.level | default "INFO" }}
+    level={{ .Values.api.logging.level | default "INFO" }}
     handlers=access
     propagate=0
     qualname=gunicorn.access
 
     [handler_console]
     class=StreamHandler
-    level={{ .Values.opengatellm.logging.level | default "INFO" }}
+    level={{ .Values.api.logging.level | default "INFO" }}
     formatter=default
     args=(sys.stdout,)
 
     [handler_access]
     class=StreamHandler
-    level={{ .Values.opengatellm.logging.level | default "INFO" }}
+    level={{ .Values.api.logging.level | default "INFO" }}
     formatter=access
     args=(sys.stdout,)
 
