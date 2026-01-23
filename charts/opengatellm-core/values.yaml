@@ -157,7 +157,7 @@ opengatellmCore:
   #   ALBERT_URL: https://example.com/api
   #   ALBERT_KEY: changeme
   #
-  existingModelSecret: "albert-model-secret"
+  existingModelSecret: ""
 
   #
   # -- Secret loaded into env variable

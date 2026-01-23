@@ -26,7 +26,6 @@ data:
       session_secret_key: {{ $coreValues.opengatellmCore.structuredConfig.playground.session_secret_key | default "changeme" | quote }}
       proconnect_enabled: {{ $coreValues.opengatellmCore.structuredConfig.playground.proconnect_enabled | default false }}
     dependencies:
-    #TODO: is postgres still used by the playground ?
       {{- if $coreValues.opengatellmCore.structuredConfig.playground.postgres }}
       postgres:
         {{- toYaml $coreValues.opengatellmCore.structuredConfig.playground.postgres | nindent 8 }}
