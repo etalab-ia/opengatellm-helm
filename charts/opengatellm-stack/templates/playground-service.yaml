@@ -3,13 +3,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: opengatellm-stack-playground
+  name: {{ .Release.Name }}-playground
   labels:
     {{- include "opengatellm-stack.labels" . | nindent 4 }}
     app.kubernetes.io/component: playground
 spec:
   selector:
-    app: opengatellm-stack-playground
+    app: {{ .Release.Name }}-playground
   ports:
     - port: {{ .Values.playground.service.port }}
       targetPort: {{ .Values.playground.service.targetPort }}

@@ -1,1 +1,1 @@
-{{- tpl .Values.opengatellmCore.config . -}}
+{{- tpl .Values.api.config . -}}

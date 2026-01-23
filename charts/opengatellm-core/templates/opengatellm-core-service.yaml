@@ -10,8 +10,8 @@ spec:
     app: opengatellm-core
     app.kubernetes.io/component: api
   ports:
-    - port: {{ .Values.opengatellmCore.service.port }}
+    - port: {{ .Values.api.service.port }}
       protocol: TCP
       targetPort: http
       name: http
-  type: {{ .Values.opengatellmCore.service.type }}
+  type: {{ .Values.api.service.type }}

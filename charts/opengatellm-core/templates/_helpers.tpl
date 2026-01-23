@@ -54,10 +54,10 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Create the name of the service account to use
 */}}
 {{- define "opengatellm-core.serviceAccountName" -}}
-{{- if .Values.opengatellmCore.serviceAccount.create }}
-{{- default (include "opengatellm-core.fullname" .) .Values.opengatellmCore.serviceAccount.name }}
+{{- if .Values.api.serviceAccount.create }}
+{{- default (include "opengatellm-core.fullname" .) .Values.api.serviceAccount.name }}
 {{- else }}
-{{- default "default" .Values.opengatellmCore.serviceAccount.name }}
+{{- default "default" .Values.api.serviceAccount.name }}
 {{- end }}
 {{- end }}
 
@@ -65,7 +65,7 @@ Create the name of the service account to use
 Calculate the config from structured and unstructured text input
 */}}
 {{- define "opengatellm-core.calculatedConfig" -}}
-{{ tpl (merge .Values.opengatellmCore.structuredConfig (include "opengatellm-core.unstructuredConfig" . | fromYaml) | toYaml) . }}
+{{ tpl (merge .Values.api.structuredConfig (include "opengatellm-core.unstructuredConfig" . | fromYaml) | toYaml) . }}
 {{- end -}}
 
 {{/*

@@ -3,7 +3,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: opengatellm-stack-playground
+  name: {{ .Release.Name }}-playground
   labels:
     {{- include "opengatellm-stack.labels" . | nindent 4 }}
     app.kubernetes.io/component: playground
@@ -11,11 +11,11 @@ spec:
   replicas: {{ .Values.playground.replicas }}
   selector:
     matchLabels:
-      app: opengatellm-stack-playground
+      app: {{ .Release.Name }}-playground
   template:
     metadata:
       labels:
-        app: opengatellm-stack-playground
+        app: {{ .Release.Name }}-playground
     spec:
       {{- with .Values.playground.nodeSelector }}
       nodeSelector:
@@ -29,7 +29,7 @@ spec:
           - name: CONFIG_FILE
             value: "/home/opengatellm/conf/config.yml"
           - name: OPENGATELLM_URL
-            value: {{ $coreValues.opengatellmCore.structuredConfig.playground.api_url | quote }}
+            value: {{ $coreValues.api.structuredConfig.playground.api_url | quote }}
           {{- if not $coreValues.redis.existingRedisSecret }}
           - name: REDIS_HOST
             value: {{ printf "%s-redis" .Release.Name }}
@@ -97,5 +97,5 @@ spec:
       volumes:
         - name: playground-config-vol
           configMap:
-            name: opengatellm-stack-playground-config
+            name: {{ .Release.Name }}-playground-config
 {{- end }}

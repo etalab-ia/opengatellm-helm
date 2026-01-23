@@ -4,8 +4,7 @@ namespaceOverride: ""
 image:
   pullSecrets: []
 
-# TODO: renommer en api
-opengatellmCore:
+api:
   serviceAccount:
     create: false
     name: ""
@@ -98,7 +97,7 @@ opengatellmCore:
       log_level: INFO
 
     models:
-      {{ toYaml .Values.opengatellmCore.models | nindent 8 }}
+      {{ toYaml .Values.api.models | nindent 8 }}
 
   # -- Additional structured values on top of the text based 'opengatellm-core.config'. Applied after the text based config is evaluated for templates. Enables adding and modifying YAML elements in the evaluated 'opengatellm-core.config'.
   #
@@ -107,7 +106,7 @@ opengatellmCore:
   #
   # Example for parent chart adding Elasticsearch:
   #
-  # opengatellmCore:
+  # api:
   #   structuredConfig:
   #     dependencies:
   #       elasticsearch:

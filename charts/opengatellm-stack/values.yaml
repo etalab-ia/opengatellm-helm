@@ -12,7 +12,7 @@ opengatellm-core:
           - CREATE DATABASE playground WITH ENCODING 'UTF8';
 
   # values for opengateLLM
-  opengatellmCore:
+  api:
     replicas: 1
     image:
       repository: ghcr.io/etalab-ia/opengatellm/api
@@ -33,13 +33,13 @@ opengatellm-core:
             url: "http://albert-testbed.etalab.gouv.fr:8000"
             key: "changeme"
 
-      - name: mistralai/Mistral-Small-3.2-24B-Instruct-2506
-        type: text-generation
-        providers:
-          - type: vllm
-            model_name: "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
-            url: "http://opengatellm-router-service/"
-            key: "changeme"
+#      - name: mistralai/Mistral-Small-3.2-24B-Instruct-2506
+#        type: text-generation
+#        providers:
+#          - type: vllm
+#            model_name: "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
+#            url: "http://opengatellm-router-service/"
+#            key: "changeme"
 
       # If embeddings are deployed through vLLM, use this version :
 #      - name: BAAI/bge-m3
@@ -74,7 +74,7 @@ opengatellm-core:
           url: redis://:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}
 
         elasticsearch:
-          hosts: "http://opengatellm-elasticsearch-es-http:9200"
+          hosts: "http://{{ .Release.Name }}-elasticsearch-es-http:9200"
 
       settings:
         log_level: INFO
