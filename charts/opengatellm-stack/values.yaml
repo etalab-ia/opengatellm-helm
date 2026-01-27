@@ -164,11 +164,11 @@ vllm-stack:
         modelURL: mistralai/Ministral-3-3B-Instruct-2512
 
         replicaCount: 1
-        requestCPU: 20
-        requestMemory: "200G"
+        requestCPU: "8"
+        requestMemory: "64Gi"
         requestGPU: 1
-        limitCPU: "22"
-        limitMemory: "230G"
+        limitCPU: "8"
+        limitMemory: "64Gi"
 
         pvcStorage: "230Gi"
         storageClass: bsu-gp2

@@ -39,8 +39,12 @@ vllm-stack:
       runAsNonRoot: true
       seccompProfile:
         type: RuntimeDefault
+    strategy:
+      type: Recreate
 
 playground:
+  image:
+    repository: ghcr.io/ohemelaar-dinum/opengatellm:main
   containerSecurityContext:
     allowPrivilegeEscalation: false
     capabilities:
@@ -56,6 +60,7 @@ playground:
     limits:
       memory: 512Mi
 embeddings:
+  enabled: false
   containerSecurityContext:
     allowPrivilegeEscalation: false
     capabilities:
