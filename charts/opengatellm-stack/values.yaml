@@ -167,7 +167,6 @@ vllm-stack:
         requestCPU: "8"
         requestMemory: "64Gi"
         requestGPU: 1
-        limitCPU: "8"
         limitMemory: "64Gi"
 
         pvcStorage: "230Gi"
