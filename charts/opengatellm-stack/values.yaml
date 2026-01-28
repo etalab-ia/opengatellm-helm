@@ -46,6 +46,16 @@ opengatellm:
             url: "http://opengatellm-router-service/"
             key: "changeme"
 
+      - name: mistralai/Ministral-3-3B-Instruct-2512
+        type: text-generation
+        providers:
+          - type: vllm
+            model_name: "mistralai/Ministral-3-3B-Instruct-2512"
+            # Note: vLLM router service name follows pattern: <release-name>-router-service
+            # Update this URL if you change the Helm release name
+            url: "http://opengatellm-stack-router-service/"
+            key: "changeme"
+
       # If embeddings are deployed through vLLM, use this version :
 #      - name: BAAI/bge-m3
 #        type: text-embeddings-inference
