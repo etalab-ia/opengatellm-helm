@@ -15,6 +15,7 @@ opengatellm:
       - host: opengatellm.admin-dev-osc-cgw1-bacasable-wapp-03.k8s.cloud.incubateur.net
         paths:
           - path: /
+            pathType: Prefix
     tls:
       - secretName: opengatellm-tls
         hosts:
