@@ -256,3 +256,5 @@ Thumbs.db
 .ansible_env
 uv.lock
 .terraform.lock.hcl
+
+values-secrets.yaml
