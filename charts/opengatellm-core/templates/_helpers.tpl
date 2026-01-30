@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "opengatellm.name" -}}
+{{- define "opengatellm-core.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "opengatellm.fullname" -}}
+{{- define "opengatellm-core.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "opengatellm.chart" -}}
+{{- define "opengatellm-core.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "opengatellm.labels" -}}
-helm.sh/chart: {{ include "opengatellm.chart" . }}
-{{ include "opengatellm.selectorLabels" . }}
+{{- define "opengatellm-core.labels" -}}
+helm.sh/chart: {{ include "opengatellm-core.chart" . }}
+{{ include "opengatellm-core.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,40 +45,40 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "opengatellm.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "opengatellm.name" . }}
+{{- define "opengatellm-core.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "opengatellm-core.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "opengatellm.serviceAccountName" -}}
-{{- if .Values.opengatellm.serviceAccount.create }}
-{{- default (include "opengatellm.fullname" .) .Values.opengatellm.serviceAccount.name }}
+{{- define "opengatellm-core.serviceAccountName" -}}
+{{- if .Values.api.serviceAccount.create }}
+{{- default (include "opengatellm-core.fullname" .) .Values.api.serviceAccount.name }}
 {{- else }}
-{{- default "default" .Values.opengatellm.serviceAccount.name }}
+{{- default "default" .Values.api.serviceAccount.name }}
 {{- end }}
 {{- end }}
 
 {{/*
 Calculate the config from structured and unstructured text input
 */}}
-{{- define "opengatellm.calculatedConfig" -}}
-{{ tpl (merge .Values.opengatellm.structuredConfig (include "opengatellm.unstructuredConfig" . | fromYaml) | toYaml) . }}
+{{- define "opengatellm-core.calculatedConfig" -}}
+{{ tpl (merge .Values.api.structuredConfig (include "opengatellm-core.unstructuredConfig" . | fromYaml) | toYaml) . }}
 {{- end -}}
 
 {{/*
 Calculate the config from the unstructured text input
 */}}
-{{- define "opengatellm.unstructuredConfig" -}}
+{{- define "opengatellm-core.unstructuredConfig" -}}
 {{ include (print $.Template.BasePath "/_config-render.tpl") . }}
 {{- end -}}
 
 {{/*
-The volume to mount for opengatellm configuration
+The volume to mount for opengatellm-core configuration
 */}}
-{{- define "opengatellm.configVolume" -}}
+{{- define "opengatellm-core.configVolume" -}}
 {{- if eq .Values.configStorageType "Secret" -}}
 secret:
   secretName: {{ tpl .Values.externalConfigSecretName . }}
@@ -91,6 +91,6 @@ configMap:
 {{- end -}}
 {{- end -}}
 
-{{- define "opengatellm.config.checksum" -}}
-checksum/config: {{ include (print .Template.BasePath "/opengatellm-configmap.yaml") . | sha256sum }}
+{{- define "opengatellm-core.config.checksum" -}}
+checksum/config: {{ include (print .Template.BasePath "/opengatellm-core-configmap.yaml") . | sha256sum }}
 {{- end -}}
