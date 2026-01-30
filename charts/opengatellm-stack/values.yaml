@@ -110,7 +110,7 @@ opengatellm-core:
         httpGet:
           path: /health
           port: http
-        initialDelaySeconds: 120
+        initialDelaySeconds: 160
         periodSeconds: 30
 
 playground:
