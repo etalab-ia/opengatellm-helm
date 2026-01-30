@@ -7,7 +7,7 @@ appVersion: "0.3.6"
 
 dependencies:
   - name: opengatellm-core
-    version: "0.2.0"
+    version: "0.3.0"
     repository: "file://../opengatellm-core"
     condition: opengatellm-core.enabled
   - name: vllm-stack
