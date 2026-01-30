@@ -1,0 +1,19 @@
+# File: opengatellm-stack/templates/NOTES.txt
+Thank you for installing {{ .Chart.Name }}.
+
+Your release is named {{ .Release.Name }}.
+
+To learn more about the release, try:
+
+  $ helm status {{ .Release.Name }} -n {{ .Release.Namespace }}
+  $ helm get all {{ .Release.Name }} -n {{ .Release.Namespace }}
+
+You can test the deployments using a port forward :
+  $ kubectl port-forward -n {{ .Release.Namespace }} svc/opengatellm-core 8000:8000
+  $ kubectl port-forward -n {{ .Release.Namespace }} svc/{{ .Release.Name }}-playground 8501:8501
+
+Test request :
+  $ curl --request POST --url http://localhost:8000/v1/chat/completions --header 'authorization: Bearer changeme' --header 'content-type: application/json' --data '{"model": "albert-testbed", "messages": [{"role": "system", "content": "You are a helpful assistant."}, { "role": "user", "content": "Bonjour"}]}'
+
+Or run the bootscrap script :
+  $ ./bootstrap_ogl.sh

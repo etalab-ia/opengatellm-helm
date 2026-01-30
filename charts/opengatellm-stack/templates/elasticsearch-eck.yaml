@@ -1,0 +1,47 @@
+{{- if .Values.elasticsearch.enabled }}
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: {{ .Release.Name }}-elasticsearch
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "opengatellm-stack.labels" . | nindent 4 }}
+spec:
+  version: {{ .Values.elasticsearch.version }}
+  nodeSets:
+  - name: default
+    count: {{ .Values.elasticsearch.replicas | default 1 }}
+    config:
+      node.roles: ["master", "data", "ingest", "ml"]
+      xpack.security.enabled: false
+      xpack.security.transport.ssl.enabled: false
+      xpack.security.http.ssl.enabled: false
+    podTemplate:
+      spec:
+        containers:
+        - name: elasticsearch
+          resources:
+            {{- toYaml .Values.elasticsearch.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /_cluster/health?local=true
+              port: 9200
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        {{- if .Values.global.storage.storageClassName }}
+        storageClassName: {{ .Values.global.storage.storageClassName }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.elasticsearch.persistence.size | default "8Gi" }}
+{{- end }}

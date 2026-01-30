@@ -33,10 +33,10 @@ jobs:
           helm repo update
 
           # Replace file:// dependency with published repo URL for opengatellm-stack
-          # sed -i 's|repository: "file://../opengatellm-core"|repository: "https://etalab-ia.github.io/opengatellm-helm"|g' charts/opengatellm-stack/Chart.yaml
+          sed -i 's|repository: "file://../opengatellm-core"|repository: "https://etalab-ia.github.io/opengatellm-helm"|g' charts/opengatellm-stack/Chart.yaml
 
           # Remove Chart.lock for opengatellm-stack since we changed the repository URL
-          # rm -f charts/opengatellm-stack/Chart.lock
+          rm -f charts/opengatellm-stack/Chart.lock
 
           # Update dependencies only for opengatellm (redis, postgresql)
           helm dependency update charts/opengatellm-core

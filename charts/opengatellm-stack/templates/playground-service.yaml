@@ -1,0 +1,24 @@
+{{- $coreValues := index .Values "opengatellm-core" }}
+{{- if $coreValues.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-playground
+  labels:
+    {{- include "opengatellm-stack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: playground
+spec:
+  selector:
+    app: {{ .Release.Name }}-playground
+  ports:
+    - port: {{ .Values.playground.service.port }}
+      targetPort: {{ .Values.playground.service.targetPort }}
+      name: http
+    - port: 8501
+      targetPort: 8501
+      name: frontend
+    - port: 8500
+      targetPort: 8500
+      name: backend
+  type: {{ .Values.playground.service.type }}
+{{- end }}
