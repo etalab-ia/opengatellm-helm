@@ -32,15 +32,13 @@ jobs:
           helm repo update
           helm dependency update charts/opengatellm-core
 
-      - name: Isolate opengatellm-core for release
-        run: |
-          mkdir -p .release-core
-          cp -r charts/opengatellm-core .release-core/
+      - name: Remove stack chart to release only core
+        run: rm -rf charts/opengatellm-stack
 
       - name: Release opengatellm-core
         uses: helm/chart-releaser-action@v1.6.0
         with:
-          charts_dir: .release-core
+          charts_dir: charts
           skip_existing: true
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
@@ -75,15 +73,13 @@ jobs:
           # Resolve opengatellm-core from local file:// path and other deps from remote repos
           helm dependency update charts/opengatellm-stack
 
-      - name: Isolate opengatellm-stack for release
-        run: |
-          mkdir -p .release-stack
-          cp -r charts/opengatellm-stack .release-stack/
+      - name: Remove core chart to release only stack
+        run: rm -rf charts/opengatellm-core
 
       - name: Release opengatellm-stack
         uses: helm/chart-releaser-action@v1.6.0
         with:
-          charts_dir: .release-stack
+          charts_dir: charts
           skip_existing: true
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"

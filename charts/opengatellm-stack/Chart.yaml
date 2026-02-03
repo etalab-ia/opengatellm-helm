@@ -2,12 +2,12 @@ apiVersion: v2
 name: opengatellm-stack
 description: A Helm chart for OpenGateLLM Stack
 type: application
-version: 0.8.1
+version: 0.8.2
 appVersion: "0.3.6"
 
 dependencies:
   - name: opengatellm-core
-    version: "0.3.1"
+    version: "0.3.2"
     repository: "file://../opengatellm-core"
     condition: opengatellm-core.enabled
   - name: vllm-stack
