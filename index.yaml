@@ -23,6 +23,25 @@ entries:
   opengatellm-core:
   - apiVersion: v2
     appVersion: 0.3.6
+    created: "2026-02-03T15:28:39.427539563Z"
+    dependencies:
+    - alias: redis
+      name: redis-ha
+      repository: https://dandydeveloper.github.io/charts/
+      version: 4.35.5
+    - alias: postgresql
+      name: cluster
+      repository: https://cloudnative-pg.github.io/charts
+      version: 0.3.1
+    description: A Helm chart for OpenGateLLM
+    digest: 9fcf40383b482df0db1b4d1f2ae876be73bd7c464d2f02e8c469850adbaa985e
+    name: opengatellm-core
+    type: application
+    urls:
+    - https://github.com/etalab-ia/opengatellm-helm/releases/download/opengatellm-core-0.3.2/opengatellm-core-0.3.2.tgz
+    version: 0.3.2
+  - apiVersion: v2
+    appVersion: 0.3.6
     created: "2026-01-30T09:16:01.908103408Z"
     dependencies:
     - alias: redis
@@ -248,4 +267,4 @@ entries:
     urls:
     - https://github.com/etalab-ia/opengatellm-helm/releases/download/opengatellm-stack-0.1.0-test/opengatellm-stack-0.1.0-test.tgz
     version: 0.1.0-test
-generated: "2026-01-30T09:16:01.908147831Z"
+generated: "2026-02-03T15:28:39.427558528Z"
