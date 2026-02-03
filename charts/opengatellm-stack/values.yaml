@@ -142,6 +142,8 @@ playground:
     type: ClusterIP
     port: 80
     targetPort: 8501
+  ingress:
+    enabled: false
   probes:
     readiness:
       path: /

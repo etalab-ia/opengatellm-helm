@@ -79,6 +79,20 @@ playground:
       memory: 1Gi
     limits:
       memory: 1Gi
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: "letsencrypt-production"
+    hosts:
+    - host: playground.admin-dev-osc-cgw1-bacasable-wapp-03.k8s.cloud.incubateur.net
+      paths:
+      - path: /
+        pathType: Prefix
+    tls:
+    - hosts:
+      - playground.admin-dev-osc-cgw1-bacasable-wapp-03.k8s.cloud.incubateur.net
+      secretName: playground-tls
+    ingressClassName: nginx
 embeddings:
   enabled: false
   containerSecurityContext:
