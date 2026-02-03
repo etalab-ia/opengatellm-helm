@@ -21,6 +21,10 @@ opengatellm:
         hosts:
           - opengatellm.admin-dev-osc-cgw1-bacasable-wapp-03.k8s.cloud.incubateur.net
 
+  redis:
+    persistentVolume:
+      enabled: false
+
   postgresql:
     enabled: false
     clusterName: cnpg-cluster-albert-ppr
@@ -104,3 +108,4 @@ embeddings:
       type: RuntimeDefault
     runAsUser: 1100
     runAsGroup: 1100
+
