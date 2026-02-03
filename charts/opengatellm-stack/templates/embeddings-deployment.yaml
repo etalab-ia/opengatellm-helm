@@ -25,6 +25,10 @@ spec:
       - name: bge-embeddings
         image: {{ .Values.embeddings.image.repository }}:{{ .Values.embeddings.image.tag }}
         imagePullPolicy: {{ .Values.embeddings.image.pullPolicy }}
+        {{- if .Values.embeddings.securityContext }}
+        securityContext:
+          {{- toYaml .Values.embeddings.securityContext | nindent 12 }}
+        {{- end }}
         command: [ "text-embeddings-router" ]
         args: [ "--model-id", "{{ .Values.embeddings.config.model }}" ]
         env:

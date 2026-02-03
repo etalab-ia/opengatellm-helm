@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - feat/add-security-context-refactor-ci
+  workflow_dispatch:
 
 jobs:
-  release:
+  release-core:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -14,15 +16,40 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Configure Git
-        run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+      - name: Setup Helm environment
+        uses: ./.github/actions/setup-helm-env
 
-      - name: Install Helm
-        uses: azure/setup-helm@v4
+      - name: Add Helm repositories and update dependencies
+        run: |
+          helm repo add dandydeveloper https://dandydeveloper.github.io/charts/
+          helm repo add cloudnative-pg https://cloudnative-pg.github.io/charts
+          helm repo update
+          helm dependency update charts/opengatellm-core
+
+      - name: Isolate opengatellm-core for release
+        run: |
+          mkdir -p .release-core
+          cp -r charts/opengatellm-core .release-core/
+
+      - name: Release opengatellm-core
+        uses: helm/chart-releaser-action@v1.6.0
         with:
-          version: v3.14.0
+          charts_dir: .release-core
+          skip_existing: true
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+  release-stack:
+    needs: release-core
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Helm environment
+        uses: ./.github/actions/setup-helm-env
 
       - name: Add Helm repositories and update dependencies
         run: |
@@ -30,21 +57,24 @@ jobs:
           helm repo add elastic https://helm.elastic.co
           helm repo add dandydeveloper https://dandydeveloper.github.io/charts/
           helm repo add cloudnative-pg https://cloudnative-pg.github.io/charts
+          helm repo add opengatellm https://etalab-ia.github.io/opengatellm-helm
           helm repo update
 
-          # Replace file:// dependency with published repo URL for opengatellm-stack
+          # Replace file:// dependency with published repo URL
           sed -i 's|repository: "file://../opengatellm-core"|repository: "https://etalab-ia.github.io/opengatellm-helm"|g' charts/opengatellm-stack/Chart.yaml
-
-          # Remove Chart.lock for opengatellm-stack since we changed the repository URL
           rm -f charts/opengatellm-stack/Chart.lock
 
-          # Update dependencies only for opengatellm (redis, postgresql)
-          helm dependency update charts/opengatellm-core
+          helm dependency update charts/opengatellm-stack
 
-      - name: Run chart-releaser
+      - name: Isolate opengatellm-stack for release
+        run: |
+          mkdir -p .release-stack
+          cp -r charts/opengatellm-stack .release-stack/
+
+      - name: Release opengatellm-stack
         uses: helm/chart-releaser-action@v1.6.0
         with:
-          charts_dir: charts
+          charts_dir: .release-stack
           skip_existing: true
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
