@@ -4,47 +4,9 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
-  release-core:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Configure Git
-        run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-
-      - name: Install Helm
-        uses: azure/setup-helm@v4
-        with:
-          version: v3.14.0
-
-      - name: Add Helm repositories and update dependencies
-        run: |
-          helm repo add dandydeveloper https://dandydeveloper.github.io/charts/
-          helm repo add cloudnative-pg https://cloudnative-pg.github.io/charts
-          helm repo update
-          helm dependency update charts/opengatellm-core
-
-      - name: Remove stack chart to release only core
-        run: rm -rf charts/opengatellm-stack
-
-      - name: Release opengatellm-core
-        uses: helm/chart-releaser-action@v1.6.0
-        with:
-          charts_dir: charts
-          skip_existing: true
-        env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-
-  release-stack:
-    needs: release-core
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -70,13 +32,16 @@ jobs:
           helm repo add cloudnative-pg https://cloudnative-pg.github.io/charts
           helm repo update
 
-          # Resolve opengatellm-core from local file:// path and other deps from remote repos
-          helm dependency update charts/opengatellm-stack
+          # Replace file:// dependency with published repo URL for opengatellm-stack
+          sed -i 's|repository: "file://../opengatellm-core"|repository: "https://etalab-ia.github.io/opengatellm-helm"|g' charts/opengatellm-stack/Chart.yaml
 
-      - name: Remove core chart to release only stack
-        run: rm -rf charts/opengatellm-core
+          # Remove Chart.lock for opengatellm-stack since we changed the repository URL
+          rm -f charts/opengatellm-stack/Chart.lock
 
-      - name: Release opengatellm-stack
+          # Update dependencies only for opengatellm (redis, postgresql)
+          helm dependency update charts/opengatellm-core
+
+      - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.6.0
         with:
           charts_dir: charts

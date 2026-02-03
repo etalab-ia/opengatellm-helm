@@ -113,7 +113,7 @@ api:
   #         hosts: http://my-elasticsearch:9200
   #     settings:
   #       vector_store_model: "BAAI/bge-m3"
-  #
+
   structuredConfig: {}
 
   #
@@ -251,7 +251,7 @@ postgresql:
   #   POSTGRES_USER: api
   #   POSTGRES_PASSWORD: changeme
   #   POSTGRES_HOST: localhost
-  #   POSTGRES_PORT: "5432"
+  #   POSTGRES_PORT: 5432
   #
   existingPostgresSecret: ""
 
