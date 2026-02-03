@@ -70,13 +70,9 @@ jobs:
           helm repo add elastic https://helm.elastic.co
           helm repo add dandydeveloper https://dandydeveloper.github.io/charts/
           helm repo add cloudnative-pg https://cloudnative-pg.github.io/charts
-          helm repo add opengatellm https://etalab-ia.github.io/opengatellm-helm
           helm repo update
 
-          # Replace file:// dependency with published repo URL
-          sed -i 's|repository: "file://../opengatellm-core"|repository: "https://etalab-ia.github.io/opengatellm-helm"|g' charts/opengatellm-stack/Chart.yaml
-          rm -f charts/opengatellm-stack/Chart.lock
-
+          # Resolve opengatellm-core from local file:// path and other deps from remote repos
           helm dependency update charts/opengatellm-stack
 
       - name: Isolate opengatellm-stack for release
