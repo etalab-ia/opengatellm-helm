@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - feat/add-security-context-refactor-ci
   workflow_dispatch:
 
 jobs:
@@ -16,8 +15,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Helm environment
-        uses: ./.github/actions/setup-helm-env
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
 
       - name: Add Helm repositories and update dependencies
         run: |
@@ -48,8 +54,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Helm environment
-        uses: ./.github/actions/setup-helm-env
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
 
       - name: Add Helm repositories and update dependencies
         run: |
