@@ -88,11 +88,6 @@ spec:
                 key: {{ default .Values.redis.authKey .Values.redis.sentinel.authKey }}
           {{- end }}
           {{- if not .Values.postgresql.existingPostgresSecret }}
-          - name: POSTGRES_URI
-            valueFrom:
-              secretKeyRef:
-                name: {{ printf "%s-app" .Values.postgresql.clusterName }}
-                key: uri
           - name: POSTGRES_HOST
             valueFrom:
               secretKeyRef:
