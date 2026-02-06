@@ -81,6 +81,27 @@ entries:
   opengatellm-stack:
   - apiVersion: v2
     appVersion: 0.3.6
+    created: "2026-02-06T08:54:23.666987439Z"
+    dependencies:
+    - condition: opengatellm-core.enabled
+      name: opengatellm-core
+      repository: https://etalab-ia.github.io/opengatellm-helm
+      version: 0.3.2
+    - condition: vllm-stack.enabled
+      name: vllm-stack
+      repository: https://vllm-project.github.io/production-stack
+      tags:
+      - opengatellm-stack-inference
+      version: 0.1.8
+    description: A Helm chart for OpenGateLLM Stack
+    digest: c4ef5aa368b192e304fa6d6e475b1abce2925421e25488356e9deeb079ab8c92
+    name: opengatellm-stack
+    type: application
+    urls:
+    - https://github.com/etalab-ia/opengatellm-helm/releases/download/opengatellm-stack-0.8.2/opengatellm-stack-0.8.2.tgz
+    version: 0.8.2
+  - apiVersion: v2
+    appVersion: 0.3.6
     created: "2026-01-30T09:08:18.046983432Z"
     dependencies:
     - condition: opengatellm-core.enabled
@@ -267,4 +288,4 @@ entries:
     urls:
     - https://github.com/etalab-ia/opengatellm-helm/releases/download/opengatellm-stack-0.1.0-test/opengatellm-stack-0.1.0-test.tgz
     version: 0.1.0-test
-generated: "2026-02-03T15:28:39.427558528Z"
+generated: "2026-02-06T08:54:23.66701528Z"
