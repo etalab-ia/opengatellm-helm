@@ -63,6 +63,8 @@ cp values-secrets.example.yaml values-secrets.yaml
 
 **From source:**
 ```bash
+# Update dependencies of both core and stack charts
+helm dependency update ../opengatellm-core
 helm dependency update
 
 # Install
@@ -91,6 +93,7 @@ When modifying the charts:
 ```bash
 # 1. Make your changes to values.yaml or templates
 # 2. Update dependencies if you modified the opengatellm subchart
+helm dependency update ../opengatellm-core
 helm dependency update
 
 # 3. Upgrade the release
