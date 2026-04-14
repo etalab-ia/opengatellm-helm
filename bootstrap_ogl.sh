@@ -73,39 +73,39 @@ else
   echo "   ⚠ Router 'albert-testbed' not found, skipping provider creation"
 fi
 
-# Check if router ID 3 exists and needs a provider
-ROUTER_3_EXISTS=$(echo $ROUTERS | jq -r '.data[] | select(.id == 3) | .id')
-if [ -n "$ROUTER_3_EXISTS" ]; then
-  ROUTER_3_PROVIDERS=$(echo $ROUTERS | jq -r '.data[] | select(.id == 3) | .providers')
+# Check if ministral-3b router exists and needs a provider
+MINISTRAL_ROUTER_ID=$(echo $ROUTERS | jq -r '.data[] | select(.name == "mistralai/Ministral-3-3B-Instruct-2512") | .id')
+if [ -n "$MINISTRAL_ROUTER_ID" ] && [ "$MINISTRAL_ROUTER_ID" != "null" ]; then
+  MINISTRAL_PROVIDERS=$(echo $ROUTERS | jq -r ".data[] | select(.id == $MINISTRAL_ROUTER_ID) | .providers")
 
-  if [ "$ROUTER_3_PROVIDERS" = "0" ]; then
-    echo "   Creating provider for mistralai/Mistral-Small-3.2-24B-Instruct-2506 (Router ID 3)..."
-    PROVIDER_3=$(curl -s -X POST "${BASE_URL}/v1/admin/providers" \
+  if [ "$MINISTRAL_PROVIDERS" = "0" ]; then
+    echo "   Creating provider for mistralai/Ministral-3-3B-Instruct-2512 (Router ID ${MINISTRAL_ROUTER_ID})..."
+    PROVIDER_MINISTRAL=$(curl -s -X POST "${BASE_URL}/v1/admin/providers" \
       -H "Content-Type: application/json" \
       -H "Authorization: Bearer ${ADMIN_API_KEY}" \
       -d '{
-        "router": 3,
+        "router": '${MINISTRAL_ROUTER_ID}',
         "type": "vllm",
         "url": "http://opengatellm-stack-router-service/",
         "key": "changeme",
-        "model_name": "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
+        "model_name": "mistralai/Ministral-3-3B-Instruct-2512",
         "timeout": 300,
         "model_carbon_footprint_zone": "WOR",
-        "model_carbon_footprint_total_params": 0,
-        "model_carbon_footprint_active_params": 0
+        "model_carbon_footprint_total_params": 3000000000,
+        "model_carbon_footprint_active_params": 3000000000
       }')
 
-    PROVIDER_3_ID=$(echo $PROVIDER_3 | jq -r '.id')
-    if [ "$PROVIDER_3_ID" != "null" ]; then
-      echo "   ✓ Provider created for Mistral-Small with ID: ${PROVIDER_3_ID}"
+    PROVIDER_MINISTRAL_ID=$(echo $PROVIDER_MINISTRAL | jq -r '.id')
+    if [ "$PROVIDER_MINISTRAL_ID" != "null" ]; then
+      echo "   ✓ Provider created for Ministral-3B with ID: ${PROVIDER_MINISTRAL_ID}"
     else
-      echo "   ✗ Failed to create provider. Response: $PROVIDER_3"
+      echo "   ✗ Failed to create provider. Response: $PROVIDER_MINISTRAL"
     fi
   else
-    echo "   ✓ Provider already exists for Mistral-Small (Router ID 3)"
+    echo "   ✓ Provider already exists for Ministral-3B (Router ID ${MINISTRAL_ROUTER_ID})"
   fi
 else
-  echo "   ⚠ Router ID 3 not found, skipping provider creation"
+  echo "   ⚠ Router 'mistralai/Ministral-3-3B-Instruct-2512' not found, skipping provider creation"
 fi
 
 echo ""

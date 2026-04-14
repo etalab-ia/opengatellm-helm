@@ -12,7 +12,7 @@ api:
     labels: {}
   image:
     repository: ghcr.io/etalab-ia/opengatellm/api
-    tag: "0.3.6"
+    tag: "0.4.2"
     pullPolicy: IfNotPresent
 
   replicas: 1
