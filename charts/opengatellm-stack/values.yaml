@@ -16,8 +16,15 @@ opengatellm-core:
     replicas: 1
     image:
       repository: ghcr.io/etalab-ia/opengatellm/api
-      tag: 0.3.6
+      tag: 0.4.2
       pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: "200m"
+        memory: "1Gi"
+      limits:
+        cpu: "1"
+        memory: "3Gi"
     service:
       type: ClusterIP
       port: 8000
@@ -33,14 +40,14 @@ opengatellm-core:
             url: "http://albert-testbed.etalab.gouv.fr:8000"
             key: "changeme"
 
-# Example config for a model deployed with the vllm of this stack
-#      - name: mistralai/Mistral-Small-3.2-24B-Instruct-2506
-#        type: text-generation
-#        providers:
-#          - type: vllm
-#            model_name: "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
-#            url: "http://opengatellm-router-service/"
-#            key: "changeme"
+      # Example config for a model deployed with the vllm of this stack
+      - name: mistralai/Ministral-3-3B-Instruct-2512
+        type: text-generation
+        providers:
+          - type: vllm
+            model_name: "mistralai/Ministral-3-3B-Instruct-2512"
+            url: "http://opengatellm-stack-router-service/"
+            key: "changeme"
 
 
       # If embeddings are deployed through TEI, use this version :
@@ -68,17 +75,33 @@ opengatellm-core:
           url: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/api
           echo: False
           pool_size: 5
+          max_overflow: 10
+          pool_pre_ping: true
           connect_args:
             server_settings:
-              statement_timeout: "120s"
+              application_name: "OpenGateLLM production"
+              statement_timeout: "60s"
             command_timeout: 60
         redis:
           url: redis://:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}
+          max_connections: 200
+          socket_connect_timeout: 5
+          retry_on_timeout: true
+          health_check_interval: 30
+          decode_responses: false
+          socket_keepalive: true
 
         elasticsearch:
+          index_name: opengatellm
+          index_language: english
+          number_of_shards: 24
+          number_of_replicas: 1
+          request_timeout: 120
+          retry_on_timeout: true
           hosts: "http://{{ .Release.Name }}-elasticsearch-es-http:9200"
 
       settings:
+        swagger_version: "{{ .Values.api.image.tag }}"
         log_level: INFO
         vector_store_model: "BAAI/bge-m3"
 
@@ -153,25 +176,25 @@ vllm-stack:
     enableEngine: true
     vllmApiKey: "changeme"
     modelSpec:
-      - name: "mistral-small"
+      - name: "ministral-3b"
         repository: vllm/vllm-openai
         tag: v0.11.0
         imagePullPolicy: IfNotPresent
-        modelURL: mistralai/Mistral-Small-3.2-24B-Instruct-2506
+        modelURL: mistralai/Ministral-3-3B-Instruct-2512
 
         replicaCount: 1
-        requestCPU: 20
-        requestMemory: "200G"
+        requestCPU: 2
+        requestMemory: "8G"
         requestGPU: 1
-        limitCPU: "22"
-        limitMemory: "230G"
+        limitCPU: "6"
+        limitMemory: "20G"
 
-        pvcStorage: "230Gi"
+        pvcStorage: "20Gi"
         storageClass: sbs-default
         pvcAccessMode:
           - ReadWriteOnce
 
-        shmSize: "32Gi"
+        shmSize: "2Gi"
 
         vllmConfig:
           tensorParallelSize: 1
@@ -186,6 +209,8 @@ vllm-stack:
             - "--tool-call-parser"
             - "mistral"
             - "--enable-auto-tool-choice"
+            - "--max-model-len"
+            - "128000"
 
         hf_token:
           secretName: "huggingface-token"
