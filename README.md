@@ -9,7 +9,6 @@ This repository contains the helm chart to deploy [opengatellm](https://github.c
 > That said, migrating to Kubernetes is an active goal for us, and this repository will be continuously improved along the way.
 > If you notice any unexpected behavior or bugs, please feel free to open an issue — we’ll do our best to respond quickly.
 
-
 ## Repository structure
 
 This repository provides two Helm charts:
@@ -38,11 +37,11 @@ helm install cnpg cnpg/cloudnative-pg --namespace cnpg-system --create-namespace
 ```
 
 If you deploy the stack chart, you also need the ECK operator
+
 ```bash
 # Install ECK operator 
 helm repo add elastic https://helm.elastic.co
 helm install elastic-operator elastic/eck-operator --namespace elastic-system --create-namespace
-
 ```
 
 
@@ -56,7 +55,6 @@ cd charts/opengatellm-stack
 # Customize values.yaml for your needs (resources, models, etc.)
 # Copy and customize the secrets file
 cp values-secrets.example.yaml values-secrets.yaml
-
 ```
 
 ### 2. Install the chart

@@ -90,11 +90,33 @@ api:
     dependencies:
       postgres:
         url: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/api
+        pool_pre_ping: true
+        pool_size: 5
+        max_overflow: 10
+        pool_pre_ping: true
+        connect_args:
+          server_settings:
+            application_name: "OpenGateLLM"
+            statement_timeout: "60s"
+
       redis:
         url: redis://:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}
+        max_connections: 200
+        socket_connect_timeout: 5
+        retry_on_timeout: true
+        health_check_interval: 30
+        decode_responses: false
+        socket_keepalive: true
 
     settings:
+      app_title: OpenGateLLM
+      swagger_version: 0.4.4
       log_level: INFO
+      auth_secret_key: changeme
+      auth_bootstrap_admin_email: admin
+      auth_bootstrap_admin_password: changeme
+      # auth_key_max_expiration_days: 365 # uncomment in production
+      # hidden_routers: ["admin", "auth"] # uncomment in production
 
     models:
       {{ toYaml .Values.api.models | nindent 8 }}
