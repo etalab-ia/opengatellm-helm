@@ -23,7 +23,7 @@ spec:
       {{- end }}
       containers:
       - name: playground
-        image: {{ .Values.playground.image.repository }}:{{ .Values.playground.image.tag }}
+        image: {{ .Values.playground.image.repository }}:{{ .Values.playground.image.tag | default .Chart.AppVersion }}
         imagePullPolicy: {{ .Values.playground.image.pullPolicy }}
         {{- if .Values.playground.securityContext }}
         securityContext:
@@ -45,36 +45,10 @@ spec:
                 name: {{ printf "%s-redis" .Release.Name }}
                 key: {{ default $coreValues.redis.authKey $coreValues.redis.sentinel.authKey }}
           {{- end }}
-          {{- if not $coreValues.postgresql.existingPostgresSecret }}
-          - name: POSTGRES_HOST
-            valueFrom:
-              secretKeyRef:
-                name: {{ printf "%s-app" $coreValues.postgresql.clusterName }}
-                key: host
-          - name: POSTGRES_PORT
-            valueFrom:
-              secretKeyRef:
-                name: {{ printf "%s-app" $coreValues.postgresql.clusterName }}
-                key: port
-          - name: POSTGRES_USER
-            valueFrom:
-              secretKeyRef:
-                name: {{ printf "%s-app" $coreValues.postgresql.clusterName }}
-                key: user
-          - name: POSTGRES_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: {{ printf "%s-app" $coreValues.postgresql.clusterName }}
-                key: password
-          {{- end }}
         envFrom:
           {{- if $coreValues.redis.existingRedisSecret }}
           - secretRef:
               name: {{ $coreValues.redis.existingRedisSecret }}
-          {{- end }}
-          {{- if $coreValues.postgresql.existingPostgresSecret }}
-          - secretRef:
-              name: {{ $coreValues.postgresql.existingPostgresSecret }}
           {{- end }}
         ports:
           - containerPort: {{ .Values.playground.service.targetPort }}

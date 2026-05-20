@@ -1,4 +1,3 @@
-fullnameOverride: ""
 nameOverride: ""
 namespaceOverride: ""
 image:
@@ -12,7 +11,6 @@ api:
     labels: {}
   image:
     repository: ghcr.io/etalab-ia/opengatellm/api
-    tag: "0.4.2"
     pullPolicy: IfNotPresent
 
   replicas: 1
@@ -110,7 +108,7 @@ api:
 
     settings:
       app_title: OpenGateLLM
-      swagger_version: 0.4.4
+      swagger_version: "{{ .Values.api.image.tag | default .Chart.AppVersion }}"
       log_level: INFO
       auth_secret_key: changeme
       auth_bootstrap_admin_email: admin
@@ -138,49 +136,8 @@ api:
 
   structuredConfig: {}
 
-  #
-  # -- Models list to append to opengatellm-core.config
-  #
-  # Example:
-  #
-  #models:
-  # - name: albert
-  #   type: text-generation
-  #   providers:
-  #     - type: vllm
-  #       model_name: "gemma3:1b"
-  #       url: ${ALBERT_URL}
-  #       key: ${ALBERT_KEY}
-  models:
-    - name: albert-testbed
-      type: text-generation
-      providers:
-        - type: vllm
-          model_name: "gemma3:1b"
-          url: "http://albert-testbed.etalab.gouv.fr:8000"
-          key: "changeme"
-
-  #
-  # -- Secret loaded into env variable
-  #
-  # Example:
-  #
-  # existingModelSecret: "my-model-secrets"
-  #
-  # You need to create secret before install/upgrade
-  #
-  # apiVersion: v1
-  # kind: Secret
-  # metadata:
-  #   name: my-models-secrets
-  # type: Opaque
-  # stringData:
-  #   ALBERT_URL: https://example.com/api
-  #   ALBERT_KEY: changeme
-  #
   existingModelSecret: ""
 
-  #
   # -- Secret loaded into env variable
   #
   # Example:
@@ -217,13 +174,13 @@ ingress:
         - api.example.com
 
 postgresql:
+  # values from cnpg/cluster charts https://github.com/cloudnative-pg/charts/tree/main/charts/cluster
   enabled: true
-  # Values from cnpg/cluster charts https://github.com/cloudnative-pg/charts/tree/main/charts/cluster
-  fullnameOverride: "cluster-opengatellm-core"
+  fullnameOverride: "opengatellm-core-postgres"
   version:
     postgresql: "17"
   mode: standalone
-  clusterName: "cluster-opengatellm-core"
+  clusterName: "opengatellm-core"
   database: api
   pgBaseBackup:
     database: api
@@ -282,15 +239,11 @@ redis:
   # Values from redis-ha chart https://github.com/DandyDeveloper/charts/tree/master/charts/redis-ha
   name: redis
   replicas: 1
-  ## Redis image - Using Redis Stack to support JSON, Search, TimeSeries, and Bloom modules
   image:
     repository: "redis/redis-stack-server"
     tag: "7.4.0-v8"
-  ## Prometheus redis-exporter sidecar
   exporter:
     enabled: false
-    #image: ""
-    #tag: ""
   persistentVolume:
     enabled: true
     size: 10Gi
