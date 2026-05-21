@@ -22,6 +22,27 @@ entries:
     version: 0.1.0
   opengatellm-core:
   - apiVersion: v2
+    appVersion: 0.4.4
+    created: "2026-05-21T13:00:26.441584573Z"
+    dependencies:
+    - alias: redis
+      condition: redis.enabled
+      name: redis-ha
+      repository: https://dandydeveloper.github.io/charts/
+      version: 4.35.5
+    - alias: postgresql
+      condition: postgresql.enabled
+      name: cluster
+      repository: https://cloudnative-pg.github.io/charts
+      version: 0.3.1
+    description: A Helm chart for OpenGateLLM
+    digest: 7b9f205f61e1178f979ce5438f7b325178b3deae356ba2ccfb937e577af80209
+    name: opengatellm-core
+    type: application
+    urls:
+    - https://github.com/etalab-ia/opengatellm-helm/releases/download/opengatellm-core-0.5.0/opengatellm-core-0.5.0.tgz
+    version: 0.5.0
+  - apiVersion: v2
     appVersion: 0.4.2
     created: "2026-04-14T18:25:59.996975335Z"
     dependencies:
@@ -121,6 +142,27 @@ entries:
     - https://github.com/etalab-ia/opengatellm-helm/releases/download/opengatellm-core-0.2.0/opengatellm-core-0.2.0.tgz
     version: 0.2.0
   opengatellm-stack:
+  - apiVersion: v2
+    appVersion: 0.4.4
+    created: "2026-05-21T13:00:26.659305725Z"
+    dependencies:
+    - condition: opengatellm-core.enabled
+      name: opengatellm-core
+      repository: file://../opengatellm-core
+      version: 0.5.0
+    - condition: vllm-stack.enabled
+      name: vllm-stack
+      repository: https://vllm-project.github.io/production-stack
+      tags:
+      - opengatellm-stack-inference
+      version: 0.1.8
+    description: A Helm chart for OpenGateLLM Stack
+    digest: 057fe5154d0264e73501589e5d74ae097ee2fd5d4177ea4c55de4ec3c91efee5
+    name: opengatellm-stack
+    type: application
+    urls:
+    - https://github.com/etalab-ia/opengatellm-helm/releases/download/opengatellm-stack-0.9.0/opengatellm-stack-0.9.0.tgz
+    version: 0.9.0
   - apiVersion: v2
     appVersion: 0.3.6
     created: "2026-04-14T18:26:00.205879302Z"
@@ -372,4 +414,4 @@ entries:
     urls:
     - https://github.com/etalab-ia/opengatellm-helm/releases/download/opengatellm-stack-0.1.0-test/opengatellm-stack-0.1.0-test.tgz
     version: 0.1.0-test
-generated: "2026-04-14T18:26:00.20594748Z"
+generated: "2026-05-21T13:00:26.659384972Z"
