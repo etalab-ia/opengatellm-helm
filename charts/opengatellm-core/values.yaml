@@ -1,4 +1,3 @@
-fullnameOverride: ""
 nameOverride: ""
 namespaceOverride: ""
 image:
@@ -12,7 +11,6 @@ api:
     labels: {}
   image:
     repository: ghcr.io/etalab-ia/opengatellm/api
-    tag: "0.4.2"
     pullPolicy: IfNotPresent
 
   replicas: 1
@@ -90,11 +88,33 @@ api:
     dependencies:
       postgres:
         url: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/api
+        pool_pre_ping: true
+        pool_size: 5
+        max_overflow: 10
+        pool_pre_ping: true
+        connect_args:
+          server_settings:
+            application_name: "OpenGateLLM"
+            statement_timeout: "60s"
+
       redis:
         url: redis://:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}
+        max_connections: 200
+        socket_connect_timeout: 5
+        retry_on_timeout: true
+        health_check_interval: 30
+        decode_responses: false
+        socket_keepalive: true
 
     settings:
+      app_title: OpenGateLLM
+      swagger_version: "{{ .Values.api.image.tag | default .Chart.AppVersion }}"
       log_level: INFO
+      auth_secret_key: changeme
+      auth_bootstrap_admin_email: admin
+      auth_bootstrap_admin_password: changeme
+      # auth_key_max_expiration_days: 365 # uncomment in production
+      # hidden_routers: ["admin", "auth"] # uncomment in production
 
     models:
       {{ toYaml .Values.api.models | nindent 8 }}
@@ -116,49 +136,8 @@ api:
 
   structuredConfig: {}
 
-  #
-  # -- Models list to append to opengatellm-core.config
-  #
-  # Example:
-  #
-  #models:
-  # - name: albert
-  #   type: text-generation
-  #   providers:
-  #     - type: vllm
-  #       model_name: "gemma3:1b"
-  #       url: ${ALBERT_URL}
-  #       key: ${ALBERT_KEY}
-  models:
-    - name: albert-testbed
-      type: text-generation
-      providers:
-        - type: vllm
-          model_name: "gemma3:1b"
-          url: "http://albert-testbed.etalab.gouv.fr:8000"
-          key: "changeme"
-
-  #
-  # -- Secret loaded into env variable
-  #
-  # Example:
-  #
-  # existingModelSecret: "my-model-secrets"
-  #
-  # You need to create secret before install/upgrade
-  #
-  # apiVersion: v1
-  # kind: Secret
-  # metadata:
-  #   name: my-models-secrets
-  # type: Opaque
-  # stringData:
-  #   ALBERT_URL: https://example.com/api
-  #   ALBERT_KEY: changeme
-  #
   existingModelSecret: ""
 
-  #
   # -- Secret loaded into env variable
   #
   # Example:
@@ -195,13 +174,12 @@ ingress:
         - api.example.com
 
 postgresql:
+  # values from cnpg/cluster charts https://github.com/cloudnative-pg/charts/tree/main/charts/cluster
   enabled: true
-  # Values from cnpg/cluster charts https://github.com/cloudnative-pg/charts/tree/main/charts/cluster
-  fullnameOverride: "cluster-opengatellm-core"
+  fullnameOverride: "opengatellm-core-postgres"
   version:
     postgresql: "17"
   mode: standalone
-  clusterName: "cluster-opengatellm-core"
   database: api
   pgBaseBackup:
     database: api
@@ -260,15 +238,11 @@ redis:
   # Values from redis-ha chart https://github.com/DandyDeveloper/charts/tree/master/charts/redis-ha
   name: redis
   replicas: 1
-  ## Redis image - Using Redis Stack to support JSON, Search, TimeSeries, and Bloom modules
   image:
     repository: "redis/redis-stack-server"
     tag: "7.4.0-v8"
-  ## Prometheus redis-exporter sidecar
   exporter:
     enabled: false
-    #image: ""
-    #tag: ""
   persistentVolume:
     enabled: true
     size: 10Gi

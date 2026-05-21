@@ -1,296 +1,149 @@
 #!/bin/bash
 
 # OpenGateLLM Bootstrap Script
-# This script bootstraps OpenGateLLM by creating an admin role with full access, an admin user with that role, and an API key for that user. It also creates missing providers and verifies the API key can access models.
+# - Logs in as the bootstrap admin user
+# - Creates an API key and prints it.
+# - Creates the router/provider for the Ministral model served by the
 
-set -e  # Exit on error
+set -e
 
-# Configuration
-BASE_URL="http://localhost:8000"
-ADMIN_API_KEY="changeme"
+BASE_URL="${BASE_URL:-http://localhost:8000}"
+ADMIN_EMAIL="${ADMIN_EMAIL:-admin}"
+ADMIN_PASSWORD="${ADMIN_PASSWORD:-changeme}"
 
-echo "=== OpenGateLLM Bootstrap Script ==="
+ROUTER_NAME="mistralai/Ministral-3-3B-Instruct-2512"
+ROUTER_TYPE="text-generation"
+PROVIDER_TYPE="vllm"
+PROVIDER_URL="${PROVIDER_URL:-http://opengatellm-stack-router-service/}"
+PROVIDER_KEY="${PROVIDER_KEY:-changeme}"
+PROVIDER_MODEL_NAME="mistralai/Ministral-3-3B-Instruct-2512"
+
+echo "=== OpenGateLLM Bootstrap ==="
 echo "Base URL: ${BASE_URL}"
 echo ""
 
-# ============================================================================
-# 1. List and Verify Existing Routers
-# ============================================================================
-echo "1. Checking existing routers/models..."
-ROUTERS=$(curl -s -H "Authorization: Bearer ${ADMIN_API_KEY}" \
-  "${BASE_URL}/v1/admin/routers")
-
-# Verify we have routers
-ROUTER_COUNT=$(echo $ROUTERS | jq '.data | length')
-if [ "$ROUTER_COUNT" -eq "0" ]; then
-  echo "   ⚠ WARNING: No routers found!"
-  echo "   Routers must exist before creating role limits."
-  echo "   The script will continue but users won't be able to access any models."
-  echo ""
-else
-  echo "   ✓ Found ${ROUTER_COUNT} router(s):"
-  echo "$ROUTERS" | jq -r '.data[] | "      - Router ID \(.id): \(.name) (type: \(.type), providers: \(.providers))"'
-  echo ""
-fi
-
-# ============================================================================
-# 2. Create Missing Providers
-# ============================================================================
-echo "2. Creating missing providers..."
-
-# Check if albert-testbed router exists and needs a provider
-ALBERT_ROUTER_ID=$(echo $ROUTERS | jq -r '.data[] | select(.name == "albert-testbed") | .id')
-if [ -n "$ALBERT_ROUTER_ID" ] && [ "$ALBERT_ROUTER_ID" != "null" ]; then
-  ALBERT_PROVIDERS=$(echo $ROUTERS | jq -r ".data[] | select(.id == $ALBERT_ROUTER_ID) | .providers")
-
-  if [ "$ALBERT_PROVIDERS" = "0" ]; then
-    echo "   Creating provider for albert-testbed (Router ID ${ALBERT_ROUTER_ID})..."
-    PROVIDER_ALBERT=$(curl -s -X POST "${BASE_URL}/v1/admin/providers" \
-      -H "Content-Type: application/json" \
-      -H "Authorization: Bearer ${ADMIN_API_KEY}" \
-      -d '{
-        "router": '${ALBERT_ROUTER_ID}',
-        "type": "vllm",
-        "url": "http://albert-testbed.etalab.gouv.fr:8000",
-        "key": "changeme",
-        "model_name": "gemma3:1b",
-        "timeout": 300,
-        "model_carbon_footprint_zone": "WOR",
-        "model_carbon_footprint_total_params": 0,
-        "model_carbon_footprint_active_params": 0
-      }')
-
-    PROVIDER_ALBERT_ID=$(echo $PROVIDER_ALBERT | jq -r '.id')
-    if [ "$PROVIDER_ALBERT_ID" != "null" ]; then
-      echo "   ✓ Provider created for albert-testbed with ID: ${PROVIDER_ALBERT_ID}"
-    else
-      echo "   ✗ Failed to create provider. Response: $PROVIDER_ALBERT"
-    fi
-  else
-    echo "   ✓ Provider already exists for albert-testbed (Router ID ${ALBERT_ROUTER_ID})"
-  fi
-else
-  echo "   ⚠ Router 'albert-testbed' not found, skipping provider creation"
-fi
-
-# Check if ministral-3b router exists and needs a provider
-MINISTRAL_ROUTER_ID=$(echo $ROUTERS | jq -r '.data[] | select(.name == "mistralai/Ministral-3-3B-Instruct-2512") | .id')
-if [ -n "$MINISTRAL_ROUTER_ID" ] && [ "$MINISTRAL_ROUTER_ID" != "null" ]; then
-  MINISTRAL_PROVIDERS=$(echo $ROUTERS | jq -r ".data[] | select(.id == $MINISTRAL_ROUTER_ID) | .providers")
-
-  if [ "$MINISTRAL_PROVIDERS" = "0" ]; then
-    echo "   Creating provider for mistralai/Ministral-3-3B-Instruct-2512 (Router ID ${MINISTRAL_ROUTER_ID})..."
-    PROVIDER_MINISTRAL=$(curl -s -X POST "${BASE_URL}/v1/admin/providers" \
-      -H "Content-Type: application/json" \
-      -H "Authorization: Bearer ${ADMIN_API_KEY}" \
-      -d '{
-        "router": '${MINISTRAL_ROUTER_ID}',
-        "type": "vllm",
-        "url": "http://opengatellm-stack-router-service/",
-        "key": "changeme",
-        "model_name": "mistralai/Ministral-3-3B-Instruct-2512",
-        "timeout": 300,
-        "model_carbon_footprint_zone": "WOR",
-        "model_carbon_footprint_total_params": 3000000000,
-        "model_carbon_footprint_active_params": 3000000000
-      }')
-
-    PROVIDER_MINISTRAL_ID=$(echo $PROVIDER_MINISTRAL | jq -r '.id')
-    if [ "$PROVIDER_MINISTRAL_ID" != "null" ]; then
-      echo "   ✓ Provider created for Ministral-3B with ID: ${PROVIDER_MINISTRAL_ID}"
-    else
-      echo "   ✗ Failed to create provider. Response: $PROVIDER_MINISTRAL"
-    fi
-  else
-    echo "   ✓ Provider already exists for Ministral-3B (Router ID ${MINISTRAL_ROUTER_ID})"
-  fi
-else
-  echo "   ⚠ Router 'mistralai/Ministral-3-3B-Instruct-2512' not found, skipping provider creation"
-fi
-
-echo ""
-
-# ============================================================================
-# 3. Verify All Providers
-# ============================================================================
-echo "3. Verifying all providers..."
-PROVIDERS=$(curl -s -H "Authorization: Bearer ${ADMIN_API_KEY}" \
-  "${BASE_URL}/v1/admin/providers")
-
-PROVIDER_COUNT=$(echo $PROVIDERS | jq '.data | length')
-if [ "$PROVIDER_COUNT" -eq "0" ]; then
-  echo "   ⚠ WARNING: No providers found! Models won't be accessible."
-else
-  echo "   ✓ Found ${PROVIDER_COUNT} provider(s):"
-  echo "$PROVIDERS" | jq -r '.data[] | "      - Provider ID \(.id): \(.model_name) -> \(.url) (router_id: \(.router_id))"'
-fi
-echo ""
-
-# ============================================================================
-# 4. Create Admin Role with Initial Empty Limits
-# ============================================================================
-echo "4. Creating admin role..."
-ROLE_RESPONSE=$(curl -s -X POST "${BASE_URL}/v1/admin/roles" \
+# 1. Login as bootstrap admin
+echo "1. Logging in as ${ADMIN_EMAIL}..."
+LOGIN_BODY=$(cat <<EOF
+{"email": "${ADMIN_EMAIL}", "password": "${ADMIN_PASSWORD}"}
+EOF
+)
+LOGIN_RESPONSE=$(curl -sf -X POST "${BASE_URL}/v1/auth/login" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer ${ADMIN_API_KEY}" \
-  -d '{
-    "name": "Admin Role",
-    "permissions": ["admin", "create_public_collection", "read_metric", "provide_models"],
-    "limits": []
-  }')
-
-ROLE_ID=$(echo $ROLE_RESPONSE | jq -r '.id')
-if [ "$ROLE_ID" = "null" ] || [ -z "$ROLE_ID" ]; then
-  echo "   ✗ Failed to create role. Response: $ROLE_RESPONSE"
+  -d "$LOGIN_BODY") || {
+  echo "   ✗ Login failed. Check ADMIN_EMAIL / ADMIN_PASSWORD and that the API is reachable at ${BASE_URL}."
   exit 1
-fi
-echo "   ✓ Admin role created with ID: ${ROLE_ID}"
-echo ""
+}
 
-# ============================================================================
-# 5. Add Router Limits to Admin Role (ALL FOUR LIMIT TYPES)
-# ============================================================================
-echo "5. Adding router access to admin role..."
-
-# Refresh router list to get latest state
-ROUTERS=$(curl -s -H "Authorization: Bearer ${ADMIN_API_KEY}" \
-  "${BASE_URL}/v1/admin/routers")
-
-ROUTER_COUNT=$(echo $ROUTERS | jq '.data | length')
-
-if [ "$ROUTER_COUNT" -eq "0" ]; then
-  echo "   ⚠ WARNING: No routers available. Role will have empty limits."
-  echo "   Users with this role won't be able to see or access any models!"
-  LIMITS="[]"
-else
-  # Build limits array for ALL routers with ALL FOUR limit types
-  # This ensures users can both LIST models and MAKE REQUESTS
-  # Types: rpm (requests per minute), rpd (requests per day),
-  #        tpm (tokens per minute), tpd (tokens per day)
-  # Value: null means unlimited access
-  # Use -c flag for compact JSON output (no newlines)
-  LIMITS=$(echo $ROUTERS | jq -c '[.data[] | . as $router | ["rpm", "rpd", "tpm", "tpd"] | .[] | {router: $router.id, type: ., value: null}]')
-
-  LIMIT_COUNT=$(echo $LIMITS | jq 'length')
-  echo "   ✓ Created ${LIMIT_COUNT} limit entries (4 types × ${ROUTER_COUNT} routers)"
-fi
-
-# Update role with router limits
-UPDATE_ROLE=$(curl -s -X PATCH "${BASE_URL}/v1/admin/roles/${ROLE_ID}" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer ${ADMIN_API_KEY}" \
-  -d '{
-    "name": "Admin Role",
-    "permissions": ["admin", "create_public_collection", "read_metric", "provide_models"],
-    "limits": '"${LIMITS}"'
-  }')
-
-
-# ============================================================================
-# 6. Create Admin User
-# ============================================================================
-echo "6. Creating admin user..."
-USER_RESPONSE=$(curl -s -X POST "${BASE_URL}/v1/admin/users" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer ${ADMIN_API_KEY}" \
-  -d '{
-    "email": "admin@example.com",
-    "password": "SecurePassword123!",
-    "name": "AdminTest",
-    "role": '${ROLE_ID}'
-  }')
-
-USER_ID=$(echo $USER_RESPONSE | jq -r '.id')
-if [ "$USER_ID" = "null" ] || [ -z "$USER_ID" ]; then
-  echo "   ✗ Failed to create user. Response: $USER_RESPONSE"
-  exit 1
-fi
-echo "   ✓ User created with ID: ${USER_ID}"
-echo ""
-
-# ============================================================================
-# 7. Login as Admin User
-# ============================================================================
-echo "7. Logging in as admin user..."
-LOGIN_RESPONSE=$(curl -s -X POST "${BASE_URL}/v1/auth/login" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "admin@example.com",
-    "password": "SecurePassword123!"
-  }')
-
-SESSION_KEY=$(echo $LOGIN_RESPONSE | jq -r '.key')
+SESSION_KEY=$(echo "$LOGIN_RESPONSE" | jq -r '.key')
 if [ "$SESSION_KEY" = "null" ] || [ -z "$SESSION_KEY" ]; then
-  echo "   ✗ Failed to login. Response: $LOGIN_RESPONSE"
+  echo "   ✗ Login response missing key: $LOGIN_RESPONSE"
   exit 1
 fi
-echo "   ✓ Session key obtained: ${SESSION_KEY}"
-echo ""
+echo "   ✓ Logged in"
 
-# ============================================================================
-# 8. Create API Key for Admin User
-# ============================================================================
-echo "8. Creating API key for admin user..."
-KEY_RESPONSE=$(curl -s -X POST "${BASE_URL}/v1/me/keys" \
+# 2. Create API key
+echo "2. Creating API key..."
+KEY_RESPONSE=$(curl -sf -X POST "${BASE_URL}/v1/me/keys" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer ${SESSION_KEY}" \
-  -d '{
-    "name": "Admin API Key",
-    "expires": null
-  }')
+  -d '{"name": "bootstrap-key", "expires": null}') || {
+  echo "   ✗ Failed to create API key"
+  exit 1
+}
 
-API_KEY=$(echo $KEY_RESPONSE | jq -r '.key')
+API_KEY=$(echo "$KEY_RESPONSE" | jq -r '.key // .token')
 if [ "$API_KEY" = "null" ] || [ -z "$API_KEY" ]; then
-  echo "   ✗ Failed to create API key. Response: $KEY_RESPONSE"
+  echo "   ✗ API key response missing key/token: $KEY_RESPONSE"
   exit 1
 fi
-echo "   ✓ API key created: ${API_KEY}"
-echo ""
+echo "   ✓ API key created"
 
-# ============================================================================
-# 9. Verify API Key Can Access Models
-# ============================================================================
-echo "9. Verifying API key can access models..."
-MODELS_RESPONSE=$(curl -s -H "Authorization: Bearer ${API_KEY}" \
-  "${BASE_URL}/v1/models")
+# 3. Find or create the Ministral router
+echo "3. Setting up router '${ROUTER_NAME}'..."
+ROUTERS=$(curl -sf -H "Authorization: Bearer ${API_KEY}" "${BASE_URL}/v1/admin/routers")
+ROUTER_ID=$(echo "$ROUTERS" | jq -r --arg n "$ROUTER_NAME" '.data[] | select(.name == $n) | .id' | head -n 1)
 
-MODEL_COUNT=$(echo $MODELS_RESPONSE | jq '.data | length')
-echo "   ✓ API key can see ${MODEL_COUNT} model(s)"
-
-if [ "$MODEL_COUNT" -eq "0" ]; then
-  echo "   ⚠ WARNING: User API key cannot see any models!"
-  echo "   This usually means:"
-  echo "      - No routers exist, or"
-  echo "      - Role limits are not properly set, or"
-  echo "      - Routers have no providers"
+if [ -z "$ROUTER_ID" ] || [ "$ROUTER_ID" = "null" ]; then
+  ROUTER_BODY=$(cat <<EOF
+{"name": "${ROUTER_NAME}", "type": "${ROUTER_TYPE}"}
+EOF
+)
+  CREATE_ROUTER=$(curl -sf -X POST "${BASE_URL}/v1/admin/routers" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${API_KEY}" \
+    -d "$ROUTER_BODY") || {
+    echo "   ✗ Failed to create router"
+    exit 1
+  }
+  ROUTER_ID=$(echo "$CREATE_ROUTER" | jq -r '.id')
+  if [ -z "$ROUTER_ID" ] || [ "$ROUTER_ID" = "null" ]; then
+    echo "   ✗ Router response missing id: $CREATE_ROUTER"
+    exit 1
+  fi
+  echo "   ✓ Router created (id=${ROUTER_ID})"
 else
-  echo "$MODELS_RESPONSE" | jq -r '.data[] | "      - \(.id)"'
+  echo "   ✓ Router already exists (id=${ROUTER_ID})"
 fi
-echo ""
 
-# ============================================================================
-# 10. Summary
-# ============================================================================
-echo "=== Bootstrap Complete ==="
-echo ""
-echo "Credentials:"
-echo "   Email:       admin@example.com"
-echo "   Password:    SecurePassword123!"
-echo "   User ID:     ${USER_ID}"
-echo "   Role ID:     ${ROLE_ID}"
-echo "   Session Key: ${SESSION_KEY}"
-echo "   API Key:     ${API_KEY}"
-echo ""
-echo "Statistics:"
-echo "   Routers:     ${ROUTER_COUNT}"
-echo "   Providers:   ${PROVIDER_COUNT}"
-echo "   Accessible Models: ${MODEL_COUNT}"
-echo ""
+# 4. Find or create the Ministral provider on that router
+echo "4. Setting up provider..."
+PROVIDERS=$(curl -sf -H "Authorization: Bearer ${API_KEY}" "${BASE_URL}/v1/admin/providers")
+EXISTING_PROVIDER=$(echo "$PROVIDERS" \
+  | jq -r --argjson r "$ROUTER_ID" --arg url "$PROVIDER_URL" --arg name "$PROVIDER_MODEL_NAME" \
+      '.data[] | select(.router_id == $r and .url == $url and .model_name == $name) | .id' \
+  | head -n 1)
 
-if [ "$MODEL_COUNT" -eq "0" ]; then
-  echo "⚠ ACTION REQUIRED:"
-  echo "   The user API key cannot access any models."
-  echo "   Please ensure routers and providers are properly configured."
-  echo "   Then re-run this script or manually update the role limits."
-  echo ""
+if [ -z "$EXISTING_PROVIDER" ] || [ "$EXISTING_PROVIDER" = "null" ]; then
+  PROVIDER_BODY=$(cat <<EOF
+{
+  "router_id": ${ROUTER_ID},
+  "type": "${PROVIDER_TYPE}",
+  "url": "${PROVIDER_URL}",
+  "key": "${PROVIDER_KEY}",
+  "model_name": "${PROVIDER_MODEL_NAME}",
+  "timeout": 300,
+  "model_hosting_zone": "FRA",
+  "model_total_params": 3,
+  "model_active_params": 3
+}
+EOF
+)
+  CREATE_PROVIDER=$(curl -sf -X POST "${BASE_URL}/v1/admin/providers" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${API_KEY}" \
+    -d "$PROVIDER_BODY") || {
+    echo "   ✗ Failed to create provider"
+    exit 1
+  }
+  PROVIDER_ID=$(echo "$CREATE_PROVIDER" | jq -r '.id')
+  if [ -z "$PROVIDER_ID" ] || [ "$PROVIDER_ID" = "null" ]; then
+    echo "   ✗ Provider response missing id: $CREATE_PROVIDER"
+    exit 1
+  fi
+  echo "   ✓ Provider created (id=${PROVIDER_ID})"
+else
+  echo "   ✓ Provider already exists (id=${EXISTING_PROVIDER})"
 fi
+
+# 5. Verify the API key can list models
+echo "5. Listing models visible with the new API key..."
+MODELS=$(curl -sf -H "Authorization: Bearer ${API_KEY}" "${BASE_URL}/v1/models" || echo '{}')
+MODEL_COUNT=$(echo "$MODELS" | jq '.data | length // 0')
+if [ "$MODEL_COUNT" = "0" ]; then
+  echo "   ⚠ API key sees 0 models (provider may still be initialising)."
+else
+  echo "$MODELS" | jq -r '.data[] | "      - \(.id)"'
+fi
+
+cat <<EOF
+
+=== Done ===
+
+API key: ${API_KEY}
+
+Try a chat completion:
+  curl -X POST -H "Authorization: Bearer ${API_KEY}" -H "Content-Type: application/json" \\
+    ${BASE_URL}/v1/chat/completions \\
+    -d '{"model": "${ROUTER_NAME}", "messages": [{"role":"system","content":"You are a helpful assistant."},{"role":"user","content":"Hey how are you ?"}]}'
+EOF

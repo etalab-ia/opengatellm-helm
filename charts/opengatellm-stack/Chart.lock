@@ -1,9 +1,9 @@
 dependencies:
 - name: opengatellm-core
   repository: file://../opengatellm-core
-  version: 0.3.3
+  version: 0.5.0
 - name: vllm-stack
   repository: https://vllm-project.github.io/production-stack
   version: 0.1.8
-digest: sha256:584fe7bc8404cb797b5bff8786999b7b9d01f96d044a15b48cd8ff37f2249b1d
-generated: "2026-04-14T12:18:35.607458+02:00"
+digest: sha256:6a38e1767e127d370ab4a1b31a1e71cb43cb80327cce1cceff317cfe12617152
+generated: "2026-05-20T12:10:12.382195+02:00"

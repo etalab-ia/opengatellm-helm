@@ -1,3 +1,5 @@
+# OpenGateLLM helm
+
 This repository contains the helm chart to deploy [opengatellm](https://github.com/etalab-ia/OpenGateLLM/tree/main) and its components on Kubernetes.
 
 > ⚠️ Disclaimer  
@@ -9,13 +11,22 @@ This repository contains the helm chart to deploy [opengatellm](https://github.c
 > That said, migrating to Kubernetes is an active goal for us, and this repository will be continuously improved along the way.
 > If you notice any unexpected behavior or bugs, please feel free to open an issue — we’ll do our best to respond quickly.
 
-
 ## Repository structure
 
 This repository provides two Helm charts:
 
-- **`charts/opengatellm-core`** - Core chart for deploying OpenGateLLM API and its mandatory dependencies : Redis and PostgreSQL
-- **`charts/opengatellm-stack`** - Chart based on OpenGateLLM core + optional dependencies : vLLM inference, TEI embeddings, and Elasticsearch
+- **`charts/opengatellm-core`**: include:
+  - OpenGateLLM API
+  - Redis (mandatory)
+  - PostgreSQL (mandatory)
+
+- **`charts/opengatellm-stack`** include
+  - *opengatellm-core chart*
+  - OpenGateLLM Plyaground
+  - vLLM production stack
+  - A embeddings model (TEI backend)
+  - Elasticsearch
+
 - `manifests` - Legacy helm chart version used for deployment on LaSuite (deprecated)
 
 ## Prerequisites
@@ -26,25 +37,21 @@ This repository provides two Helm charts:
 - We recommend having at least 3 nodes, including one with a GPU sized for the LLM you wish to use (if using vLLM)
 - Verify the connection with your cluster: `kubectl get nodes`
 
+### Operators
 
-### K8S Operator
+Before deploying the core chart, you must install following operators:
+  
+- PostgreSQL operator
 
-Before deploying the core chart, you must install the PostgreSQL operator :
+  ```bash
+  helm repo add cnpg https://cloudnative-pg.github.io/charts && helm install cnpg cnpg/cloudnative-pg --namespace cnpg-system --create-namespace
+  ```
 
-```bash
-# Install CloudNative-PG operator
-helm repo add cnpg https://cloudnative-pg.github.io/charts
-helm install cnpg cnpg/cloudnative-pg --namespace cnpg-system --create-namespace
-```
+- ECK operator (only for opengatellm-stack)
 
-If you deploy the stack chart, you also need the ECK operator
-```bash
-# Install ECK operator 
-helm repo add elastic https://helm.elastic.co
-helm install elastic-operator elastic/eck-operator --namespace elastic-system --create-namespace
-
-```
-
+  ```bash 
+  helm repo add elastic https://helm.elastic.co && helm install elastic-operator elastic/eck-operator --namespace elastic-system --create-namespace
+  ```
 
 ## Deployment
 
@@ -56,7 +63,6 @@ cd charts/opengatellm-stack
 # Customize values.yaml for your needs (resources, models, etc.)
 # Copy and customize the secrets file
 cp values-secrets.example.yaml values-secrets.yaml
-
 ```
 
 ### 2. Install the chart
@@ -167,8 +173,3 @@ curl -X 'POST' 'http://localhost:8000/v1/embeddings' \
     }'
 ```
 
-You can also run the bootstrap script : 
-```bash
-chmod +x ./bootstrap_ogl.sh
-./bootstrap_ogl.sh
-```
