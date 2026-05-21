@@ -91,22 +91,22 @@ spec:
           - name: POSTGRES_HOST
             valueFrom:
               secretKeyRef:
-                name: {{ printf "%s-app" .Values.postgresql.clusterName }}
+                name: {{ printf "%s-app" (include "opengatellm-core.postgresql.fullname" .) }}
                 key: host
           - name: POSTGRES_PORT
             valueFrom:
               secretKeyRef:
-                name: {{ printf "%s-app" .Values.postgresql.clusterName }}
+                name: {{ printf "%s-app" (include "opengatellm-core.postgresql.fullname" .) }}
                 key: port
           - name: POSTGRES_USER
             valueFrom:
               secretKeyRef:
-                name: {{ printf "%s-app" .Values.postgresql.clusterName }}
+                name: {{ printf "%s-app" (include "opengatellm-core.postgresql.fullname" .) }}
                 key: user
           - name: POSTGRES_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: {{ printf "%s-app" .Values.postgresql.clusterName }}
+                name: {{ printf "%s-app" (include "opengatellm-core.postgresql.fullname" .) }}
                 key: password
           {{- end }}
           envFrom:

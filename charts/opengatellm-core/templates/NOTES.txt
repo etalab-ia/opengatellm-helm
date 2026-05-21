@@ -12,7 +12,4 @@ You can test the deployments using a port forward :
   $ kubectl port-forward -n opengatellm svc/opengatellm-core 8000:8000
 
 Test request :
-  $ curl --request GET --url http://localhost:8000/health'
-
-Or run the bootscrap script :
-  $ ./bootstrap_ogl.sh
+  $ curl --request GET --url http://localhost:8000/health

@@ -180,7 +180,6 @@ postgresql:
   version:
     postgresql: "17"
   mode: standalone
-  clusterName: "opengatellm-core"
   database: api
   pgBaseBackup:
     database: api
