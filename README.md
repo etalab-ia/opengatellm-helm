@@ -15,16 +15,17 @@ This repository contains the helm chart to deploy [opengatellm](https://github.c
 
 This repository provides two Helm charts:
 
-- **`charts/opengatellm-core`**: include:
-  - OpenGateLLM API
+- **`charts/opengatellm-core`**: includes
+  - OpenGateLLM API (inference, governance, admin console)
   - Redis (mandatory)
   - PostgreSQL (mandatory)
 
-- **`charts/opengatellm-stack`** include
+- **`charts/opengatellm-stack`** includes
   - *opengatellm-core chart*
-  - OpenGateLLM Plyaground
+  - OpenGateRAG
+  - OpenGateLLM Playground
   - vLLM production stack
-  - A embeddings model (TEI backend)
+  - An embeddings model (TEI backend)
   - Elasticsearch
 
 - `manifests` - Legacy helm chart version used for deployment on LaSuite (deprecated)
@@ -73,8 +74,17 @@ cp values-secrets.example.yaml values-secrets.yaml
 helm dependency update ../opengatellm-core
 helm dependency update
 
-# Install
+# Install ogl-stack
+cd charts/opengatellm-stack
 helm install opengatellm-stack . \
+  --namespace opengatellm \
+  --create-namespace \
+  -f values-secrets.yaml \
+  -f values.yaml
+  
+# Install ogl-core
+cd charts/opengatellm-core
+helm install opengatellm-core . \
   --namespace opengatellm \
   --create-namespace \
   -f values-secrets.yaml \

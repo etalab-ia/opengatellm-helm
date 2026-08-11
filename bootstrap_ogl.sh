@@ -3,7 +3,7 @@
 # OpenGateLLM Bootstrap Script
 # - Logs in as the bootstrap admin user
 # - Creates an API key and prints it.
-# - Creates the router/provider for the Ministral model served by the
+# - Creates the router/provider for the Ministral
 
 set -e
 
@@ -35,26 +35,31 @@ LOGIN_RESPONSE=$(curl -sf -X POST "${BASE_URL}/v1/auth/login" \
   exit 1
 }
 
-SESSION_KEY=$(echo "$LOGIN_RESPONSE" | jq -r '.key')
+# /v1/auth/login returns the token under `.value`; fall back to `.key` for safety.
+SESSION_KEY=$(echo "$LOGIN_RESPONSE" | jq -r '.value // .key')
 if [ "$SESSION_KEY" = "null" ] || [ -z "$SESSION_KEY" ]; then
-  echo "   ✗ Login response missing key: $LOGIN_RESPONSE"
+  echo "   ✗ Login response missing token value: $LOGIN_RESPONSE"
   exit 1
 fi
 echo "   ✓ Logged in"
 
 # 2. Create API key
-echo "2. Creating API key..."
+# A key's value is only returned once, at creation, so use a unique name to keep
+# the script re-runnable (a fixed name would 409 "already exists" on re-run).
+KEY_NAME="${KEY_NAME:-bootstrap-key-$(date +%s)}"
+echo "2. Creating API key (${KEY_NAME})..."
 KEY_RESPONSE=$(curl -sf -X POST "${BASE_URL}/v1/me/keys" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer ${SESSION_KEY}" \
-  -d '{"name": "bootstrap-key", "expires": null}') || {
+  -d "{\"name\": \"${KEY_NAME}\", \"expires\": null}") || {
   echo "   ✗ Failed to create API key"
   exit 1
 }
 
-API_KEY=$(echo "$KEY_RESPONSE" | jq -r '.key // .token')
+# /v1/me/keys returns the token under `.key` (differs from /v1/auth/login's `.value`).
+API_KEY=$(echo "$KEY_RESPONSE" | jq -r '.key // .value')
 if [ "$API_KEY" = "null" ] || [ -z "$API_KEY" ]; then
-  echo "   ✗ API key response missing key/token: $KEY_RESPONSE"
+  echo "   ✗ API key response missing token value: $KEY_RESPONSE"
   exit 1
 fi
 echo "   ✓ API key created"
