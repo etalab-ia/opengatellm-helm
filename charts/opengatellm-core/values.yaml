@@ -123,14 +123,6 @@ api:
   #
   # The base configuration (postgres, redis, settings) is defined in 'config' above.
   # Use structuredConfig to override or add additional configuration when using this chart as a dependency.
-  #
-  #
-  # Example for a parent chart wiring the (deprecated) search bridge to OpenGateRAG:
-  #
-  # api:
-  #   structuredConfig:
-  #     settings:
-  #       search_opengaterag_url: "http://my-opengaterag:8000"
 
   structuredConfig: {}
 
