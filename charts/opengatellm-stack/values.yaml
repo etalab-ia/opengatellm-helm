@@ -66,8 +66,9 @@ opengatellm-core:
       settings:
         swagger_version: "{{ .Values.api.image.tag | default .Chart.AppVersion }}"
         log_level: INFO
-        # Uncomment to expose the search tool in /v1/chat/completions (deprecated, removal planned in OGL v1.0.0)
-        # search_opengaterag_url: "http://{{ .Release.Name }}-opengaterag:8000"
+        # Routes the /v1/chat/completions search tool to the bundled OpenGateRAG.
+        # Deprecated in OpenGateLLM (removal planned in v1.0.0); comment out to disable.
+        search_opengaterag_url: "http://{{ .Release.Name }}-opengaterag:8000"
 
       playground:
         api_url: "http://opengatellm-core:8000"
@@ -208,9 +209,6 @@ opengaterag:
   replicas: 1
   image:
     repository: ghcr.io/etalab-ia/opengaterag
-    # NB: the tagged 0.1.0 release image is broken (its pyproject.toml omits
-    # gunicorn while startup_api.sh execs gunicorn -> "gunicorn: not found").
-    # Fixed on main, so use 'latest' until a 0.1.1+ release is published.
     tag: "latest"
     pullPolicy: IfNotPresent
   service:
