@@ -40,7 +40,7 @@ This repository provides two Helm charts:
 
 ### Operators
 
-Before deploying the core chart, you must install following operators:
+Before deploying the charts, you must install following operators:
   
 - PostgreSQL operator
 
