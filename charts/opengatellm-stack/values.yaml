@@ -209,7 +209,7 @@ opengaterag:
   replicas: 1
   image:
     repository: ghcr.io/etalab-ia/opengaterag
-    tag: "latest"
+    tag: "0.1.1"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
