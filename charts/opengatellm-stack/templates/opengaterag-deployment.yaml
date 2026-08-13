@@ -1,0 +1,104 @@
+{{- if .Values.opengaterag.enabled }}
+{{- $coreValues := index .Values "opengatellm-core" }}
+{{- $pgSecret := printf "%s-app" $coreValues.postgresql.fullnameOverride }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-opengaterag
+  labels:
+    {{- include "opengatellm-stack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: opengaterag
+spec:
+  replicas: {{ .Values.opengaterag.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-opengaterag
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/opengaterag-configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ .Release.Name }}-opengaterag
+        app.kubernetes.io/component: opengaterag
+    spec:
+      {{- with .Values.opengaterag.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: opengaterag
+        image: "{{ .Values.opengaterag.image.repository }}:{{ .Values.opengaterag.image.tag }}"
+        imagePullPolicy: {{ .Values.opengaterag.image.pullPolicy }}
+        {{- if .Values.opengaterag.securityContext }}
+        securityContext:
+          {{- toYaml .Values.opengaterag.securityContext | nindent 10 }}
+        {{- end }}
+        env:
+          - name: CONFIG_FILE
+            value: "/home/opengaterag/conf/config.yml"
+          - name: OPENGATELLM_URL
+            value: "http://opengatellm-core:{{ $coreValues.api.service.port }}"
+          - name: OPENGATELLM_MODEL_NAME
+            value: {{ .Values.opengaterag.config.opengatellm.model_name | quote }}
+          - name: OPENGATELLM_MODEL_VECTOR_SIZE
+            value: {{ .Values.opengaterag.config.opengatellm.model_vector_size | quote }}
+          - name: ELASTICSEARCH_HOST
+            value: "{{ .Release.Name }}-elasticsearch-es-http"
+          - name: ELASTICSEARCH_PORT
+            value: "9200"
+          {{- if not $coreValues.postgresql.existingPostgresSecret }}
+          - name: POSTGRES_HOST
+            valueFrom:
+              secretKeyRef:
+                name: {{ $pgSecret }}
+                key: host
+          - name: POSTGRES_PORT
+            valueFrom:
+              secretKeyRef:
+                name: {{ $pgSecret }}
+                key: port
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ $pgSecret }}
+                key: user
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ $pgSecret }}
+                key: password
+          {{- end }}
+        envFrom:
+          {{- if $coreValues.postgresql.existingPostgresSecret }}
+          - secretRef:
+              name: {{ $coreValues.postgresql.existingPostgresSecret }}
+          {{- end }}
+        ports:
+          - name: http
+            containerPort: 8000
+            protocol: TCP
+        volumeMounts:
+          - name: config
+            mountPath: /home/opengaterag/conf
+            readOnly: true
+        {{- if .Values.opengaterag.resources }}
+        resources:
+          {{- toYaml .Values.opengaterag.resources | nindent 10 }}
+        {{- end }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.opengaterag.probes.readiness.path }}
+            port: http
+          initialDelaySeconds: {{ .Values.opengaterag.probes.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.opengaterag.probes.readiness.periodSeconds }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.opengaterag.probes.liveness.path }}
+            port: http
+          initialDelaySeconds: {{ .Values.opengaterag.probes.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.opengaterag.probes.liveness.periodSeconds }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ .Release.Name }}-opengaterag-config
+{{- end }}

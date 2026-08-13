@@ -111,8 +111,8 @@ api:
       swagger_version: "{{ .Values.api.image.tag | default .Chart.AppVersion }}"
       log_level: INFO
       auth_secret_key: changeme
-      auth_bootstrap_admin_email: admin
-      auth_bootstrap_admin_password: changeme
+      auth_bootsrap_admin_username: admin
+      auth_bootsrap_admin_password: changeme
       # auth_key_max_expiration_days: 365 # uncomment in production
       # hidden_routers: ["admin", "auth"] # uncomment in production
 
@@ -123,16 +123,6 @@ api:
   #
   # The base configuration (postgres, redis, settings) is defined in 'config' above.
   # Use structuredConfig to override or add additional configuration when using this chart as a dependency.
-  #
-  # Example for parent chart adding Elasticsearch:
-  #
-  # api:
-  #   structuredConfig:
-  #     dependencies:
-  #       elasticsearch:
-  #         hosts: http://my-elasticsearch:9200
-  #     settings:
-  #       vector_store_model: "BAAI/bge-m3"
 
   structuredConfig: {}
 

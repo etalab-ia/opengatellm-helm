@@ -63,19 +63,12 @@ opengatellm-core:
           decode_responses: false
           socket_keepalive: true
 
-        elasticsearch:
-          index_name: opengatellm
-          index_language: english
-          number_of_shards: 4
-          number_of_replicas: 2
-          request_timeout: 120
-          retry_on_timeout: true
-          hosts: "http://{{ .Release.Name }}-elasticsearch-es-http:9200"
-
       settings:
         swagger_version: "{{ .Values.api.image.tag | default .Chart.AppVersion }}"
         log_level: INFO
-        vector_store_model: "BAAI/bge-m3"
+        # Routes the /v1/chat/completions search tool to the bundled OpenGateRAG.
+        # Deprecated in OpenGateLLM (removal planned in v1.0.0); comment out to disable.
+        search_opengaterag_url: "http://{{ .Release.Name }}-opengaterag:8000"
 
       playground:
         api_url: "http://opengatellm-core:8000"
@@ -210,6 +203,43 @@ embeddings:
 
 huggingface:
   token: "changeme"
+
+opengaterag:
+  enabled: true
+  replicas: 1
+  image:
+    repository: ghcr.io/etalab-ia/opengaterag
+    tag: "0.1.1"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8000
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+  config:
+    opengatellm:
+      model_name: "BAAI/bge-m3"
+      model_vector_size: 1024
+    elasticsearch:
+      index_name: opengaterag
+      index_language: french
+      number_of_shards: 1
+      number_of_replicas: 0
+      refresh_interval: 1s
+  probes:
+    readiness:
+      path: /health
+      initialDelaySeconds: 30
+      periodSeconds: 15
+    liveness:
+      path: /health
+      initialDelaySeconds: 120
+      periodSeconds: 30
 
 # ES deployment follows this recommended deployment : https://www.elastic.co/docs/deploy-manage/deploy/cloud-on-k8s/install-using-helm-chart
 elasticsearch:
